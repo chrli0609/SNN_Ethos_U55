@@ -4,6 +4,16 @@ import tensorflow as tf
 import numpy as np
 
 
+# Model Architecture parameters
+INPUT_SIZE = 1
+HIDDEN_SIZES = [2]
+OUTPUT_SIZE = 1
+
+#Batch Size
+BATCH_SIZE = 1
+
+
+
 
 # Example model
 class SpikeNeuron(tf.Module):
@@ -17,6 +27,8 @@ class SpikeNeuron(tf.Module):
 		self.time_step = 1e-3
 		self.threshold = 1.0
 
+
+
 	@tf.function
 	def __call__(self, i_app):
 
@@ -26,13 +38,21 @@ class SpikeNeuron(tf.Module):
 		total_input = tf.reduce_sum(i_app)
 
 		# Compute spike (binary output in uint8)
-		spk = tf.cast(self.mem > self.threshold, dtype=tf.float32)
+		#spk = tf.cast(tf.greater(self.mem, self.threshold), dtype=tf.float32)
+
+		if tf.greater(self.mem, self.threshold):
+			spk = tf.constant([1.0])
+		else:
+			spk = tf.constant([0.0])
 
 
 		self.mem.assign(self.mem + (self.time_step / tau_mem) * (-self.mem + total_input))
 
 
-		return tf.reshape(spk, [-1])
+		#return tf.reshape(spk, [-1])
+		#print("spk", spk)
+		#print("spk.size", tf.size(spk))
+		return spk
 
 
 class SpikeMLP(tf.Module):
@@ -53,7 +73,7 @@ class SpikeMLP(tf.Module):
 				tf.Variable(tf.random.normal([layer_sizes[i], num_neurons], stddev=0.1))
 			)  # Weight matrix
 
-	@tf.function(input_signature=[tf.TensorSpec(shape=[1,3], dtype=tf.float32)])
+	@tf.function(input_signature=[tf.TensorSpec(shape=[BATCH_SIZE, INPUT_SIZE], dtype=tf.float32)])
 	def __call__(self, x):
 	
 
@@ -63,10 +83,14 @@ class SpikeMLP(tf.Module):
 			# Apply spiking activation per neuron
 			new_x = []
 			for neuron in self.layers[i]:
-				new_x.append(neuron(x))
+				tmp = neuron(x)
+				#print("neuron(x):", tmp)
+				new_x.append(tmp)
 		
 
+			#print("x", x)
 			x = tf.stack(new_x, axis=1)  # Combine outputs into a tensor
+			#print("post stack x", x)
 
 
 		return x
@@ -76,11 +100,9 @@ class SpikeMLP(tf.Module):
 
 # Instantiate model
 
-input_size = 3
-hidden_sizes = [5]
-output_size = 1
 
-model = SpikeMLP(input_size, hidden_sizes, output_size)
+
+model = SpikeMLP(INPUT_SIZE, HIDDEN_SIZES, OUTPUT_SIZE)
 
 
 # Save model

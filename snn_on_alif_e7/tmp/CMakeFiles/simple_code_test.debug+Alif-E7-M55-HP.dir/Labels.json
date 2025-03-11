@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/CMakeFiles/simple_code_test.debug+Alif-E7-M55-HP"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/CMakeFiles/simple_code_test.debug+Alif-E7-M55-HP.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/CMakeFiles/simple_code_test.debug+Alif-E7-M55-HP-complete.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-build.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-configure.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-download.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-install.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-patch.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-test.rule"
+		},
+		{
+			"file" : "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP/src/simple_code_test.debug+Alif-E7-M55-HP-stamp/simple_code_test.debug+Alif-E7-M55-HP-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"simple_code_test.debug+Alif-E7-M55-HP"
+		],
+		"name" : "simple_code_test.debug+Alif-E7-M55-HP"
+	}
+}

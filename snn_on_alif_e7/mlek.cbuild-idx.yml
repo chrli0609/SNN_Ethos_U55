@@ -1,0 +1,22 @@
+build-idx:
+  generated-by: csolution version 2.6.0
+  cdefault: cdefault.yml
+  csolution: mlek.csolution.yml
+  tmpdir: tmp
+  cprojects:
+    - cproject: simple_code_test/simple_code_test.cproject.yml
+      clayers:
+        - clayer: common/common.clayer.yml
+        - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
+  cbuilds:
+    - cbuild: simple_code_test/simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml
+      project: simple_code_test
+      configuration: .debug+Alif-E7-M55-HP
+      clayers:
+        - clayer: common/common.clayer.yml
+        - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
+      messages:
+        info:
+          - mlek.cbuild-set.yml - file is already up-to-date
+          - mlek.cbuild-pack.yml - file is already up-to-date
+          - simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml - file generated successfully

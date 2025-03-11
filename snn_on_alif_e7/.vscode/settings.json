@@ -1,0 +1,25 @@
+{
+    "clangd.arguments": [
+        "--compile-commands-dir=c:\\Users\\chris\\skolsaker\\ak5\\mex\\project\\SNN_Ethos_U55\\snn_on_alif_e7\\out\\simple_code_test\\Alif-E7-M55-HP\\debug"
+    ],
+    "cmsis-csolution.actions": [
+        {
+            "path": "mlek.csolution.yml",
+            "target": "Alif-E7-M55-HP",
+            "config": {
+                "run": "Program with Security Toolkit (select COM port)"
+            },
+            "projects": [
+                {
+                    "path": "object-detection-custom/object-detection-custom.cproject.yml",
+                    "config": {
+                        "run": "Program with Security Toolkit (select COM port)"
+                    }
+                }
+            ]
+        }
+    ],
+    "files.associations": {
+        "uart_stdout.h": "c"
+    }
+}
