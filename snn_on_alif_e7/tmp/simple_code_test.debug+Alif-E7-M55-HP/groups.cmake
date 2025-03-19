@@ -2,7 +2,6 @@
 
 # group Main
 add_library(Group_Main OBJECT
-  "${SOLUTION_ROOT}/simple_code_test/src/lif_model.c"
   "${SOLUTION_ROOT}/simple_code_test/src/main.cpp"
 )
 target_include_directories(Group_Main PUBLIC

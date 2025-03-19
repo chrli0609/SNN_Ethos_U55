@@ -43,6 +43,7 @@ target_include_directories(${CONTEXT} PUBLIC
   $<$<COMPILE_LANGUAGE:C,CXX>:
     ${SOLUTION_ROOT}/simple_code_test
     ${SOLUTION_ROOT}/simple_code_test/include
+    ${SOLUTION_ROOT}/.
     ${SOLUTION_ROOT}/board
     ${SOLUTION_ROOT}/libs/board
     ${SOLUTION_ROOT}/libs/common_app_utils/logging
@@ -58,6 +59,7 @@ target_include_directories(${CONTEXT} PUBLIC
   ${CMSIS_PACK_ROOT}/ARM/ethos-u-core-driver/1.23.2/ethos_u_core_driver/include
   ${CMSIS_PACK_ROOT}/ARM/ethos-u-core-driver/1.23.2/ethos_u_core_driver/src
   ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/common/include
+  ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/use_case/object_detection/include
   ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/log/include
   ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/math/include
   ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Alif_CMSIS/Include
@@ -174,6 +176,7 @@ target_link_libraries(${CONTEXT} PUBLIC
   ARM_ML_Eval_Kit_Common_API_1_0_0
   ARM_ML_Eval_Kit_Common_Log_1_0_0
   ARM_ML_Eval_Kit_Common_Math_1_0_0
+  ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0
   AlifSemiconductor_BSP_External_peripherals_CAMERA_Sensor_ARX3A0_1_3_0
   AlifSemiconductor_BSP_External_peripherals_ILI9806E_LCD_panel_1_3_0
   AlifSemiconductor_BSP_External_peripherals_OSPI_Flash_ISSI_1_3_0

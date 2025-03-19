@@ -23,16 +23,6 @@ rule CXX_EXECUTABLE_LINKER__simple_code_test.2edebug.2bAlif-E7-M55-HP_
 
 
 #############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__Group_Main_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
 # Rule for compiling CXX files.
 
 rule CXX_COMPILER__Group_Main_unscanned_
@@ -136,6 +126,16 @@ rule CXX_COMPILER__ARM_ML_Eval_Kit_Common_API_1_0_0_unscanned_
 # Rule for compiling CXX files.
 
 rule CXX_COMPILER__ARM_ML_Eval_Kit_Common_Math_1_0_0_unscanned_
+  depfile = $DEP_FILE
+  deps = gcc
+  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0_unscanned_
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in

@@ -26,10 +26,14 @@ project:
     - group: Main
       files:
         - file: src/main.cpp
-        - file: src/lif_model.c
+        #- file: src/lif_model.c
         #- file: src/nn_test.c
         #- file: src/conv2d_model.hpp
         #- file: src/yolo-fastest_192_face_v4_vela_H256.tflite.cpp
+        #- file: src/tmp_main.cpp
+        #- file: src/InputFiles.cpp
+        #- file: src/sample_image.cpp
+        #- file: include/InputFiles.hpp
           for-context:
             - +Alif-E7-M55-HP
           
@@ -47,6 +51,8 @@ project:
   add-path:
   - .
   - include/
+  #- ../../ethosu_compiler/command_stream/
+  - ../
   - ../device/alif-ensemble-custom/src
   - ../board/
   - ../libs/board/
@@ -74,5 +80,6 @@ project:
         - +Alif-E7-M55-HP
         
 
-  #components:
-    #- component: ARM::ML Eval Kit:Vision:Object detection
+  #not needed
+  components:
+    - component: ARM::ML Eval Kit:Vision:Object detection

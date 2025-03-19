@@ -140,15 +140,24 @@ def process_cmd0(emit, npu_op_str):
         print("ERROR: npu_cmd not found:", npu_cmd_str)
         return -1
     
-    #convert parameter to value (should it be binary or hex or integer?)
+    #Paramter give as int --> string to int conversion
     try:
-        parameter = int(parameter_str, 16)
+        parameter = int(parameter_str)
     except:
-        print("ERROR: parameter could not be converted to hex, parameter:", parameter_str)
+        print("ERROR: parameter could not be converted to int, parameter:", parameter_str)
 
 
     #Add the command stream
+    if npu_cmd == cmd0.NPU_OP_STOP:
+        print("this is the cmd_s BEFORE adding npu pool cmd\n", emit.cmd_stream)
+        print("parameter currently stored as int:", parameter)
+        print("the hex equivalent is:", format(parameter, '08x'))
+		
     emit.cmd0_with_param(npu_cmd, parameter)
+
+    if npu_cmd == cmd0.NPU_OP_STOP:
+        print("this is the cmd_s AFTER adding npu pool cmd\n", emit.cmd_stream)
+
 
     return npu_op_parts
 
@@ -172,11 +181,11 @@ def process_cmd1(emit, npu_op_str):
         print("ERROR: npu_cmd not found:", npu_cmd_str)
         return -1
     
-    #convert parameter to value (should it be binary or hex or integer?)
+    #convert parameter to number, given as int --> string to int
     try:
-        parameter = int(parameter_str, 16)
+        parameter = int(parameter_str)
     except:
-        print("ERROR: parameter could not be converted to hex, parameter:", parameter_str)
+        print("ERROR: parameter could not be converted to int, parameter:", parameter_str)
         return -1
 
     try:
@@ -198,6 +207,8 @@ def parse_assembly(input_name, emit):
     with open(input_name, 'r', encoding='utf8') as file:
         for line in file:
 
+            print("incoming line:", line)
+
             #remove newline
             line = line.strip('\n')
             #remove white spaces
@@ -208,11 +219,15 @@ def parse_assembly(input_name, emit):
 
             #decide if its cmd0 or cmd1
             tmp = line.split('.')
+            print("tmp", tmp)
+            print("len(tmp)", len(tmp))
 
-            #Make sure only 1 '.' in code
-            if len(tmp) > 2:
+            #Make sure only 1 '.' in code, otherwise skip line
+            if len(tmp) != 2:
                 print("ERROR: should only have 1 '.' in each line, found:", len(tmp))
+                continue
 
+            
             cmd_type = tmp[0]
             npu_op_str = tmp[1]
 
@@ -293,10 +308,13 @@ def write_to_file(emit, output_tfl_filename):
 
     #End stuff
     out_str += get_end_stuff()
-        
+
+    print("writing to", output_tfl_filename)
+    print(out_str)
+
     with open(output_tfl_filename, "w") as text_file:
         text_file.write(out_str)
-    
+
 
 
 

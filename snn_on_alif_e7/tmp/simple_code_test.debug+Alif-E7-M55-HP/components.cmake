@@ -187,6 +187,28 @@ target_link_libraries(ARM_ML_Eval_Kit_Common_Math_1_0_0 PUBLIC
   ${CONTEXT}_ABSTRACTIONS
 )
 
+# component ARM::ML Eval Kit:Vision:Object detection@1.0.0
+add_library(ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0 OBJECT
+  "${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/use_case/object_detection/src/DetectorPostProcessing.cc"
+  "${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/use_case/object_detection/src/DetectorPreProcessing.cc"
+  "${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/use_case/object_detection/src/YoloFastestModel.cc"
+)
+target_include_directories(ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0 PUBLIC
+  $<TARGET_PROPERTY:${CONTEXT},INTERFACE_INCLUDE_DIRECTORIES>
+  ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/application/api/use_case/object_detection/include
+  ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/log/include
+  ${CMSIS_PACK_ROOT}/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/math/include
+)
+target_compile_definitions(ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0 PUBLIC
+  $<TARGET_PROPERTY:${CONTEXT},INTERFACE_COMPILE_DEFINITIONS>
+)
+target_compile_options(ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0 PUBLIC
+  $<TARGET_PROPERTY:${CONTEXT},INTERFACE_COMPILE_OPTIONS>
+)
+target_link_libraries(ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0 PUBLIC
+  ${CONTEXT}_ABSTRACTIONS
+)
+
 # component AlifSemiconductor::BSP:External peripherals:CAMERA Sensor ARX3A0@1.3.0
 add_library(AlifSemiconductor_BSP_External_peripherals_CAMERA_Sensor_ARX3A0_1_3_0 OBJECT
   "${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/components/Source/arx3A0_camera_sensor.c"

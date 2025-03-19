@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 # Run the cmsis-csolution.build command first
 Write-Host "Running cmsis-csolution.build..."
 try {
-    cbuild C:\Users\chris\skolsaker\ak5\mex\project\snn_ethosu\mlek.csolution.yml --context-set --packs
+    cbuild C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\mlek.csolution.yml --context-set --packs
 }
 catch { 
     Write-Host "Build Failed, exiting..."
@@ -14,7 +14,7 @@ catch {
 
 
 
-$outputElfFilename='C:\Users\chris\skolsaker\ak5\mex\project\snn_ethosu\out\simple_code_test\Alif-E7-M55-HP\debug\simple_code_test.elf'; $outputBinFilename=${outputElfFilename}.Substring(0, $outputElfFilename.Length -3) + 'bin'; cp "$outputBinFilename" '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/build/images/alif-img.bin'; cp './.alif/M55_HP_cfg.json' '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/alif-img.json';
+$outputElfFilename='C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\out\simple_code_test\Alif-E7-M55-HP\debug\simple_code_test.elf'; $outputBinFilename=${outputElfFilename}.Substring(0, $outputElfFilename.Length -3) + 'bin'; cp "$outputBinFilename" '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/build/images/alif-img.bin'; cp './.alif/M55_HP_cfg.json' '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/alif-img.json';
 
 
 
@@ -68,5 +68,5 @@ Write-Host "Script execution completed!"
 #$answer = Read-Host 'Read from COM7?'
 
 #if($answer -eq 'y'){
-.\scripts\read_com7.ps1
+#.\scripts\read_com7.ps1
 #}

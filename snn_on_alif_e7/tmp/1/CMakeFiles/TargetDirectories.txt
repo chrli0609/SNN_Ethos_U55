@@ -9,6 +9,7 @@ C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMak
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/ARM_CMSIS_NN_Lib_4_0_0.dir
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/ARM_ML_Eval_Kit_Common_API_1_0_0.dir
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/ARM_ML_Eval_Kit_Common_Math_1_0_0.dir
+C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0.dir
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/AlifSemiconductor_BSP_External_peripherals_CAMERA_Sensor_ARX3A0_1_3_0.dir
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/AlifSemiconductor_BSP_External_peripherals_ILI9806E_LCD_panel_1_3_0.dir
 C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/AlifSemiconductor_BSP_External_peripherals_OSPI_Flash_ISSI_1_3_0.dir

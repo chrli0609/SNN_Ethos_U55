@@ -16,6 +16,8 @@ build-idx:
         - clayer: common/common.clayer.yml
         - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
       messages:
+        warnings:
+          - "source modules added by multiple components, duplicate ignored:\n  filename: C:/Users/chris/AppData/Local/arm/packs/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/math/PlatformMath.cc\n    - component: ARM::ML Eval Kit:Common:Math@1.0.0\n      from-pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta\n    - component: ARM::ML Eval Kit:Vision:Object detection@1.0.0\n      from-pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta"
         info:
           - mlek.cbuild-set.yml - file is already up-to-date
           - mlek.cbuild-pack.yml - file is already up-to-date
