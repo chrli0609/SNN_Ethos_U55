@@ -19,13 +19,14 @@
 
 //#include "lif_model.c"
 //#include "conv2d_model.hpp"
+#include "conv2d_vela.hpp"
 #include "maxpool2d_vela.hpp"
 //#include "maxpool2d_translated.hpp"
-#include "../ethosu_compiler/command_stream/conv2d_translated.hpp"
+//#include "../ethosu_compiler/command_stream/conv2d_translated.hpp"
 
 // REMOVE THESE SOOOOOONN!!!!
-#include "../python_models/conv2d_test/saved_models/cpp_tflite_vela/tflite_model_vela.tflite.cc"
-#include <inttypes.h>
+//#include "../python_models/conv2d_test/saved_models/cpp_tflite_vela/tflite_model_vela.tflite.cc"
+//#include <inttypes.h>
 
 //#include "lif_model.h"
 //#include "nn_test.h"
@@ -34,7 +35,6 @@
 
 
 //#include <unistd.h> // notice this! you need it!
-
 
 
 #define REGISTER_ADDRESS    0x20020200
@@ -131,8 +131,8 @@ int main() {
         //    printf("%"PRIu8"\n", whole_ex_cmd_stream[i]);
         //}
         
-        printf("doing max pooling now!!!\n");
-        maxpool2d(8*8*16, 4*4*16);
+        //printf("doing max pooling now!!!\n");
+        //maxpool2d(8*8*16, 4*4*16);
 
         printf("doing conv2d now!!!\n");
         //conv2d(8*8*16, 4*4*16, 1360);

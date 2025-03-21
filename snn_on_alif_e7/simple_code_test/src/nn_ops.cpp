@@ -15,7 +15,7 @@
 //include "tensorflow/lite/micro/micro_allocator.h"
 #include "micro_allocator.h"
 
-
+#include <cinttypes> //for PRIi8
 
 //#define MEM_ALIGNMENT 16
 
@@ -223,6 +223,15 @@ int conv2d(size_t input_size, size_t output_size)
     }
 
 
+    // Allocate for output tensor
+    //uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(output_size*sizeof(uint8_t), MEM_ALIGNMENT));
+    //if (output_tensor) {
+    //    for (int i = 0; i < output_size; i++) {
+    //        output_tensor[i] = 1;  // init to 1
+    //    }
+    //}
+
+
 
      // Set weights for Conv2d to 0
     //uint8_t model_weight_tensor[weight_size] __attribute__((aligned(16))) = { 0 };
@@ -250,7 +259,7 @@ int conv2d(size_t input_size, size_t output_size)
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
     //printf("output_tensor\n");
-    //PrintTensor(output_tensor, OUTPUT_SIZE);
+    //PrintTensor(output_tensor, output_size);
     printf("actual output_tensor\n");
     PrintTensor(tensor_arena, output_size);
 
@@ -334,9 +343,14 @@ int conv2d(size_t input_size, size_t output_size)
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
     //printf("output_tensor\n");
-    //PrintTensor(output_tensor, OUTPUT_SIZE);
+    //PrintTensor(output_tensor, output_size);
     printf("actual output_tensor\n");
     PrintTensor(tensor_arena, output_size);
+
+    printf("checking if negative?\n");
+    for (int i = 0; i < output_size; i++) {
+        printf("%" PRIi8 " : ", (int8_t)tensor_arena[i]);
+    }
 
 
     // print weights

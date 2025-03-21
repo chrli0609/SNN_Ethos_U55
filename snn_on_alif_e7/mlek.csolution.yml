@@ -109,3 +109,7 @@ solution:
     - project: ./simple_code_test/simple_code_test.cproject.yml
       for-context:
         - +Alif-E7-M55-HP
+
+    #- project: ./tensorflow_test/tensorflow_test.cproject.yml
+    #  for-context:
+    #    - +Alif-E7-M55-HP

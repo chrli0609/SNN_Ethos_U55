@@ -4,13 +4,23 @@ $ErrorActionPreference = "Stop"
 # Run the cmsis-csolution.build command first
 Write-Host "Running cmsis-csolution.build..."
 try {
-    cbuild C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\mlek.csolution.yml --context-set --packs
+    $build_output = cbuild C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\mlek.csolution.yml --context-set --packs
 }
 catch { 
     Write-Host "Build Failed, exiting..."
     exit
 }
+echo $build_output
 
+if ($build_output -match "Build summary: 1 succeeded, 0 failed") {
+    Write-Host "Build succeeded!"
+} elseif ($build_output -match "Build summary: 0 succeeded, 1 failed") {
+    Write-Host "Build failed!"
+    exit
+} else {
+    Write-Host "No relevant build summary found."
+    exit
+}
 
 
 
