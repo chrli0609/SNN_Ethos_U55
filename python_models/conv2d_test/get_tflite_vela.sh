@@ -38,8 +38,7 @@ vela ${TFLITE_PATH} --output-dir ${VELA_TFLITE_DIR} \
 
 echo "Illustrate Vela Compiled Model in Netron? (y/n)"
 
-read userVal
-
+#read userVal
 #if [ $userVal == "y" ]; then
 #	netron saved_models/tflite_vela/tflite_model_vela.tflite
 #fi

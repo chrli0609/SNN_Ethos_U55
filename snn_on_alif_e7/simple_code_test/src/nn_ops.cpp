@@ -203,11 +203,12 @@ int conv2d(size_t input_size, size_t output_size)
 {
 
     //Get length of command stream
-    const uint8_t* command_stream = GetConv2DPointer();
-    size_t command_stream_size = GetConv2DLen();
+    const uint8_t* command_stream = Getconv2dCMSPointer();
+    size_t command_stream_size = Getconv2dCMSLen();
+    printf("command_stream_size = %d\n", command_stream_size);
 
-    //const int tensor_arena_size = 3248;
     const int tensor_arena_size = 3248;
+    //const int tensor_arena_size = 1322;
     uint8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
     // Allocate Tensor Arena
@@ -249,8 +250,8 @@ int conv2d(size_t input_size, size_t output_size)
 
 
     //Get weight tensor pointer and length
-    const uint8_t* weight_tensor = GetConv2DWeightsPointer();
-    size_t weight_size = GetConv2DWeightsLen();
+    const uint8_t* weight_tensor = Getconv2dWeightsPointer();
+    size_t weight_size = Getconv2dWeightsLen();
 
     // print values
     printf("BEFORE INVOKE\n");

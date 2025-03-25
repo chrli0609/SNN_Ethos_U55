@@ -1,9 +1,9 @@
 import sys
 
 ##################### my own parser ##########################
-from register_command_stream_generator import CommandStreamEmitter
-from ethos_u55_regs import cmd0
-from ethos_u55_regs import cmd1
+from .register_command_stream_generator import CommandStreamEmitter
+from .ethos_u55_regs import cmd0
+from .ethos_u55_regs import cmd1
 
 
 
@@ -246,16 +246,45 @@ def parse_assembly(input_name, emit):
     return emit
 
 
-def get_header():
-    return "#include <cstddef>\n#include <cstdint>\n\n\n\n\nstatic const uint8_t command_stream[] __attribute__((aligned(16))) =\n\t{\n"
+def get_header(base_name):
+    return "#include <cstddef>\n#include <cstdint>\n\n\n\n\nstatic const uint8_t cms_" + base_name + "[] __attribute__((aligned(16))) =\n\t{\n"
 
-def get_end_stuff():
-    return "};\n\n\n\n\nconst uint8_t * GetModelPointer()\n{\n\treturn command_stream;\n}\n\nsize_t GetModelLen()\n{\n\treturn sizeof(command_stream);\n}"
+def get_preamble(num_words_in_stream):
+
+    num_words_in_stream_str = ''
+    for i in range(2):
+        num_words_in_stream_str += "0x" + str(format(num_words_in_stream >> 8*i & 0xFF, '02x')) + ', '
+    
+
+    
+
+    ret_str = '''\n
+    //Start reading cms
+    0x43, 0x4f, 0x50, 0x31,
+    //Config NPU
+    0x01, 0x00, 0x10, 0x00, 0x08, 0x30, 0x00, 0x00, 0x00, 0x00, 0x06, 0x10, 
+    //NOP
+    0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
+    //Start CMS OPS
+    0x02, 0x00, 
+    //CMS OP Length
+    '''
+
+    ret_str += num_words_in_stream_str + "\n"
+
+    return ret_str
+
+def get_end_stuff(base_name):
+    #get op_name:
+    #   remove all characters after and including first '_'
+    op_name = base_name.split("_", 1)[0]
+    
+    return "};\n\n\n\n\nconst uint8_t * Get" + op_name + "CMSPointer()\n{\n\treturn cms_" + base_name + ";\n}\n\nsize_t Get"+ op_name +"CMSLen()\n{\n\treturn sizeof(cms_" + base_name + ");\n}"
     
 
 def pretty_string(split_up_hex_vals_list, next_is_payload=False):
     
-    out_str = ''
+    out_str = '\t'
 
     for i in range(4): #32 bits split to 1 byte chunks --> 32/(8) = 4
         out_str += "0x" + str(format(split_up_hex_vals_list[i], '02x')) + ', '
@@ -275,45 +304,66 @@ def split_to_two_byte_and_little_endian(hex_val_8_bit):
     return split_up
 
 
-def write_to_file(emit, output_tfl_filename):
+def write_to_file(emit, base_name):
+
+    output_tfl_filename = "output/"+base_name+"_translated.hpp"
+
     print("output_tfl_filename:", output_tfl_filename)
     print("emitting emit.cmd_stream:\n", emit.cmd_stream)
 
 
-    out_str = ''
+    
 
     # Print header:
-    out_str += get_header()
+    header_str = get_header(base_name)
 
 
+    #record cms in hex format for writing to file
+    cms_str = '\t//Command stream OPS\n'
+    
+    #record number of commands --> needed in preamble
+    num_words_in_stream = 0
 
     #Command stream in C array format
     for i in range(len(emit.cmd_stream)):
         cmd_tuple = emit.cmd_stream[i]
 
+        num_words_in_stream += len(cmd_tuple)
+
 
         if len(cmd_tuple) == 1:
             split_up_cmd = split_to_two_byte_and_little_endian(cmd_tuple[0])
-            out_str += pretty_string(split_up_cmd, next_is_payload=False)
+            cms_str += pretty_string(split_up_cmd, next_is_payload=False)
 
         elif len(cmd_tuple) == 2:
             split_up_cmd = split_to_two_byte_and_little_endian(cmd_tuple[0])
             split_up_payload = split_to_two_byte_and_little_endian(cmd_tuple[1])
 
-            out_str += pretty_string(split_up_cmd, next_is_payload=True)
-            out_str += pretty_string(split_up_payload, next_is_payload=False)
+            cms_str += pretty_string(split_up_cmd, next_is_payload=True)
+            cms_str += pretty_string(split_up_payload, next_is_payload=False)
 
         else:
             print("ERROR: Expected 1 or 2 elements in command stream but got:", len(cmd_tuple))
 
+    
+
+    #Get preamble
+    preamble_str = get_preamble(num_words_in_stream)
+
     #End stuff
-    out_str += get_end_stuff()
+    getter_functions_str = get_end_stuff(base_name)
+
+
+    
 
     print("writing to", output_tfl_filename)
-    print(out_str)
+    #print(out_str)
 
     with open(output_tfl_filename, "w") as text_file:
-        text_file.write(out_str)
+        text_file.write(header_str)
+        text_file.write(preamble_str)
+        text_file.write(cms_str)
+        text_file.write(getter_functions_str)
 
 
 
@@ -339,8 +389,15 @@ def assembly_2_machine_code(input_name, output_name):
 
 
     #output_tfl_filename = output_basename + "_translated.hpp"
+
+    #Get basename:
+    #   remove: _translated.hpp
+    #   remove: output/
+
+    base_name = output_name.rsplit("_", 1)[0]
+    base_name = base_name.rsplit("/", 1)[-1]
     
-    write_to_file(emit, output_name)
+    write_to_file(emit, base_name)
 
 
     return 0

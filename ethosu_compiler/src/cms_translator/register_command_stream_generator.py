@@ -66,8 +66,8 @@ import numpy as np
 #from .errors import VelaError
 #from .ethos_u55_regs.ethos_u55_regs import acc_format
 #from .ethos_u55_regs.ethos_u55_regs import activation
-from ethos_u55_regs import cmd0
-from ethos_u55_regs import cmd1
+from .ethos_u55_regs import cmd0
+from .ethos_u55_regs import cmd1
 #from .ethos_u55_regs.ethos_u55_regs import elementwise_mode
 #from .ethos_u55_regs.ethos_u55_regs import pooling_mode
 #from .ethos_u55_regs.ethos_u55_regs import resampling_mode

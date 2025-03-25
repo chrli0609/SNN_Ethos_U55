@@ -19,10 +19,18 @@
 
 //#include "lif_model.c"
 //#include "conv2d_model.hpp"
-#include "conv2d_vela.hpp"
+//#include "conv2d_vela.hpp"
 #include "maxpool2d_vela.hpp"
 //#include "maxpool2d_translated.hpp"
-//#include "../ethosu_compiler/command_stream/conv2d_translated.hpp"
+
+#include "copy_conv2d_vela.hpp"
+
+
+//#include "../ethosu_compiler/output/conv2d_doc_ex_translated.hpp"
+//#include "../ethosu_compiler/output/conv2d_my_translated.hpp"
+
+
+
 
 // REMOVE THESE SOOOOOONN!!!!
 //#include "../python_models/conv2d_test/saved_models/cpp_tflite_vela/tflite_model_vela.tflite.cc"
