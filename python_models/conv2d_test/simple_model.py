@@ -10,7 +10,15 @@ import sys
 
 # Define a simple CNN model
 model = keras.Sequential([
-    layers.Conv2D(filters=16, kernel_size=(2, 2), strides=(2, 2), input_shape=(8, 8, 16))  # First conv layer
+    layers.Conv2D(
+		filters=16,
+		kernel_size=(2, 2),
+		strides=(2, 2), 
+		padding="valid",
+		dilation_rate=(1, 1),
+		input_shape=(8, 8, 16)
+
+)  # First conv layer
 #    layers.MaxPooling2D(pool_size=(2, 2)),  # Downsample the feature maps
 #    layers.Conv2D(64, (3, 3), activation='relu'),  # Second conv layer
 #    layers.MaxPooling2D(pool_size=(2, 2)),  # Downsample again
@@ -37,8 +45,10 @@ print("model weights:\n", model.layers[0].get_weights())
 
 
 print("set weights")
-new_weights = np.zeros((2,2,16,16))
+#new_weights = np.zeros((2,2,16,16))
+new_weights = np.ones((2,2,16,16))
 new_biases = np.zeros(16)
+#new_biases = np.ones(16)
 
 #new_weights = np.arange(0, 2*2*16*16).reshape((2,2,16,16))
 #new_biases  = np.arange(1, 16+1)
@@ -47,7 +57,8 @@ model.layers[0].set_weights([new_weights, new_biases])
 
 print("model weights:\n", model.layers[0].get_weights())
 
-input_tensor = tf.random.normal((1, 8, 8, 16))  # Random tensor inpu
+#input_tensor = tf.random.normal((1, 8, 8, 16))  # Random tensor input
+
 np_input = np.full((1, 8, 8, 16), 1, dtype=int)
 input_tensor = tf.constant(np_input)
 print("Input shape:", input_tensor.shape, '\n', input_tensor)
@@ -57,5 +68,5 @@ print("Output shape:", output_tensor.shape, '\n', output_tensor)
 
 
 
-tf.saved_model.save(model, sys.argv[1])
+#tf.saved_model.save(model, sys.argv[1])
 

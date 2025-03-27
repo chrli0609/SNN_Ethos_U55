@@ -207,8 +207,11 @@ int conv2d(size_t input_size, size_t output_size)
     size_t command_stream_size = Getconv2dCMSLen();
     printf("command_stream_size = %d\n", command_stream_size);
 
-    const int tensor_arena_size = 3248;
-    //const int tensor_arena_size = 1322;
+    //const int tensor_arena_size = 3248;
+    //const int tensor_arena_size = 1448;
+    //const int tensor_arena_size = 1456;
+    //const int tensor_arena_size = 2048;
+    const int tensor_arena_size = 1584;
     uint8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
     // Allocate Tensor Arena
@@ -219,20 +222,41 @@ int conv2d(size_t input_size, size_t output_size)
     uint8_t* input_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(input_size*sizeof(uint8_t), MEM_ALIGNMENT));
     if (input_tensor) {
         for (int i = 0; i < input_size; i++) {
-          input_tensor[i] = 0;  // Writing float values
+          input_tensor[i] = 1;  // Writing float values
         }
     }
 
 
+
+
     // Allocate for output tensor
-    //uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(output_size*sizeof(uint8_t), MEM_ALIGNMENT));
-    //if (output_tensor) {
-    //    for (int i = 0; i < output_size; i++) {
-    //        output_tensor[i] = 1;  // init to 1
-    //    }
-    //}
+    uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(output_size*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (output_tensor) {
+        for (int i = 0; i < output_size; i++) {
+            output_tensor[i] = 0;  // init to 0
+        }
+    }
 
 
+
+    //Get weight tensor pointer and length
+    const uint8_t* weight_tensor = Getconv2dWeightsPointer();
+    size_t weight_size = Getconv2dWeightsLen();
+    printf("weight_size: %d", weight_size);
+    
+
+    // Allocate for weights & biases
+    uint8_t* weight_tensor_on_sram = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(weight_size*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (weight_tensor_on_sram) {
+        for (int i = 0; i < weight_size; i++) {
+            weight_tensor_on_sram[i] = 0;  // init to 0
+        }
+    }
+
+
+
+
+    
 
      // Set weights for Conv2d to 0
     //uint8_t model_weight_tensor[weight_size] __attribute__((aligned(16))) = { 0 };
@@ -249,9 +273,7 @@ int conv2d(size_t input_size, size_t output_size)
     //}
 
 
-    //Get weight tensor pointer and length
-    const uint8_t* weight_tensor = Getconv2dWeightsPointer();
-    size_t weight_size = Getconv2dWeightsLen();
+    
 
     // print values
     printf("BEFORE INVOKE\n");
@@ -259,10 +281,10 @@ int conv2d(size_t input_size, size_t output_size)
     PrintTensor(tensor_arena, tensor_arena_size);
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
-    //printf("output_tensor\n");
-    //PrintTensor(output_tensor, output_size);
-    printf("actual output_tensor\n");
-    PrintTensor(tensor_arena, output_size);
+    printf("output_tensor\n");
+    PrintTensor(output_tensor, output_size);
+    //printf("actual output_tensor\n");
+    //PrintTensor(tensor_arena, output_size);
 
 
 
@@ -285,8 +307,8 @@ int conv2d(size_t input_size, size_t output_size)
     base_addrs[1] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Tensor arena pointer
     base_addrs[2] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Fast scratch, just keep same as tensor arena for now
     base_addrs[3] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input_tensor));           // Input tensor (lies in the tensor arena)
-    //base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
-    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));
+    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
+    //base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));
 
     base_addrs_size[0] = weight_size;
     base_addrs_size[1] = tensor_arena_size;
@@ -296,12 +318,12 @@ int conv2d(size_t input_size, size_t output_size)
 
 
 
-    const uint8_t* ptr_after = (uint8_t*)reinterpret_cast<void*>(base_addrs[0]);  // Pointer to the array
-    printf("before invoke: weight tensor: %p\n", weight_tensor);
-      for (int i = 0; i < base_addrs_size[0]; ++i) {
-          printf("0x%02x ", ptr_after[i]);  // Print each byte in hexadecimal format
-    }
-    printf("\n");
+    //const uint8_t* ptr_after = (uint8_t*)reinterpret_cast<void*>(base_addrs[0]);  // Pointer to the array
+    //printf("before invoke: weight tensor: %p\n", weight_tensor);
+    //  for (int i = 0; i < base_addrs_size[0]; ++i) {
+    //      printf("0x%02x ", ptr_after[i]);  // Print each byte in hexadecimal format
+    //}
+    //printf("\n");
   
 
 
@@ -343,15 +365,15 @@ int conv2d(size_t input_size, size_t output_size)
     PrintTensor(tensor_arena, tensor_arena_size);
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
-    //printf("output_tensor\n");
-    //PrintTensor(output_tensor, output_size);
-    printf("actual output_tensor\n");
-    PrintTensor(tensor_arena, output_size);
+    printf("output_tensor\n");
+    PrintTensor(output_tensor, output_size);
+    //printf("actual output_tensor\n");
+    //PrintTensor(tensor_arena, output_size);
 
-    printf("checking if negative?\n");
-    for (int i = 0; i < output_size; i++) {
-        printf("%" PRIi8 " : ", (int8_t)tensor_arena[i]);
-    }
+    //printf("checking if negative?\n");
+    //for (int i = 0; i < output_size; i++) {
+    //    printf("%" PRIi8 " : ", (int8_t)tensor_arena[i]);
+    //}
 
 
     // print weights

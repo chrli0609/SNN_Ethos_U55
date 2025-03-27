@@ -23,11 +23,14 @@
 #include "maxpool2d_vela.hpp"
 //#include "maxpool2d_translated.hpp"
 
-#include "copy_conv2d_vela.hpp"
+//#include "copy_conv2d_vela.hpp"
+
+#include "nn_ops/conv2d_vela_api.hpp"
 
 
 //#include "../ethosu_compiler/output/conv2d_doc_ex_translated.hpp"
 //#include "../ethosu_compiler/output/conv2d_my_translated.hpp"
+//#include "../ethosu_compiler/output/conv2d_only_vela_test_translated.hpp"
 
 
 
