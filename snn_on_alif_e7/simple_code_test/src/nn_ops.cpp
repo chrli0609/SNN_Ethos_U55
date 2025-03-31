@@ -19,6 +19,27 @@
 
 //#define MEM_ALIGNMENT 16
 
+
+
+//#include "conv2d_model.hpp"
+//#include "conv2d_vela.hpp"
+#include "maxpool2d_vela.hpp"
+//#include "maxpool2d_translated.hpp"
+
+//#include "copy_conv2d_vela.hpp"
+
+#include "nn_ops/conv2d_vela_api.hpp"
+#include "nn_ops/elementwise_add.hpp"
+
+
+//#include "../ethosu_compiler/output/conv2d_doc_ex_translated.hpp"
+//#include "../ethosu_compiler/output/conv2d_my_translated.hpp"
+//#include "../ethosu_compiler/output/conv2d_only_vela_test_translated.hpp"
+
+
+
+
+
 extern const size_t MEM_ALIGNMENT = 16;
 
 
@@ -51,6 +72,16 @@ class PersistentAllocator {
     return aligned_result;
   }
 
+  //Getters
+  uint8_t* GetBufferHead(){
+    return buffer_head_;
+  }
+
+  uint8_t* GetTailTemp(){
+    return tail_temp_;
+  }
+
+
  private:
   uint8_t* buffer_head_;  // Start of buffer
   uint8_t* tail_temp_;    // Current tail position
@@ -62,6 +93,7 @@ void PrintTensor(uint8_t* tensor, size_t num_elements) {
       printf("Tensor is NULL!\n");
       return;
     }
+
     printf("Tensor values: ");
     for (size_t i = 0; i < num_elements; i++) {
       printf("%u ", tensor[i]);
@@ -211,11 +243,11 @@ int conv2d(size_t input_size, size_t output_size)
     //const int tensor_arena_size = 1448;
     //const int tensor_arena_size = 1456;
     //const int tensor_arena_size = 2048;
-    const int tensor_arena_size = 1584;
-    uint8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+    //const int tensor_arena_size = 1584;
+    uint8_t tensor_arena[CONV2D_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
 
     // Allocate Tensor Arena
-    PersistentAllocator allocator(tensor_arena, tensor_arena_size);
+    PersistentAllocator allocator(tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
 
 
     // Allocate for input tensor
@@ -278,7 +310,7 @@ int conv2d(size_t input_size, size_t output_size)
     // print values
     printf("BEFORE INVOKE\n");
     printf("tensor_arena\n");
-    PrintTensor(tensor_arena, tensor_arena_size);
+    PrintTensor(tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
     printf("output_tensor\n");
@@ -299,7 +331,7 @@ int conv2d(size_t input_size, size_t output_size)
     
 
     
-    int num_tensors = 5;
+    const size_t num_tensors = 5;
     uint64_t base_addrs[num_tensors];
     size_t base_addrs_size[num_tensors];
 
@@ -311,8 +343,8 @@ int conv2d(size_t input_size, size_t output_size)
     //base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));
 
     base_addrs_size[0] = weight_size;
-    base_addrs_size[1] = tensor_arena_size;
-    base_addrs_size[2] = tensor_arena_size;
+    base_addrs_size[1] = CONV2D_TENSOR_ARENA_SIZE;
+    base_addrs_size[2] = CONV2D_TENSOR_ARENA_SIZE;
     base_addrs_size[3] = input_size;
     base_addrs_size[4] = output_size;
 
@@ -362,7 +394,7 @@ int conv2d(size_t input_size, size_t output_size)
     // print values
     printf("AFTER INVOKE\n");
     printf("tensor_arena\n");
-    PrintTensor(tensor_arena, tensor_arena_size);
+    PrintTensor(tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
     printf("input_tensor\n");
     PrintTensor(input_tensor, input_size);
     printf("output_tensor\n");
@@ -387,6 +419,178 @@ int conv2d(size_t input_size, size_t output_size)
 
     return 0;
     
+}
+
+
+
+
+int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
+{
+
+    //Check that the submitted tensors have the correct sizes
+
+
+    //Get length of command stream
+    const uint8_t* command_stream = GetElementwiseAddCMSPointer();
+    size_t command_stream_size = GetElementwiseAddCMSLen();
+
+    const int tensor_arena_size = ELEMENTWISE_ADD_TENSOR_ARENA_SIZE;
+    uint8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+
+    // Allocate Tensor Arena
+    PersistentAllocator allocator(tensor_arena, tensor_arena_size);
+
+
+    printf("Before allocating input1_tensor\n");
+    printf("allocator bufferhead: %p\n", allocator.GetBufferHead());
+    printf("allocator tail: %p\n", allocator.GetTailTemp());
+    // Allocate for input1_tensor
+    uint8_t* input1_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (input1_tensor) {
+        for (int i = 0; i < ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE; i++) {
+        input1_tensor[i] = input1[i];  // Writing input tensors to SRAM
+        }
+    }
+
+
+    printf("Before allocating input2_tensor\n");
+    printf("allocator bufferhead: %p\n", allocator.GetBufferHead());
+    printf("allocator tail: %p\n", allocator.GetTailTemp());
+
+    // Allocate for input2_tensor
+    uint8_t* input2_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (input2_tensor) {
+        for (int i = 0; i < ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE; i++) {
+        input2_tensor[i] = input2[i];  // Writing input tensors to SRAM
+        }
+    }
+
+
+
+    printf("Before allocating output_tensor\n");
+    printf("allocator bufferhead: %p\n", allocator.GetBufferHead());
+    printf("allocator tail: %p\n", allocator.GetTailTemp());
+    // Allocate for output_tensor (dont have to initiallize anything to it, but we do zero for safety?)
+    uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (output_tensor) {
+        for (int i = 0; i < ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE; i++) {
+        output_tensor[i] = 0;
+        }
+    }
+
+
+
+    // print values
+    printf("BEFORE INVOKE\n");
+    printf("tensor_arena\n");
+    PrintTensor(tensor_arena, tensor_arena_size);
+    printf("input1_tensor\n");
+    PrintTensor(input1_tensor, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
+    printf("input2_tensor\n");
+    PrintTensor(input2_tensor, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
+    printf("output_tensor\n");
+    PrintTensor(output_tensor, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
+
+
+
+    // No model weights for ELEMENTWISE OP
+    //uint8_t model_weight_tensor[0] __attribute__((aligned(16)));
+    uint8_t* model_weight_tensor = nullptr;
+
+
+
+    const size_t num_tensors = 6;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(model_weight_tensor));    //model weights
+    base_addrs[1] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Tensor arena pointer
+    base_addrs[2] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Fast scratch, just keep same as tensor arena for now
+    base_addrs[3] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input1_tensor));           // Input tensor (lies in the tensor arena)
+    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input2_tensor));           // Input tensor (lies in the tensor arena)
+    base_addrs[5] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
+
+
+    base_addrs_size[0] = 0;
+    base_addrs_size[1] = tensor_arena_size;
+    base_addrs_size[2] = tensor_arena_size;
+    base_addrs_size[3] = ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE;
+    base_addrs_size[4] = ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE;
+    base_addrs_size[5] = ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE;
+
+
+    
+    PersistentAllocator tmpallocator = allocator;
+    printf("allocator bufferhead: %p\n", allocator.GetBufferHead());
+    printf("allocator tail: %p\n", allocator.GetTailTemp());
+    printf("tmpallocator: %p\n", tmpallocator);
+    printf("tmpallocator bufferhead: %p\n", tmpallocator.GetBufferHead());
+    printf("tmpallocator tail: %p\n", tmpallocator.GetTailTemp());
+    printf("before run_cms input1_tensor: %p\n", input1_tensor);
+
+    uint8_t* tmpinput1ptr = input1_tensor;
+    uint8_t* tmpinput2ptr = input2_tensor;
+    uint8_t* tmpoutputptr = output_tensor;
+    printf("tmpinput1ptr: %p\n", tmpinput1ptr);
+    printf("tmpinput2ptr: %p\n", tmpinput2ptr);
+    printf("tmpoutputptr: %p\n", tmpoutputptr);
+    
+
+    
+
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    } else {
+        printf("run_cms called successfully\n");
+    }
+
+
+    printf("allocator bufferhead: %p\n", allocator.GetBufferHead());
+    printf("allocator tail: %p\n", allocator.GetTailTemp());
+    printf("tmpallocator: %p\n", tmpallocator);
+    printf("tmpallocator bufferhead: %p\n", tmpallocator.GetBufferHead());
+    printf("tmpallocator tail: %p\n", tmpallocator.GetTailTemp());
+
+    printf("after run_cms input1_tensor: %p\n", input1_tensor);
+
+
+
+
+
+    // print values
+    printf("AFTER INVOKE\n");
+    printf("tensor_arena\n");
+    PrintTensor(tensor_arena, tensor_arena_size);
+    //printf("input1_tensor\n");
+    //printf("Argagnoreg\n");
+    //PrintTensor(input1_tensor, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
+    //printf("input2_tensor\n");
+    //PrintTensor(input2_tensor, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
+    //printf("output_tensor\n");
+    //PrintTensor(output_tensor, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
+
+    ////Write the values from the arena tensor to the output tensor
+    //for (int i = 0; i < ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE; i++) {
+    //    output[i] = output_tensor[i];  // Writing input tensors to SRAM
+    //}
+
+    printf("input1_tensor\n");
+    printf("Argagnoreg\n");
+    PrintTensor(tmpinput1ptr, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
+    printf("input2_tensor\n");
+    PrintTensor(tmpinput2ptr, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
+    printf("output_tensor\n");
+    PrintTensor(tmpoutputptr, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
+
+    //Write the values from the arena tensor to the output tensor
+    for (int i = 0; i < ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE; i++) {
+        output[i] = tmpoutputptr[i];  // Writing input tensors to SRAM
+    }
+
+
+
+    return 0;
 
 
 }

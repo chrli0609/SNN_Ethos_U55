@@ -18,19 +18,6 @@
 //#include "ethosu_npu_init.c"
 
 //#include "lif_model.c"
-//#include "conv2d_model.hpp"
-//#include "conv2d_vela.hpp"
-#include "maxpool2d_vela.hpp"
-//#include "maxpool2d_translated.hpp"
-
-//#include "copy_conv2d_vela.hpp"
-
-#include "nn_ops/conv2d_vela_api.hpp"
-
-
-//#include "../ethosu_compiler/output/conv2d_doc_ex_translated.hpp"
-//#include "../ethosu_compiler/output/conv2d_my_translated.hpp"
-//#include "../ethosu_compiler/output/conv2d_only_vela_test_translated.hpp"
 
 
 
@@ -145,11 +132,35 @@ int main() {
         //printf("doing max pooling now!!!\n");
         //maxpool2d(8*8*16, 4*4*16);
 
-        printf("doing conv2d now!!!\n");
-        //conv2d(8*8*16, 4*4*16, 1360);
-        conv2d(8*8*16, 4*4*16);
-        //conv2d(8*8*16, 4*4*16, 1360+2208);
-        //conv2d(8*8*16, 4*4*16, 2);
+        //printf("doing conv2d now!!!\n");
+        //conv2d(8*8*16, 4*4*16);
+ 
+
+
+        printf("doing elementwise add now!!!\n");
+        //Generate input
+        //uint8_t input1[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+        //uint8_t input2[16] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+        //uint8_t output[16];
+
+        
+        uint8_t input1[256];
+        uint8_t input2[256];
+        for (int i = 0; i < 256; i++) {
+            input1[i] = 1;
+            input2[i] = 2;
+        }
+        uint8_t output[256];
+
+        elementwise_add(input1, input2, output);
+
+
+        printf("output:\n");
+        for (int i = 0; i < 256; i++) {
+            printf("%d ", output[i]);
+        }
+        printf("\n");
+        
 
         printf("exited to while loop in main\n");
 

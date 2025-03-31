@@ -4,6 +4,9 @@ from ethosu.vela.api import *
 
 
 
+from cms_interpreter import cms_bytearr_2_assembly
+
+
 #Accelerator
 accelerator = NpuAccelerator.Ethos_U55_256
 
@@ -228,8 +231,7 @@ conv2d_op.rounding_mode = NpuRoundingMode.TFL
 conv2d_op.fused_quantize = False
 conv2d_op.ifm_upscale = NpuResamplingMode.NONE
 conv2d_op.accumulator_type = NpuAccumulatorType.Default
-accelerator = accelerator
-
+conv2d_op.block_traversal = NpuBlockTraversal.PART_KERNEL_FIRST
 
 
 
@@ -242,6 +244,9 @@ driver_payload_byte_array = npu_create_driver_payload(register_command_stream, a
 
 formatted_cms = ", ".join(f"0x{b:02x}" for b in driver_payload_byte_array)
 print(formatted_cms)
+
+print("\nCommands:\n")
+cms_bytearr_2_assembly(driver_payload_byte_array)
 
 
 
