@@ -22,15 +22,15 @@ set(BYTE_ORDER Little-endian)
 include("toolchain.cmake")
 
 # Setup project
-project(${CONTEXT} LANGUAGES CXX C)
+project(${CONTEXT} LANGUAGES C CXX)
 
 # Compilation database
 add_custom_target(database
   COMMAND ${CMAKE_COMMAND} -E make_directory "${OUT_DIR}"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json" "${OUT_DIR}"
 )
-set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES})
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
 # Setup context
 add_executable(${CONTEXT})
@@ -148,14 +148,14 @@ target_compile_options(${CONTEXT} PUBLIC
 
 # Compile Options Abstractions
 add_library(${CONTEXT}_ABSTRACTIONS INTERFACE)
-cbuild_set_options_flags(CXX "none" "on" "" "" CXX_OPTIONS_FLAGS_${CONTEXT})
 cbuild_set_options_flags(CC "none" "on" "" "" CC_OPTIONS_FLAGS_${CONTEXT})
+cbuild_set_options_flags(CXX "none" "on" "" "" CXX_OPTIONS_FLAGS_${CONTEXT})
 target_compile_options(${CONTEXT}_ABSTRACTIONS INTERFACE
-  $<$<COMPILE_LANGUAGE:CXX>:
-    "SHELL:${CXX_OPTIONS_FLAGS_${CONTEXT}}"
-  >
   $<$<COMPILE_LANGUAGE:C>:
     "SHELL:${CC_OPTIONS_FLAGS_${CONTEXT}}"
+  >
+  $<$<COMPILE_LANGUAGE:CXX>:
+    "SHELL:${CXX_OPTIONS_FLAGS_${CONTEXT}}"
   >
 )
 

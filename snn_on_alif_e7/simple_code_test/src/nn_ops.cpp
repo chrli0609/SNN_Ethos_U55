@@ -1,40 +1,4 @@
-#include <stdint.h>
-#include <stddef.h>
-
-
-#include <stdio.h>
-#include <string.h>
-
-
-#include <cstdlib> //malloc
-
-#include "ethosu_driver.h"
-
-
-//try using tensorflow memory allocator
-//include "tensorflow/lite/micro/micro_allocator.h"
-#include "micro_allocator.h"
-
-#include <cinttypes> //for PRIi8
-
-//#define MEM_ALIGNMENT 16
-
-
-
-//#include "conv2d_model.hpp"
-//#include "conv2d_vela.hpp"
-#include "maxpool2d_vela.hpp"
-//#include "maxpool2d_translated.hpp"
-
-//#include "copy_conv2d_vela.hpp"
-
-#include "nn_ops/conv2d_vela_api.hpp"
-#include "nn_ops/elementwise_add.hpp"
-
-
-//#include "../ethosu_compiler/output/conv2d_doc_ex_translated.hpp"
-//#include "../ethosu_compiler/output/conv2d_my_translated.hpp"
-//#include "../ethosu_compiler/output/conv2d_only_vela_test_translated.hpp"
+#include "include/nn_ops.hpp"
 
 
 
@@ -88,13 +52,13 @@ class PersistentAllocator {
 };
 
 // Function to print uint8_t tensor values
-void PrintTensor(uint8_t* tensor, size_t num_elements) {
+void PrintTensor(const char* tensor_name, const uint8_t* tensor, size_t num_elements) {
     if (!tensor) {
       printf("Tensor is NULL!\n");
       return;
     }
 
-    printf("Tensor values: ");
+    printf("%s\n", tensor_name);
     for (size_t i = 0; i < num_elements; i++) {
       printf("%u ", tensor[i]);
     }
@@ -147,7 +111,7 @@ int run_cms(
 
 
 
-
+/*
 int maxpool2d(size_t input_size, size_t output_size) {
     //Get length of command stream
     const uint8_t* command_stream = GetMaxPool2DPointer();
@@ -171,14 +135,11 @@ int maxpool2d(size_t input_size, size_t output_size) {
 
     // print values
     printf("BEFORE INVOKE\n");
-    printf("tensor_arena\n");
-    PrintTensor(tensor_arena, tensor_arena_size);
-    printf("input_tensor\n");
-    PrintTensor(input_tensor, input_size);
+    PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+    PrintTensor("input_tensor", input_tensor, input_size);
     //printf("output_tensor\n");
     //PrintTensor(output_tensor, OUTPUT_SIZE);
-    printf("actual output_tensor\n");
-    PrintTensor(tensor_arena, output_size);
+    PrintTensor("output_tensor", tensor_arena, output_size);
 
 
 
@@ -217,14 +178,11 @@ int maxpool2d(size_t input_size, size_t output_size) {
 
         // print values
         printf("AFTER INVOKE\n");
-        printf("tensor_arena\n");
-        PrintTensor(tensor_arena, tensor_arena_size);
-        printf("input_tensor\n");
-        PrintTensor(input_tensor, input_size);
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        PrintTensor("input_tensor", input_tensor, input_size);
         //printf("output_tensor\n");
         //PrintTensor(output_tensor, OUTPUT_SIZE);
-        printf("actual output_tensor\n");
-        PrintTensor(tensor_arena, output_size);
+        PrintTensor("output_tensor", tensor_arena, output_size);
 
 
     return 0;
@@ -309,14 +267,9 @@ int conv2d(size_t input_size, size_t output_size)
 
     // print values
     printf("BEFORE INVOKE\n");
-    printf("tensor_arena\n");
-    PrintTensor(tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
-    printf("input_tensor\n");
-    PrintTensor(input_tensor, input_size);
-    printf("output_tensor\n");
-    PrintTensor(output_tensor, output_size);
-    //printf("actual output_tensor\n");
-    //PrintTensor(tensor_arena, output_size);
+    PrintTensor("tensor_arena", tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
+    PrintTensor("input_tensor", input_tensor, input_size);
+    PrintTensor("output_tensor", output_tensor, output_size);
 
 
 
@@ -393,12 +346,9 @@ int conv2d(size_t input_size, size_t output_size)
 
     // print values
     printf("AFTER INVOKE\n");
-    printf("tensor_arena\n");
-    PrintTensor(tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
-    printf("input_tensor\n");
-    PrintTensor(input_tensor, input_size);
-    printf("output_tensor\n");
-    PrintTensor(output_tensor, output_size);
+    PrintTensor("tensor_arena", tensor_arena, CONV2D_TENSOR_ARENA_SIZE);
+    PrintTensor("input_tensor", input_tensor, input_size);
+    PrintTensor("output_tensor", output_tensor, output_size);
     //printf("actual output_tensor\n");
     //PrintTensor(tensor_arena, output_size);
 
@@ -482,14 +432,10 @@ int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
 
     // print values
     printf("BEFORE INVOKE\n");
-    printf("tensor_arena\n");
-    PrintTensor(tensor_arena, tensor_arena_size);
-    printf("input1_tensor\n");
-    PrintTensor(input1_tensor, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
-    printf("input2_tensor\n");
-    PrintTensor(input2_tensor, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
-    printf("output_tensor\n");
-    PrintTensor(output_tensor, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
+    PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+    PrintTensor("input1_tensor", input1_tensor, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
+    PrintTensor("input2_tensor", input2_tensor, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
+    PrintTensor("output_tensor", output_tensor, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
 
 
 
@@ -561,7 +507,7 @@ int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
     // print values
     printf("AFTER INVOKE\n");
     printf("tensor_arena\n");
-    PrintTensor(tensor_arena, tensor_arena_size);
+    PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
     //printf("input1_tensor\n");
     //printf("Argagnoreg\n");
     //PrintTensor(input1_tensor, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
@@ -575,13 +521,13 @@ int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
     //    output[i] = output_tensor[i];  // Writing input tensors to SRAM
     //}
 
-    printf("input1_tensor\n");
-    printf("Argagnoreg\n");
-    PrintTensor(tmpinput1ptr, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
-    printf("input2_tensor\n");
-    PrintTensor(tmpinput2ptr, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
-    printf("output_tensor\n");
-    PrintTensor(tmpoutputptr, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
+    //printf("input1_tensor\n");
+    //printf("Argagnoreg\n");
+    //PrintTensor(tmpinput1ptr, ELEMENTWISE_ADD_INPUT1_TENSOR_SIZE);
+    //printf("input2_tensor\n");
+    //PrintTensor(tmpinput2ptr, ELEMENTWISE_ADD_INPUT2_TENSOR_SIZE);
+    //printf("output_tensor\n");
+    //PrintTensor(tmpoutputptr, ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE);
 
     //Write the values from the arena tensor to the output tensor
     for (int i = 0; i < ELEMENTWISE_ADD_OUTPUT_TENSOR_SIZE; i++) {
@@ -594,3 +540,293 @@ int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
 
 
 }
+
+
+*/
+
+
+int matmul(uint8_t* input, uint8_t* output)
+{
+
+    //Get length of command stream
+    const uint8_t* command_stream = GetMatMulCMSPointer();
+    size_t command_stream_size = GetMatMulCMSLen();
+
+    uint8_t tensor_arena[MATMUL_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
+    // Allocate Tensor Arena
+    PersistentAllocator allocator(tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+
+    // Allocate for input tensor
+    uint8_t* input_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_INPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (input_tensor) {
+        for (int i = 0; i < MATMUL_INPUT_TENSOR_SIZE; i++) {
+          input_tensor[i] = input[i];  // Writing float values
+        }
+    }
+
+
+    // Allocate for output tensor
+    uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_OUTPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (output_tensor) {
+        for (int i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
+          output_tensor[i] = 0;  // Writing float values
+        }
+    }
+
+
+    //Get weight tensor and allocate for them
+    const uint8_t* weight_tensor = GetMatMulWeightsPointer();
+    size_t weight_size = GetMatMulWeightsLen();
+
+
+    // Allocate for weights & biases
+    uint8_t* weight_tensor_on_sram = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(weight_size*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (weight_tensor_on_sram) {
+        for (int i = 0; i < weight_size; i++) {
+            weight_tensor_on_sram[i] = 0;  // init to 0
+        }
+    }
+
+
+
+
+     // print values
+     printf("BEFORE INVOKE\n");
+     PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+     PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
+     PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
+     PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+     PrintTensor("weight_tensor", weight_tensor, weight_size);
+     
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 5;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(weight_tensor));    //model weights
+    base_addrs[1] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Tensor arena pointer
+    base_addrs[2] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Fast scratch, just keep same as tensor arena for now
+    base_addrs[3] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input_tensor));           // Input tensor (lies in the tensor arena)
+    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
+
+    base_addrs_size[0] = weight_size;
+    base_addrs_size[1] = MATMUL_TENSOR_ARENA_SIZE;
+    base_addrs_size[2] = MATMUL_TENSOR_ARENA_SIZE;
+    base_addrs_size[3] = MATMUL_INPUT_TENSOR_SIZE;
+    base_addrs_size[4] = MATMUL_OUTPUT_TENSOR_SIZE;
+
+
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    } else {
+        printf("run_cms called successfully\n");
+    }
+
+
+    //print tensor values after
+    printf("AFTER INVOKE\n");
+    PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+    PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
+    PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
+    PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+    PrintTensor("weight_tensor", weight_tensor, weight_size);
+
+ 
+    //Write result to output
+    for (size_t i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
+        output[i] = output_tensor[i];
+    }
+    
+
+
+    return 0;
+}
+
+
+
+
+
+
+
+int matmul_vela(uint8_t* input, uint8_t* output)
+{
+
+    //Get length of command stream
+    const uint8_t* command_stream = GetMatMulVelaCMSPointer();
+    size_t command_stream_size = GetMatMulVelaCMSLen();
+
+    uint8_t tensor_arena[MATMUL_VELA_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
+    // Allocate Tensor Arena
+    PersistentAllocator allocator(tensor_arena, MATMUL_VELA_TENSOR_ARENA_SIZE);
+
+    // Allocate for input tensor
+    uint8_t* input_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_VELA_INPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (input_tensor) {
+        for (int i = 0; i < MATMUL_VELA_INPUT_TENSOR_SIZE; i++) {
+          input_tensor[i] = input[i];  // Writing float values
+        }
+    }
+
+
+    // Allocate for output tensor
+    uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_VELA_OUTPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (output_tensor) {
+        for (int i = 0; i < MATMUL_VELA_OUTPUT_TENSOR_SIZE; i++) {
+          output_tensor[i] = 0;  // Writing float values
+        }
+    }
+
+
+    //Get weight tensor and allocate for them
+    const uint8_t* weight_tensor = GetMatMulVelaWeightsPointer();
+    size_t weight_size = GetMatMulVelaWeightsLen();
+
+
+    // Allocate for weights & biases
+    uint8_t* weight_tensor_on_sram = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(weight_size*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (weight_tensor_on_sram) {
+        for (int i = 0; i < weight_size; i++) {
+            weight_tensor_on_sram[i] = 0;  // init to 0
+        }
+    }
+
+
+
+
+     // print values
+     printf("BEFORE INVOKE\n");
+     PrintTensor("tensor_arena", tensor_arena, MATMUL_VELA_TENSOR_ARENA_SIZE);
+     PrintTensor("input_tensor", input_tensor, MATMUL_VELA_INPUT_TENSOR_SIZE);
+     PrintTensor("output_tensor", output_tensor, MATMUL_VELA_OUTPUT_TENSOR_SIZE);
+     PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+     PrintTensor("weight_tensor", weight_tensor, weight_size);
+     
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 5;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(weight_tensor));    //model weights
+    base_addrs[1] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Tensor arena pointer
+    base_addrs[2] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Fast scratch, just keep same as tensor arena for now
+    base_addrs[3] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input_tensor));           // Input tensor (lies in the tensor arena)
+    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
+
+    base_addrs_size[0] = weight_size;
+    base_addrs_size[1] = MATMUL_VELA_TENSOR_ARENA_SIZE;
+    base_addrs_size[2] = MATMUL_VELA_TENSOR_ARENA_SIZE;
+    base_addrs_size[3] = MATMUL_VELA_INPUT_TENSOR_SIZE;
+    base_addrs_size[4] = MATMUL_VELA_OUTPUT_TENSOR_SIZE;
+
+
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    } else {
+        printf("run_cms called successfully\n");
+    }
+
+
+    //print tensor values after
+    printf("AFTER INVOKE\n");
+    PrintTensor("tensor_arena", tensor_arena, MATMUL_VELA_TENSOR_ARENA_SIZE);
+    PrintTensor("input_tensor", input_tensor, MATMUL_VELA_INPUT_TENSOR_SIZE);
+    PrintTensor("output_tensor", output_tensor, MATMUL_VELA_OUTPUT_TENSOR_SIZE);
+    PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+    PrintTensor("weight_tensor", weight_tensor, weight_size);
+
+ 
+    //Write result to output
+    for (size_t i = 0; i < MATMUL_VELA_OUTPUT_TENSOR_SIZE; i++) {
+        output[i] = output_tensor[i];
+    }
+    
+
+
+    return 0;
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+/*
+int membrane_update(uint8_t* in_mem, uint8_t* in_spk, uint8_t* out_mem, uint8_t* out_spk) {
+
+
+    //Get length of command stream
+    const uint8_t* command_stream = GetMemUpdateCMSPointer();
+    size_t command_stream_size = GetMemUpdateCMSLen();
+
+
+
+
+    uint8_t tensor_arena[MEM_UPDATE_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
+    // Allocate Tensor Arena
+    PersistentAllocator allocator(tensor_arena, MEM_UPDATE_TENSOR_ARENA_SIZE);
+
+
+
+
+    // Allocate for in_mem
+    uint8_t* in_mem_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_IN_MEM_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (in_mem_tensor) {
+        for (int i = 0; i < MEM_UPDATE_IN_MEM_TENSOR_SIZE; i++) {
+            in_mem_tensor[i] = in_mem[i];  // Writing float values
+        }
+    }
+
+
+    // Allocate for in_spk
+    uint8_t* in_spk_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_IN_SPK_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (in_spk_tensor) {
+        for (int i = 0; i < MEM_UPDATE_IN_SPK_TENSOR_SIZE; i++) {
+            in_spk_tensor[i] = in_spk[i];  // Writing float values
+        }
+    }
+
+
+    // Allocate for out_mem
+    uint8_t* out_mem_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_OUT_MEM_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (out_mem_tensor) {
+        for (int i = 0; i < MEM_UPDATE_OUT_MEM_TENSOR_SIZE; i++) {
+            out_mem_tensor[i] = out_mem[i];  // Writing float values
+        }
+    }
+
+
+    // Allocate for out_spk
+    uint8_t* out_spk_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_OUT_SPK_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    if (out_spk_tensor) {
+        for (int i = 0; i < MEM_UPDATE_OUT_SPK_TENSOR_SIZE; i++) {
+            out_spk_tensor[i] = out_spk[i];  // Writing float values
+        }
+    }
+
+
+
+    // Get weight tensor and allocate for them
+
+}
+*/

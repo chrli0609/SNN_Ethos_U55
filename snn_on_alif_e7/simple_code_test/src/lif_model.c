@@ -4,11 +4,78 @@
 
 
 
+#include "include/lif_model.h"
+
+
+
 
 struct myTuple {
     int spike;
     float membrane_voltage;
 };
+
+
+
+
+
+// Inputs:
+//  * v_mem, dim=(LAYER i)
+//  * in_spk, dim=(layer i-1)
+//  * weights, dim=(depends on encoding)
+//  * beta, scalar
+//  * threshold, scalar
+// Output:
+//  * v_mem, dim=(layer i)
+//  * out_spk, dim=(layer i)
+int membrane_update(
+    uint8_t* v_mem,
+    uint8_t* in_spk,
+    const uint8_t* weight_tensor_ptr,
+
+    float decay,
+    float threshold,
+
+
+    uint8_t* out_spk
+) {
+
+
+    //Compute delay
+    for (size_t i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
+        v_mem[i] = decay * v_mem[i];
+    }
+
+
+
+    // In_cur = W * X
+    uint8_t in_cur[MATMUL_OUTPUT_TENSOR_SIZE];
+    if (matmul(in_spk, in_cur) != 0) { return -1; }
+    printf("Resulting output\n");
+    for (size_t i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
+        printf(" %d,", in_cur[i]);
+    }
+    printf("\n");
+
+
+
+    // Check for spikes & do reset mechanism
+    for (size_t i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
+        v_mem[i] = v_mem[i] + in_cur[i];
+
+        if (v_mem[i] > threshold) {
+            v_mem[i] = v_mem[i] - threshold;
+            out_spk[i] = 1;
+        
+        } else {
+            out_spk[i] = 0;
+        }
+    }
+
+
+    return 0;
+
+}
+
 
 
 

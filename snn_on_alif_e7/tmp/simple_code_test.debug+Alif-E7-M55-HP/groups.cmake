@@ -2,7 +2,10 @@
 
 # group Main
 add_library(Group_Main OBJECT
-  "${SOLUTION_ROOT}/simple_code_test/src/main.cpp"
+  "${SOLUTION_ROOT}/simple_code_test/src/main.c"
+  "${SOLUTION_ROOT}/simple_code_test/src/lif_model.c"
+  "${SOLUTION_ROOT}/simple_code_test/nn_ops/matmul.c"
+  "${SOLUTION_ROOT}/simple_code_test/src/nn_ops.cpp"
 )
 target_include_directories(Group_Main PUBLIC
   $<TARGET_PROPERTY:${CONTEXT},INTERFACE_INCLUDE_DIRECTORIES>

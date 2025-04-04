@@ -4,7 +4,10 @@ from ethosu.vela.api import *
 
 
 
-from cms_interpreter import cms_bytearr_2_assembly
+import sys
+import os
+sys.path.insert(0, os.path.abspath('../'))
+from cms_interpreter import register_cms_2_assembly
 
 
 #Accelerator
@@ -61,7 +64,7 @@ weight_addr = output_addr - weight_tensor_size
 
 #DMA Mem
 DMA_SRC_REGION = 0
-DMA_SRC_ADDR = weight_addr
+DMA_SRC_ADDR = 0x00
 
 #len(Bias + weights) = 168, to closest 16-bit alignment --> 176
 #DMA_LEN = 768
@@ -237,6 +240,9 @@ conv2d_op.block_traversal = NpuBlockTraversal.PART_KERNEL_FIRST
 
 
 register_command_stream = npu_generate_register_command_stream([dma_op, conv2d_op], accelerator)
+print("\nCommands:\n")
+register_cms_2_assembly(register_command_stream)
+
 
 
 driver_payload_byte_array = npu_create_driver_payload(register_command_stream, accelerator)
@@ -245,8 +251,7 @@ driver_payload_byte_array = npu_create_driver_payload(register_command_stream, a
 formatted_cms = ", ".join(f"0x{b:02x}" for b in driver_payload_byte_array)
 print(formatted_cms)
 
-print("\nCommands:\n")
-cms_bytearr_2_assembly(driver_payload_byte_array)
+
 
 
 

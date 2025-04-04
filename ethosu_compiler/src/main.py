@@ -50,7 +50,7 @@ def load_module_from_path(module_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Usage: python3 main.py <cms_file_input> <wieghts_params_module> <output_file>")
+        print("Usage: python3 main.py <cms_file_input> <weights_params_module> <output_file>")
         sys.exit(1)
 
     input_name = sys.argv[1]

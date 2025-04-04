@@ -45,7 +45,7 @@ echo "Illustrate Vela Compiled Model in Netron? (y/n)"
 
 cd ../
 
-python3 gen_model_cpp.py --tflite_path add_test/saved_models/tflite_vela/tflite_model_vela.tflite --output_dir add_test/saved_models/cpp_tflite_vela
+python3 gen_model_cpp.py --tflite_path matmul_test/saved_models/tflite_vela/tflite_model_vela.tflite --output_dir matmul_test/saved_models/cpp_tflite_vela
 
 
 

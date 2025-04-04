@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include "BoardInit.hpp"
+#include "BoardInit.h"
 
 #if defined(__cplusplus)
 extern "C" {

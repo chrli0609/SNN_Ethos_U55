@@ -25,8 +25,10 @@ project:
   groups:
     - group: Main
       files:
-        - file: src/main.cpp
-        #- file: src/lif_model.c
+        - file: src/main.c
+        - file: src/lif_model.c
+        - file: nn_ops/matmul.c
+        - file: src/nn_ops.cpp
         #- file: src/nn_test.c
         #- file: src/conv2d_model.hpp
         #- file: src/yolo-fastest_192_face_v4_vela_H256.tflite.cpp
