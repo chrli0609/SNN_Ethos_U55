@@ -1,16 +1,49 @@
-#include "include/nn_ops.hpp"
+#include "include/nn_ops.h"
 
 
 
 
 
-extern const size_t MEM_ALIGNMENT = 16;
+
+#include <stdio.h>
+#include <stddef.h>
 
 
-//#include "conv2d_model.hpp"
+
+
+#include "ethosu_driver.h"
+
+
+//try using tensorflow memory allocator
+//include "tensorflow/lite/micro/micro_allocator.h"
+//#include "micro_allocator.h"
 
 
 
+
+//#include "src/maxpool2d_vela.hpp"
+//#include "nn_ops/conv2d_vela_api.hpp"
+//#include "nn_ops/elementwise_add.hpp"
+//#include "nn_ops/matmul_vela.hpp"
+#include "include/matmul.h"
+
+
+#include "include/extra_funcs.h"
+
+
+
+
+#define MEM_ALIGNMENT 16
+
+
+extern int DEBUG_MODE;
+
+
+
+
+
+
+/*
 // Aligns a pointer down to the nearest aligned address
 void* AlignPointerDown(void* ptr, size_t alignment) {
     return reinterpret_cast<void*>(
@@ -51,19 +84,51 @@ class PersistentAllocator {
   uint8_t* tail_temp_;    // Current tail position
 };
 
-// Function to print uint8_t tensor values
-void PrintTensor(const char* tensor_name, const uint8_t* tensor, size_t num_elements) {
-    if (!tensor) {
-      printf("Tensor is NULL!\n");
-      return;
+*/
+
+
+// Aligns a pointer down to the nearest aligned address
+void* AlignPointerDown(void* ptr, size_t alignment) {
+    return (void*)((uintptr_t)ptr & ~(alignment - 1));
+}
+
+// Simple Persistent Buffer Allocator (like PersistentArenaBufferAllocator)
+typedef struct {
+    uint8_t* buffer_head;  // Start of buffer
+    uint8_t* tail_temp;    // Current tail position
+} PersistentAllocator;
+
+// Initializes the PersistentAllocator
+void PersistentAllocator_Init(PersistentAllocator* allocator, uint8_t* arena, size_t size) {
+    allocator->buffer_head = arena;
+    allocator->tail_temp = arena + size;
+}
+
+// Allocates a persistent buffer
+void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, size_t alignment) {
+    uint8_t* aligned_result = (uint8_t*)AlignPointerDown(allocator->tail_temp - size, alignment);
+    
+    if (aligned_result < allocator->buffer_head) {
+        printf("Memory allocation failed! Requested: %zu bytes\n", size);
+        return NULL;
     }
 
-    printf("%s\n", tensor_name);
-    for (size_t i = 0; i < num_elements; i++) {
-      printf("%u ", tensor[i]);
-    }
-    printf("\n");
+    allocator->tail_temp = aligned_result;
+    return aligned_result;
 }
+
+// Getters
+uint8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator) {
+    return allocator->buffer_head;
+}
+
+uint8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator) {
+    return allocator->tail_temp;
+}
+
+
+
+
 
 
 
@@ -84,24 +149,22 @@ int run_cms(
         return -1;
     }
 
-    printf("Before invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv);
-
+    if (DEBUG_MODE) { printf("Before invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv); }
 
     if(ethosu_invoke_v3(drv, command_stream, command_stream_size, 
         base_addrs, base_addrs_size, num_tensors, NULL) != 0) {
         printf("Invoke_v3 Failed\n");
         return -1;
-    } else {
-        printf("Invoke_v3 called successfully\n");
     }
-    
     //struct ethosu_driver*const new_drv = (struct ethosu_driver*)536879144;
 
-    printf("After invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv);
+    //mydebug
+    if (DEBUG_MODE) { printf("After invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv); }
 
 
     ethosu_release_driver(drv);
-    printf("Driver release successfully\n");
+
+    if (DEBUG_MODE) { printf("Driver release successfully\n"); }
 
 
 
@@ -553,51 +616,67 @@ int matmul(uint8_t* input, uint8_t* output)
     size_t command_stream_size = GetMatMulCMSLen();
 
     uint8_t tensor_arena[MATMUL_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
+
+
+
     // Allocate Tensor Arena
-    PersistentAllocator allocator(tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+    // Initialize the allocator
+    PersistentAllocator allocator;
+    PersistentAllocator_Init(&allocator, tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
 
     // Allocate for input tensor
-    uint8_t* input_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_INPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    uint8_t* input_tensor = (uint8_t*)PersistentAllocator_Allocate(&allocator, 
+                                        MATMUL_INPUT_TENSOR_SIZE * sizeof(uint8_t), 
+                                        MEM_ALIGNMENT);
+
     if (input_tensor) {
         for (int i = 0; i < MATMUL_INPUT_TENSOR_SIZE; i++) {
-          input_tensor[i] = input[i];  // Writing float values
+            input_tensor[i] = input[i];  // Writing float values
         }
     }
+
 
 
     // Allocate for output tensor
-    uint8_t* output_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MATMUL_OUTPUT_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
+    uint8_t* output_tensor = (uint8_t*)PersistentAllocator_Allocate(&allocator, 
+        MATMUL_OUTPUT_TENSOR_SIZE * sizeof(uint8_t), 
+        MEM_ALIGNMENT);
+
     if (output_tensor) {
         for (int i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
-          output_tensor[i] = 0;  // Writing float values
+            output_tensor[i] = output[i];  // Writing float values
         }
     }
+
 
 
     //Get weight tensor and allocate for them
     const uint8_t* weight_tensor = GetMatMulWeightsPointer();
     size_t weight_size = GetMatMulWeightsLen();
 
+    // Allocate for output tensor
+    uint8_t* weight_tensor_on_sram = (uint8_t*)PersistentAllocator_Allocate(&allocator, 
+        weight_size * sizeof(uint8_t), 
+        MEM_ALIGNMENT);
 
-    // Allocate for weights & biases
-    uint8_t* weight_tensor_on_sram = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(weight_size*sizeof(uint8_t), MEM_ALIGNMENT));
     if (weight_tensor_on_sram) {
         for (int i = 0; i < weight_size; i++) {
-            weight_tensor_on_sram[i] = 0;  // init to 0
+            weight_tensor_on_sram[i] = 0;  // Init to 0
         }
     }
 
 
 
+    if (DEBUG_MODE) {
 
-     // print values
-     printf("BEFORE INVOKE\n");
-     PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
-     PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
-     PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
-     PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
-     PrintTensor("weight_tensor", weight_tensor, weight_size);
-     
+        // print values
+        printf("BEFORE INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+        PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
+        PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
+        PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+        PrintTensor("weight_tensor", weight_tensor, weight_size);
+    }
 
 
 
@@ -606,11 +685,11 @@ int matmul(uint8_t* input, uint8_t* output)
     uint64_t base_addrs[num_tensors];
     size_t base_addrs_size[num_tensors];
 
-    base_addrs[0] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(weight_tensor));    //model weights
-    base_addrs[1] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Tensor arena pointer
-    base_addrs[2] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tensor_arena));           //Fast scratch, just keep same as tensor arena for now
-    base_addrs[3] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(input_tensor));           // Input tensor (lies in the tensor arena)
-    base_addrs[4] = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(output_tensor));          // Output tensor (lies in the tensor arena)
+    base_addrs[0] = (uint64_t)(uintptr_t)weight_tensor;   // Model weights
+    base_addrs[1] = (uint64_t)(uintptr_t)tensor_arena;   // Tensor arena pointer
+    base_addrs[2] = (uint64_t)(uintptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+    base_addrs[3] = (uint64_t)(uintptr_t)input_tensor;   // Input tensor (in tensor arena)
+    base_addrs[4] = (uint64_t)(uintptr_t)output_tensor;  // Output tensor (in tensor arena)
 
     base_addrs_size[0] = weight_size;
     base_addrs_size[1] = MATMUL_TENSOR_ARENA_SIZE;
@@ -625,18 +704,18 @@ int matmul(uint8_t* input, uint8_t* output)
     if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
         printf("run_cms call failed\n");
         return -1;
-    } else {
-        printf("run_cms called successfully\n");
     }
 
 
-    //print tensor values after
-    printf("AFTER INVOKE\n");
-    PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
-    PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
-    PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
-    PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
-    PrintTensor("weight_tensor", weight_tensor, weight_size);
+    if (DEBUG_MODE) {
+        //print tensor values after
+        printf("AFTER INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, MATMUL_TENSOR_ARENA_SIZE);
+        PrintTensor("input_tensor", input_tensor, MATMUL_INPUT_TENSOR_SIZE);
+        PrintTensor("output_tensor", output_tensor, MATMUL_OUTPUT_TENSOR_SIZE);
+        PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+        PrintTensor("weight_tensor", weight_tensor, weight_size);
+    }
 
  
     //Write result to output
@@ -653,7 +732,7 @@ int matmul(uint8_t* input, uint8_t* output)
 
 
 
-
+/*
 
 int matmul_vela(uint8_t* input, uint8_t* output)
 {
@@ -761,7 +840,7 @@ int matmul_vela(uint8_t* input, uint8_t* output)
 
 }
 
-
+*/
 
 
 

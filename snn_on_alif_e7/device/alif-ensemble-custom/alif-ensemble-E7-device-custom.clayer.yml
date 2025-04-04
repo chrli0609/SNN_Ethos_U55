@@ -40,8 +40,8 @@ layer:
 
     - group: Init
       files:
-        - file: ./include/BoardInit.hpp
-        - file: ./src/BoardInit.cpp
+        - file: ./include/BoardInit.h
+        - file: ./src/BoardInit.c
         - file: ./Board/devkit_gen2/board_init.c
         - file: ./src/ospi_flash.c
         - file: ./src/mpu_M55_region_config.c

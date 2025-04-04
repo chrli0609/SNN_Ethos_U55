@@ -5,7 +5,8 @@ add_library(Group_Main OBJECT
   "${SOLUTION_ROOT}/simple_code_test/src/main.c"
   "${SOLUTION_ROOT}/simple_code_test/src/lif_model.c"
   "${SOLUTION_ROOT}/simple_code_test/nn_ops/matmul.c"
-  "${SOLUTION_ROOT}/simple_code_test/src/nn_ops.cpp"
+  "${SOLUTION_ROOT}/simple_code_test/src/nn_ops.c"
+  "${SOLUTION_ROOT}/simple_code_test/src/extra_funcs.c"
 )
 target_include_directories(Group_Main PUBLIC
   $<TARGET_PROPERTY:${CONTEXT},INTERFACE_INCLUDE_DIRECTORIES>
@@ -71,10 +72,10 @@ target_link_libraries(Group_Retarget PUBLIC
 
 # group Init
 add_library(Group_Init OBJECT
+  "${SOLUTION_ROOT}/device/alif-ensemble-custom/src/BoardInit.c"
   "${SOLUTION_ROOT}/device/alif-ensemble-custom/Board/devkit_gen2/board_init.c"
   "${SOLUTION_ROOT}/device/alif-ensemble-custom/src/ospi_flash.c"
   "${SOLUTION_ROOT}/device/alif-ensemble-custom/src/mpu_M55_region_config.c"
-  "${SOLUTION_ROOT}/device/alif-ensemble-custom/src/BoardInit.cpp"
 )
 target_include_directories(Group_Init PUBLIC
   $<TARGET_PROPERTY:${CONTEXT},INTERFACE_INCLUDE_DIRECTORIES>

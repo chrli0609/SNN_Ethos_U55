@@ -21,4 +21,4 @@ build-idx:
         info:
           - mlek.cbuild-set.yml - file is already up-to-date
           - mlek.cbuild-pack.yml - file is already up-to-date
-          - simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml - file generated successfully
+          - simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml - file is already up-to-date

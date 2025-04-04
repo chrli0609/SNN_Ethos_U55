@@ -1,10 +1,14 @@
-//typedef int bool;
-//#define true 1
-//#define false 0
+
+#include <stdio.h>
+
 
 
 
 #include "include/lif_model.h"
+#include "include/matmul.h"
+#include "include/nn_ops.h"
+#include "include/extra_funcs.h"
+
 
 
 
@@ -50,11 +54,8 @@ int membrane_update(
     // In_cur = W * X
     uint8_t in_cur[MATMUL_OUTPUT_TENSOR_SIZE];
     if (matmul(in_spk, in_cur) != 0) { return -1; }
-    printf("Resulting output\n");
-    for (size_t i = 0; i < MATMUL_OUTPUT_TENSOR_SIZE; i++) {
-        printf(" %d,", in_cur[i]);
-    }
-    printf("\n");
+    
+    PrintTensor("in_cur", in_cur, MATMUL_INPUT_TENSOR_SIZE);
 
 
 
