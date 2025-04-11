@@ -1,12 +1,13 @@
 import numpy as np
 
+
 from ethosu.vela.api import *
 
 import sys
 import os
 sys.path.insert(0, os.path.abspath('../'))
-from cms_interpreter import register_cms_2_assembly
 
+from cms_interpreter import register_cms_2_assembly
 from extra_func import float_to_int_safe
 from extra_func import print_includes
 from extra_func import print_methods
@@ -182,6 +183,8 @@ input_addr = tensor_arena_size - input_tensor_size
 output_addr = input_addr - output_tensor_size
 weight_addr = output_addr - weight_tensor_size
 
+print("weight_addr:", weight_addr)
+
 
 
 
@@ -227,7 +230,7 @@ my_ifm.region = 1
 my_ifm.shape = NpuShape3D(height=IFM_HEIGHT, width=IFM_WIDTH, depth=IFM_DEPTH)
 # Only 1 tile used
 my_ifm.tiles = NpuTileBox(height_0=my_ifm.shape.height, height_1=0, width_0=my_ifm.shape.width, addresses=[INPUT_ADDR, 0, 0, 0])
-my_ifm.quantization = NpuQuantization(scale_f32= 1, zero_point= 0)
+my_ifm.quantization = NpuQuantization(scale_f32=0.03, zero_point=-128)
 my_ifm.layout = NpuLayout.NHWC
 my_ifm_elem_size = my_ifm.data_type.value[0]/8
 my_ifm.strides = NpuShape3D(
@@ -247,7 +250,7 @@ my_ofm.region = 1
 my_ofm.shape = NpuShape3D(height=OFM_HEIGHT, width=OFM_WIDTH, depth=OFM_DEPTH)
 # Only 1 tile used
 my_ofm.tiles = NpuTileBox(height_0=my_ofm.shape.height, height_1=0, width_0=my_ofm.shape.width, addresses=[OUTPUT_ADDR, 0, 0, 0])
-my_ofm.quantization = NpuQuantization(scale_f32=1, zero_point= 0)
+my_ofm.quantization = NpuQuantization(scale_f32=1, zero_point=0)
 my_ofm.layout = NpuLayout.NHWC
 
 my_ofm_elem_size = my_ofm.data_type.value[0]/8
@@ -312,9 +315,9 @@ matmul_op.padding = PADDING
 matmul_op.activation = my_activation
 matmul_op.block_config = BLOCK_CONFIG
 matmul_op.rounding_mode = NpuRoundingMode.TFL
-matmul_op.fused_quantize = False
+matmul_op.fused_quantize = True
 matmul_op.ifm_upscale = NpuResamplingMode.NONE
-matmul_op.accumulator_type = NpuAccumulatorType.Default
+#matmul_op.accumulator_type = NpuAccumulatorType.Default
 matmul_op.block_traversal = BLOCK_TRAVERSAL
 
 

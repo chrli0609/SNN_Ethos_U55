@@ -18,7 +18,11 @@ TFLITE_PATH="${TFLITE_DIR}/tflite_model.tflite"
 
 
 
-python3 gen_matmul_model.py ${TF_MODEL_DIR} ${TFLITE_PATH}
+#python3 gen_matmul_model.py ${TF_MODEL_DIR} ${TFLITE_PATH}
+python3 gen_model_mem_update.py ${TF_MODEL_DIR} ${TFLITE_PATH}
+
+# test model
+python3 test_model.py ${TFLITE_PATH}
 
 
 
@@ -32,7 +36,9 @@ vela ${TFLITE_PATH} --output-dir ${VELA_TFLITE_DIR} \
 	--verbose-tensor-format \
 	--verbose-tensor-purpose \
 	--verbose-operators \
-	--verbose-config
+	--verbose-config \
+	--verbose-quantization
+
 
 
 echo "Illustrate Vela Compiled Model in Netron? (y/n)"

@@ -28,6 +28,7 @@
 #include "include/matmul.h"
 
 
+
 #include "include/extra_funcs.h"
 
 
@@ -92,21 +93,15 @@ void* AlignPointerDown(void* ptr, size_t alignment) {
     return (void*)((uintptr_t)ptr & ~(alignment - 1));
 }
 
-// Simple Persistent Buffer Allocator (like PersistentArenaBufferAllocator)
-typedef struct {
-    uint8_t* buffer_head;  // Start of buffer
-    uint8_t* tail_temp;    // Current tail position
-} PersistentAllocator;
-
 // Initializes the PersistentAllocator
-void PersistentAllocator_Init(PersistentAllocator* allocator, uint8_t* arena, size_t size) {
+void PersistentAllocator_Init(PersistentAllocator* allocator, int8_t* arena, size_t size) {
     allocator->buffer_head = arena;
     allocator->tail_temp = arena + size;
 }
 
 // Allocates a persistent buffer
 void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, size_t alignment) {
-    uint8_t* aligned_result = (uint8_t*)AlignPointerDown(allocator->tail_temp - size, alignment);
+    int8_t* aligned_result = (int8_t*)AlignPointerDown(allocator->tail_temp - size, alignment);
     
     if (aligned_result < allocator->buffer_head) {
         printf("Memory allocation failed! Requested: %zu bytes\n", size);
@@ -117,12 +112,28 @@ void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, 
     return aligned_result;
 }
 
+
+// Manually allocate relative addressing
+void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t relative_addr) {
+
+    void* absolute_ptr = allocator->buffer_head + relative_addr;
+
+    if (absolute_ptr != AlignPointerDown(absolute_ptr, MEM_ALIGNMENT)) {
+        printf("Error: manually set pointer is not 16-bit aligned\n");
+    }
+
+    return absolute_ptr;
+}
+
+
+
+
 // Getters
-uint8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator) {
+int8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator) {
     return allocator->buffer_head;
 }
 
-uint8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator) {
+int8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator) {
     return allocator->tail_temp;
 }
 
@@ -608,6 +619,486 @@ int elementwise_add(uint8_t* input1, uint8_t* input2, uint8_t* output)
 */
 
 
+
+
+
+int run_npu_op(
+    uint8_t* command_stream,
+    size_t command_stream_size,
+
+    int8_t* tensor_arena,
+    size_t tensor_arena_size,
+
+    int8_t* input_tensor,
+    size_t input_tensor_size,
+
+    int8_t* weight_tensor,
+    size_t weight_tensor_size,
+
+    int8_t* output_tensor,
+    size_t output_tensor_size
+
+
+) {
+     // Assign base addrs
+     const size_t num_tensors = 5;
+     uint64_t base_addrs[num_tensors];
+     size_t base_addrs_size[num_tensors];
+ 
+     base_addrs[0] = (uint64_t)(uintptr_t)weight_tensor;   // Model weights
+     base_addrs[1] = (uint64_t)(uintptr_t)tensor_arena;   // Tensor arena pointer
+     base_addrs[2] = (uint64_t)(uintptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+     base_addrs[3] = (uint64_t)(uintptr_t)input_tensor;   // Input tensor (in tensor arena)
+     base_addrs[4] = (uint64_t)(uintptr_t)output_tensor;  // Output tensor (in tensor arena)
+ 
+     base_addrs_size[0] = weight_tensor_size;
+     base_addrs_size[1] = tensor_arena_size;
+     base_addrs_size[2] = tensor_arena_size;
+     base_addrs_size[3] = input_tensor_size;
+     base_addrs_size[4] = output_tensor_size;
+ 
+ 
+ 
+ 
+     // Run NPU commands
+     if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+         printf("run_cms call failed\n");
+         return -1;
+     }
+ 
+ 
+     if (DEBUG_MODE) {
+         //print tensor values after
+         printf("AFTER INVOKE\n");
+         PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+         PrintTensor("input_tensor", input_tensor, input_tensor_size);
+         PrintTensor("output_tensor", output_tensor, output_tensor_size);
+         //PrintTensor("weights_tensor_on_sram", weight_tensor_on_sram, weight_size);
+         PrintTensor("weight_tensor", weight_tensor, weight_tensor_size);
+     }
+
+
+
+     return 0;
+
+}
+
+
+
+
+
+
+
+int elementwise_mul(
+    size_t tensor_arena_size,
+    int8_t* input1,
+    size_t input1_tensor_size,
+    int8_t* input2,
+    size_t input2_tensor_size,
+
+    const uint8_t* command_stream,
+    size_t command_stream_size,
+    const uint8_t* scales_tensor,
+    size_t scales_tensor_size,
+
+    int8_t* output,
+    size_t output_tensor_size
+)
+{
+
+
+
+    int8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+
+
+
+    // Allocate Tensor Arena
+    // Initialize the allocator
+    PersistentAllocator allocator;
+    PersistentAllocator_Init(&allocator, tensor_arena, tensor_arena_size);
+
+
+    // Manually set the relative addresses
+    int8_t* input1_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x00);
+    int8_t* input2_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x10);
+    int8_t* output_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x00);
+
+    
+    // Fill in input values to the tensor arena
+    for (size_t i = 0; i < input1_tensor_size; i++) {
+        input1_tensor[i] = input1[i];
+    }
+
+    for (size_t i = 0; i < input2_tensor_size; i++) {
+        input2_tensor[i] = input2[i];
+    }
+
+
+
+
+
+    if (DEBUG_MODE) {
+
+        // print values
+        printf("BEFORE INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        PrintTensor("input1_tensor", input1_tensor, input1_tensor_size);
+        PrintTensor("input2_tensor", input2_tensor, input2_tensor_size);
+        PrintTensor("output_tensor", output_tensor, output_tensor_size);
+    }
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 6;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = (uint64_t)(intptr_t)scales_tensor;   // Model weights
+    base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
+    base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+    base_addrs[3] = (uint64_t)(intptr_t)input1_tensor;   // Input tensor (in tensor arena)
+    base_addrs[4] = (uint64_t)(intptr_t)input2_tensor;   // Input tensor (in tensor arena)
+    base_addrs[5] = (uint64_t)(intptr_t)output_tensor;  // Output tensor (in tensor arena)
+
+    base_addrs_size[0] = scales_tensor_size;
+    base_addrs_size[1] = tensor_arena_size;
+    base_addrs_size[2] = tensor_arena_size;
+    base_addrs_size[3] = input1_tensor_size;
+    base_addrs_size[4] = input2_tensor_size;
+    base_addrs_size[5] = output_tensor_size;
+
+
+
+
+    //set params
+    //const uint8_t set_weight_len[40] __attribute__((aligned(16))) = {
+    //    0x43, 0x4f, 0x50, 0x31, 0x01, 0x00, 0x10, 0x00, 0x08, 0x30, 0x00, 0x00, 0x00, 0x00, 0x06, 0x10, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x02, 0x00, 0x08, 0x00, 
+    //    0x21, 0x00, 0x00, 0x00,
+    //    0x90, 0x00, 0x00, 0x00};
+//
+    //if(run_cms(set_weight_len, 40, base_addrs, base_addrs_size, num_tensors) != 0) {
+    //    printf("run_cms call failed\n");
+    //    return -1;
+    //}
+        
+    
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    }
+
+
+    if (DEBUG_MODE) {
+        //print tensor values after
+        printf("AFTER INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        PrintTensor("input1_tensor", input1_tensor, input1_tensor_size);
+        PrintTensor("input2_tensor", input2_tensor, input2_tensor_size);
+        PrintTensor("output_tensor", output_tensor, output_tensor_size);
+    }
+
+ 
+    //Write result to output
+    printf("writing output to output_tensor:\n");
+    for (size_t i = 0; i < output_tensor_size; i++) {
+        output[i] = output_tensor[i];
+        printf(" %f", output_tensor[i]);
+    }printf("\n");
+    
+
+
+    return 0;
+
+
+
+
+}
+
+
+
+
+int membrane_update_npu(
+    size_t tensor_arena_size,
+    int8_t* in_spk,
+    size_t in_spk_tensor_size,
+    int8_t* v_mem,
+    size_t v_mem_tensor_size,
+    int8_t* decay,
+    size_t decay_tensor_size,
+    
+    
+
+    const uint8_t* command_stream,
+    size_t command_stream_size,
+    const int8_t* weight_tensor,
+    size_t weight_tensor_size,
+
+
+
+    int8_t* v_mem_new,
+    size_t v_mem_new_tensor_size,
+    int8_t* out_spk,
+    size_t out_spk_tensor_size
+)
+{
+
+
+
+    int8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+
+
+
+    // Allocate Tensor Arena
+    // Initialize the allocator
+    PersistentAllocator allocator;
+    PersistentAllocator_Init(&allocator, tensor_arena, tensor_arena_size);
+
+
+    // Manually set the relative addresses
+    int8_t* in_spk_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x00);
+    int8_t* v_mem_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x20);
+    int8_t* decay_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x40);
+
+    int8_t* v_mem_new_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x40);
+    int8_t* out_spk_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        0x20);
+
+    
+    // Fill in input values to the tensor arena
+    for (size_t i = 0; i < in_spk_tensor_size; i++) {
+        in_spk_tensor[i] = in_spk[i];
+    }
+
+    for (size_t i = 0; i < v_mem_tensor_size; i++) {
+        v_mem_tensor[i] = v_mem[i];
+    }
+
+    for (size_t i = 0; i < decay_tensor_size; i++) {
+        decay_tensor[i] = decay[i];
+    }
+
+
+
+
+
+
+    if (DEBUG_MODE) {
+
+        // print values
+        printf("BEFORE INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        PrintTensor("in_spk_tensor", in_spk_tensor, in_spk_tensor_size);
+        PrintTensor("v_mem_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        PrintTensor("decay_tensor", decay_tensor, decay_tensor_size);
+        PrintTensor("v_mem_new_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        PrintTensor("out_spk_tensor", out_spk_tensor, out_spk_tensor_size);
+    }
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 6;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = (uint64_t)(intptr_t)weight_tensor;   // Model weights
+    base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
+    base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+    base_addrs[3] = (uint64_t)(intptr_t)in_spk_tensor;   // Input tensor (in tensor arena)
+    base_addrs[4] = (uint64_t)(intptr_t)v_mem_tensor;   // Input tensor (in tensor arena)
+    base_addrs[5] = (uint64_t)(intptr_t)decay_tensor;
+    base_addrs[6] = (uint64_t)(intptr_t)v_mem_new_tensor;
+    base_addrs[7] = (uint64_t)(intptr_t)out_spk_tensor;  
+
+    base_addrs_size[0] = weight_tensor_size;
+    base_addrs_size[1] = tensor_arena_size;
+    base_addrs_size[2] = tensor_arena_size;
+    base_addrs_size[3] = in_spk_tensor_size;
+    base_addrs_size[4] = v_mem_tensor_size;
+    base_addrs_size[5] = decay_tensor_size;
+    base_addrs_size[6] = v_mem_new_tensor_size;
+    base_addrs_size[7] = out_spk_tensor_size;
+
+
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    }
+
+
+    if (DEBUG_MODE) {
+        //print tensor values after
+        printf("AFTER INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        PrintTensor("in_spk_tensor", in_spk_tensor, in_spk_tensor_size);
+        PrintTensor("v_mem_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        PrintTensor("decay_tensor", decay_tensor, decay_tensor_size);
+        PrintTensor("v_mem_new_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        PrintTensor("out_spk_tensor", out_spk_tensor, out_spk_tensor_size);
+    }
+
+ 
+    //Write result to output
+    printf("writing output to output_tensor:\n");
+    for (size_t i = 0; i < v_mem_new_tensor_size; i++) {
+        v_mem_new[i] = v_mem_new_tensor[i];
+    }
+
+    for (size_t i = 0; i < out_spk_tensor_size; i++) {
+        out_spk[i] = out_spk_tensor[i];
+    }
+
+
+    return 0;
+
+
+
+
+}
+
+
+
+
+
+
+int my_mem_u_npu(
+    int8_t* tensor_arena,
+    size_t tensor_arena_size,
+
+    int8_t* input_tensor,
+    size_t input_tensor_size,
+    //int8_t* v_mem,
+    //size_t v_mem_tensor_size,
+    //int8_t* decay,
+    //size_t decay_tensor_size,
+
+    //relative addressing
+    //size_t in_spk_rel_addr,
+    //size_t out_spk_rel_addr,
+
+    
+
+    const uint8_t* command_stream,
+    size_t command_stream_size,
+    const int8_t* weight_tensor,
+    size_t weight_tensor_size,
+
+
+
+
+    //int8_t* v_mem_new,
+    //size_t v_mem_new_tensor_size,
+    int8_t* output_tensor,
+    size_t output_tensor_size
+)
+{
+
+
+
+   
+
+    //for (size_t i = 0; i < v_mem_tensor_size; i++) {
+    //    v_mem_tensor[i] = v_mem[i];
+    //}
+    //
+    //for (size_t i = 0; i < decay_tensor_size; i++) {
+    //    decay_tensor[i] = decay[i];
+    //}
+
+
+
+
+
+
+    if (DEBUG_MODE) {
+
+        // print values
+        printf("BEFORE INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        //PrintTensor("input_tensor", input_tensor, input_tensor_size);
+        //PrintTensor("v_mem_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        //PrintTensor("decay_tensor", decay_tensor, decay_tensor_size);
+        //PrintTensor("v_mem_new_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        //PrintTensor("output_tensor", output_tensor, output_tensor_size);
+    }
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 3;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = (uint64_t)(intptr_t)weight_tensor;   // Model weights
+    base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
+    base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+    //base_addrs[3] = (uint64_t)(intptr_t)input_tensor;   // Input tensor (in tensor arena)
+    //base_addrs[4] = (uint64_t)(intptr_t)output_tensor;  
+
+    base_addrs_size[0] = weight_tensor_size;
+    base_addrs_size[1] = tensor_arena_size;
+    base_addrs_size[2] = tensor_arena_size;
+    //base_addrs_size[3] = input_tensor_size;
+    //base_addrs_size[4] = output_tensor_size;
+
+
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    }
+
+
+    if (DEBUG_MODE) {
+        //print tensor values after
+        printf("AFTER INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+        //PrintTensor("input_tensor", input_tensor, input_tensor_size);
+        //PrintTensor("v_mem_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        //PrintTensor("decay_tensor", decay_tensor, decay_tensor_size);
+        //PrintTensor("v_mem_new_tensor", v_mem_new_tensor, v_mem_new_tensor_size);
+        //PrintTensor("output_tensor", output_tensor, output_tensor_size);
+    }
+
+
+    return 0;
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int matmul(uint8_t* input, uint8_t* output)
 {
 
@@ -732,6 +1223,19 @@ int matmul(uint8_t* input, uint8_t* output)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 
 int matmul_vela(uint8_t* input, uint8_t* output)
@@ -843,69 +1347,3 @@ int matmul_vela(uint8_t* input, uint8_t* output)
 */
 
 
-
-
-
-
-
-
-
-/*
-int membrane_update(uint8_t* in_mem, uint8_t* in_spk, uint8_t* out_mem, uint8_t* out_spk) {
-
-
-    //Get length of command stream
-    const uint8_t* command_stream = GetMemUpdateCMSPointer();
-    size_t command_stream_size = GetMemUpdateCMSLen();
-
-
-
-
-    uint8_t tensor_arena[MEM_UPDATE_TENSOR_ARENA_SIZE] __attribute__((aligned(16)));
-    // Allocate Tensor Arena
-    PersistentAllocator allocator(tensor_arena, MEM_UPDATE_TENSOR_ARENA_SIZE);
-
-
-
-
-    // Allocate for in_mem
-    uint8_t* in_mem_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_IN_MEM_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
-    if (in_mem_tensor) {
-        for (int i = 0; i < MEM_UPDATE_IN_MEM_TENSOR_SIZE; i++) {
-            in_mem_tensor[i] = in_mem[i];  // Writing float values
-        }
-    }
-
-
-    // Allocate for in_spk
-    uint8_t* in_spk_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_IN_SPK_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
-    if (in_spk_tensor) {
-        for (int i = 0; i < MEM_UPDATE_IN_SPK_TENSOR_SIZE; i++) {
-            in_spk_tensor[i] = in_spk[i];  // Writing float values
-        }
-    }
-
-
-    // Allocate for out_mem
-    uint8_t* out_mem_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_OUT_MEM_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
-    if (out_mem_tensor) {
-        for (int i = 0; i < MEM_UPDATE_OUT_MEM_TENSOR_SIZE; i++) {
-            out_mem_tensor[i] = out_mem[i];  // Writing float values
-        }
-    }
-
-
-    // Allocate for out_spk
-    uint8_t* out_spk_tensor = static_cast<uint8_t*>(allocator.AllocatePersistentBuffer(MEM_UPDATE_OUT_SPK_TENSOR_SIZE*sizeof(uint8_t), MEM_ALIGNMENT));
-    if (out_spk_tensor) {
-        for (int i = 0; i < MEM_UPDATE_OUT_SPK_TENSOR_SIZE; i++) {
-            out_spk_tensor[i] = out_spk[i];  // Writing float values
-        }
-    }
-
-
-
-    // Get weight tensor and allocate for them
-
-}
-*/

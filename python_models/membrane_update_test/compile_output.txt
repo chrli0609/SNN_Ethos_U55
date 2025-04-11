@@ -1,32 +1,258 @@
-Model: "model"
-__________________________________________________________________________________________________
- Layer (type)                Output Shape                 Param #   Connected to                  
-==================================================================================================
- input_1 (InputLayer)        [(None, 784)]                0         []                            
-                                                                                                  
- input_2 (InputLayer)        [(None, 1008)]               0         []                            
-                                                                                                  
- lif_layer (LIFLayer)        ((None, 1008),               791280    ['input_1[0][0]',             
-                              (None, 1008))                          'input_2[0][0]']             
-                                                                                                  
-==================================================================================================
-Total params: 791280 (3.02 MB)
-Trainable params: 791280 (3.02 MB)
-Non-trainable params: 0 (0.00 Byte)
-__________________________________________________________________________________________________
-Model expects 2 weight tensors.
-Weight 0: shape (784, 1008)
-Weight 1: shape (1008,)
-model <keras.src.engine.functional.Functional object at 0x7f4c6303d750>
-saved_model_dir saved_models/TF_model
-✅ Fully Quantized TFLite model saved at: saved_models/tflite_model/tflite_model.tflite
-Warning: No configuration file specified. Using a default of ['/home/chris/.local/lib/python3.10/site-packages/ethosu/config_files/Arm/vela.ini']. Compilation may be invalid or non-optimal.
-Warning: No system configuration specified. Using a default of Ethos_U55_High_End_Embedded. Compilation may be invalid or non-optimal.
-Warning: No memory mode specified. Using a default of Shared_Sram. Compilation may be invalid or non-optimal.
+Original weight shapes: [(16, 32), (32,)]
+[array([[-1.00034950e-02, -2.36216839e-02,  4.93984073e-02,
+        -1.02448083e-01,  3.91637534e-03,  6.13052361e-02,
+        -6.87042400e-02, -4.80377674e-02,  3.80796976e-02,
+        -4.30145115e-02, -4.52487133e-02, -1.28717525e-02,
+        -2.12586112e-02,  4.52464372e-02,  8.89452267e-03,
+         1.08237736e-01, -9.73910559e-03, -3.88021283e-02,
+        -5.86171560e-02, -4.70442586e-02, -6.82278946e-02,
+         1.87114272e-02,  1.28163919e-02, -4.04253788e-03,
+        -7.08335415e-02,  6.29299358e-02, -5.67498757e-03,
+        -6.83701262e-02, -9.12688300e-03,  5.47914691e-02,
+         4.89097461e-02,  5.22663891e-02],
+       [ 7.02779591e-02,  5.40996380e-02,  3.86308618e-02,
+         5.81573211e-02, -3.12488619e-02,  4.26766537e-02,
+         5.57433031e-02, -4.40884791e-02, -7.89417978e-03,
+         5.34596145e-02, -8.41821916e-03, -4.39191144e-03,
+        -2.64521539e-02, -1.03984915e-01,  4.95279543e-02,
+        -2.00743508e-02,  7.85975233e-02, -9.61663481e-03,
+        -1.28288297e-02, -5.41643985e-02, -1.19740106e-02,
+        -1.88138988e-02, -1.28431795e-02,  5.82657047e-02,
+        -6.12901710e-02, -4.66183061e-04,  5.28435409e-02,
+         2.11254996e-03,  3.40319648e-02,  1.48075921e-02,
+        -9.19676572e-02, -7.71649256e-02],
+       [-2.30671484e-02,  2.99901352e-04,  4.94836597e-03,
+        -3.12259924e-02,  6.06682189e-02, -4.60728407e-02,
+        -6.01133816e-02, -7.09549934e-02, -2.25887317e-02,
+        -3.30246016e-02,  2.42298599e-02, -7.83095788e-03,
+         2.68450137e-02,  1.16907498e-02,  4.42873836e-02,
+         7.30591938e-02,  9.73896310e-02,  9.57526937e-02,
+         1.45522356e-01, -4.01565991e-02, -1.36334663e-02,
+         1.16120756e-01, -2.02285573e-02,  1.63381174e-03,
+        -6.29113754e-03,  1.74024664e-02, -8.46571550e-02,
+        -1.27925634e-01, -3.71988676e-02,  3.20544839e-02,
+         3.29578184e-02,  1.70586538e-02],
+       [ 8.65744725e-02, -1.63377970e-02,  3.20614800e-02,
+         1.54275214e-03,  3.76768410e-02,  3.16446200e-02,
+         4.74611074e-02, -7.12262839e-02,  1.49921877e-02,
+        -6.93883225e-02,  3.19238342e-02, -3.75267793e-03,
+         1.89949665e-02,  2.80843768e-02,  2.88303080e-03,
+         7.42553324e-02, -1.61718410e-02,  6.38204813e-02,
+         3.91345425e-03, -1.85705386e-02,  5.27150407e-02,
+         3.21675874e-02,  5.11275902e-02, -1.73177887e-02,
+         3.88525687e-02,  4.55916254e-03, -3.65657406e-03,
+         4.71187234e-02,  9.55367386e-02,  5.29490300e-02,
+        -1.60036962e-02,  7.73352310e-02],
+       [-4.17269245e-02,  9.13738087e-03, -6.65775640e-03,
+        -2.27814112e-02, -1.10948838e-01,  6.71498552e-02,
+        -3.76016200e-02, -2.46230210e-03, -2.13592276e-02,
+        -1.38827562e-01, -4.83951531e-02, -5.33173643e-02,
+        -1.14340137e-03, -1.77871007e-02,  2.60714330e-02,
+        -4.16849367e-02,  3.72905843e-03,  2.81213112e-02,
+        -2.25770809e-02, -5.58475964e-02,  2.14079767e-02,
+         5.93329361e-03, -1.99225452e-02,  2.13411916e-02,
+        -5.11849187e-02,  6.81053177e-02,  1.80390533e-02,
+        -8.19997191e-02, -2.46775281e-02,  3.78020555e-02,
+        -1.04989327e-01, -2.48513022e-03],
+       [-6.60320977e-03,  8.27759653e-02,  7.27356458e-03,
+         8.28723013e-02,  6.50063232e-02, -2.10265759e-02,
+         1.35240480e-02,  4.25692201e-02, -3.04877441e-02,
+        -3.67956869e-02, -1.23955324e-01, -9.22201574e-02,
+         3.13523673e-02, -5.79807162e-02,  7.43042752e-02,
+         4.79675308e-02,  1.21310828e-02,  7.12568313e-02,
+        -2.42507681e-02,  3.53880483e-03, -2.30574235e-02,
+         3.05278506e-02,  3.40091065e-02,  8.27186331e-02,
+        -1.98902991e-02,  2.35038977e-02,  4.20568250e-02,
+         3.03218812e-02, -2.35815253e-02, -1.93873178e-02,
+        -1.27038658e-02, -6.84162900e-02],
+       [-2.28005797e-02,  2.94092931e-02,  6.97115585e-02,
+         1.39034642e-02,  1.53530002e-01,  7.87251443e-02,
+        -7.97314271e-02, -6.74119890e-02,  1.21731386e-02,
+         1.18999379e-02, -1.48807913e-02,  3.16116326e-02,
+         1.63452197e-02, -8.62078462e-03,  5.09632006e-02,
+         1.51312100e-02, -3.07606347e-02,  3.25079239e-03,
+         7.52508733e-03,  1.11284271e-01,  3.22844237e-02,
+         7.75446221e-02,  1.95957702e-02, -6.09238341e-04,
+        -7.37221166e-02, -3.60937603e-03,  5.45437410e-02,
+         1.59051698e-02, -7.11512053e-04, -6.44957349e-02,
+        -2.31255796e-02,  6.88295364e-02],
+       [-4.76237666e-03,  7.00633302e-02, -2.57423017e-02,
+         6.84622824e-02,  1.40690012e-02, -3.05292513e-02,
+        -3.42158601e-02,  8.26532301e-03, -5.59209362e-02,
+        -3.66623490e-03,  1.60157438e-02,  5.70316799e-02,
+        -9.78399417e-04,  2.86738183e-02, -3.34404632e-02,
+        -3.40347327e-02, -1.83314085e-02,  7.88528938e-03,
+        -5.52541576e-03,  7.25595728e-02,  2.91306917e-02,
+         4.55776975e-02, -4.43046652e-02, -6.61881715e-02,
+         4.26274166e-02,  2.73286682e-02, -1.66892004e-03,
+        -5.51572703e-02, -1.60524677e-02, -8.79551005e-03,
+         1.99617967e-02, -9.48679735e-05],
+       [-7.10474625e-02, -6.54682294e-02,  1.53823346e-02,
+         1.38047161e-02, -5.96614666e-02, -4.03719768e-02,
+        -6.18262254e-02,  5.07211275e-02, -9.38458927e-03,
+        -7.20656738e-02,  6.26770873e-03, -9.13064741e-03,
+        -8.59124493e-03,  7.66241774e-02, -3.05061080e-02,
+        -5.76301292e-02,  7.22122891e-03,  4.30873362e-03,
+         4.40503620e-02, -2.74188425e-02,  1.47793666e-02,
+         4.83511984e-02, -2.10889466e-02,  3.54953967e-02,
+         1.17684226e-03, -1.09233558e-02, -2.13664100e-02,
+        -9.38794613e-02, -1.01321749e-01, -5.40154949e-02,
+        -1.21000782e-01, -1.02667809e-01],
+       [ 2.87403516e-03,  5.87384365e-02,  1.13844730e-01,
+         4.42040786e-02, -1.43536050e-02, -1.18374467e-01,
+        -4.82093580e-02, -2.86357291e-02, -2.69797444e-02,
+         4.52915542e-02,  6.89933589e-03, -4.63329516e-02,
+        -1.21056484e-02, -1.73305385e-02, -5.81826083e-02,
+        -9.77884978e-02,  1.94395278e-02,  1.02761863e-02,
+         3.40606570e-02, -4.59252670e-02, -4.39095423e-02,
+        -1.48880873e-02, -4.31452133e-02,  3.55297490e-03,
+         1.54396743e-02, -1.57432016e-02, -3.78113054e-02,
+         5.25943898e-02, -7.18865171e-02, -7.56032318e-02,
+        -1.76256185e-03,  9.19946656e-03],
+       [-5.43012731e-02,  1.36954263e-02,  4.01343815e-02,
+         5.87467551e-02,  1.32678440e-02,  5.09086251e-02,
+         4.61987443e-02,  2.79445536e-02, -8.38298872e-02,
+        -2.36339364e-02, -2.11951789e-02,  3.96744795e-02,
+         4.53404970e-02,  1.90002366e-03,  8.52881223e-02,
+         3.13110910e-02,  8.25857837e-03, -2.50333045e-02,
+        -2.36721989e-02, -2.84632947e-02, -2.23541912e-02,
+        -7.99907073e-02,  1.00245416e-01, -1.71551015e-02,
+        -5.29376091e-03, -5.73049076e-02,  1.84223186e-02,
+         9.48191956e-02,  1.80945303e-02,  6.51030540e-02,
+         4.32819389e-02, -2.29675155e-02],
+       [ 2.81842146e-02, -9.13533643e-02,  4.60732952e-02,
+         1.26966778e-02,  6.19763136e-02, -6.55673968e-04,
+        -4.15049214e-03, -9.39290822e-02,  1.69526171e-02,
+        -3.07356026e-02, -7.77715817e-02,  1.55971944e-03,
+         3.96929495e-02, -1.49618164e-01, -1.35416433e-01,
+        -2.79939119e-02,  2.37162542e-02, -5.14819287e-02,
+        -6.65147007e-02,  7.32011814e-03,  2.28654388e-02,
+         1.14375269e-02, -2.19640434e-02, -8.53890404e-02,
+         5.34011126e-02, -2.16158424e-02,  1.03456443e-02,
+        -3.11344899e-02,  8.72118175e-02,  2.60648485e-02,
+        -6.78833723e-02,  9.09623224e-03],
+       [-2.64390707e-02, -5.63726528e-03,  4.55818931e-03,
+        -3.92934904e-02,  1.01071611e-01, -3.00025325e-02,
+         2.44112089e-02, -1.30570516e-01, -4.09171060e-02,
+        -4.45754193e-02,  6.15298338e-02, -6.48547262e-02,
+        -5.74014671e-02, -9.21463314e-03, -2.46782061e-02,
+        -9.89333820e-03,  1.17861945e-02,  5.79348616e-02,
+        -4.49077003e-02, -5.20004285e-03,  2.01349445e-02,
+        -4.29025330e-02, -1.54403029e-02,  1.72044542e-02,
+        -2.21419684e-03, -2.20853966e-02, -2.39328127e-02,
+        -4.91878688e-02, -3.05974875e-02,  6.75181067e-03,
+         3.68785970e-02,  4.09512818e-02],
+       [-2.03014743e-02, -4.31894045e-03,  5.80343492e-02,
+        -4.34021465e-02,  1.59569946e-03,  9.61888954e-03,
+         2.78192200e-03, -6.27853572e-02,  4.70073111e-02,
+        -1.36160187e-03, -8.70709717e-02, -1.50183635e-02,
+         9.85501334e-02,  8.59575793e-02,  6.18310347e-02,
+         8.26636553e-02, -7.66314659e-03, -2.89457142e-02,
+        -2.89699389e-03, -4.43667136e-02,  9.92526766e-03,
+         3.99908386e-02,  3.84749658e-02, -1.98910777e-02,
+         2.02354360e-02, -2.23903861e-02,  1.05739832e-02,
+        -3.42131667e-02, -2.19559260e-02, -1.39804659e-02,
+         6.84338883e-02, -1.41810225e-02],
+       [-1.27839774e-03, -1.15795434e-02, -2.07684990e-02,
+         2.80553158e-02,  2.49626562e-02,  4.57189195e-02,
+         4.26577404e-02,  6.67655421e-03,  2.50886288e-02,
+        -4.31233970e-03, -7.43518546e-02, -5.43384999e-03,
+         1.35511085e-01,  1.70123193e-03,  2.99060461e-03,
+        -4.41879891e-02, -3.68976332e-02, -3.11844586e-03,
+         2.31157020e-02,  7.30123445e-02,  6.25294149e-02,
+         1.43096773e-02, -4.77224477e-02,  3.40246335e-02,
+         3.45248170e-02, -1.78540442e-02,  2.98842043e-02,
+        -1.26996577e-01, -2.97767129e-02,  2.23936811e-02,
+         3.28911059e-02,  5.78533001e-02],
+       [ 4.64515798e-02, -2.92000361e-03, -4.57189605e-03,
+         1.79951172e-02, -2.89118588e-02,  7.38176424e-03,
+         7.84113035e-02, -1.79558154e-02,  1.59346592e-02,
+         9.46825370e-03, -1.44809205e-02,  7.44146332e-02,
+        -4.36094403e-02,  8.54705274e-02, -6.67378008e-02,
+         3.11113149e-02, -1.49718225e-02, -1.20901480e-01,
+         6.61175931e-03, -4.21712063e-02, -6.07241504e-02,
+        -3.47403847e-02,  4.99051027e-02, -3.06659993e-02,
+        -1.02202907e-01,  5.42128645e-02,  2.70802360e-02,
+         2.25070193e-02,  2.83101704e-02,  5.07234298e-02,
+         1.08807839e-01,  5.68572544e-02]], dtype=float32), array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
+      dtype=float32)]
+new_weight_matrix.shape (16, 32)
+Updated weight shapes: [(16, 32), (32,)]
+[array([[1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+        1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]],
+      dtype=float32), array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.,
+       1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+      dtype=float32)]
+✅ Int8 quantized TFLite model saved successfully!
+Input details: [{'name': 'serving_default_x:0', 'index': 0, 'shape': array([ 1, 16], dtype=int32), 'shape_signature': array([ 1, 16], dtype=int32), 'dtype': <class 'numpy.int8'>, 'quantization': (0.007822568528354168, -1), 'quantization_parameters': {'scales': array([0.00782257], dtype=float32), 'zero_points': array([-1], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}, {'name': 'serving_default_mem:0', 'index': 1, 'shape': array([ 1, 32], dtype=int32), 'shape_signature': array([ 1, 32], dtype=int32), 'dtype': <class 'numpy.int8'>, 'quantization': (0.007832885719835758, -128), 'quantization_parameters': {'scales': array([0.00783289], dtype=float32), 'zero_points': array([-128], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}, {'name': 'serving_default_decay:0', 'index': 2, 'shape': array([ 1, 32], dtype=int32), 'shape_signature': array([ 1, 32], dtype=int32), 'dtype': <class 'numpy.int8'>, 'quantization': (0.003921556286513805, -128), 'quantization_parameters': {'scales': array([0.00392156], dtype=float32), 'zero_points': array([-128], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}]
+Output details: [{'name': 'StatefulPartitionedCall:1', 'index': 11, 'shape': array([ 1, 32], dtype=int32), 'shape_signature': array([ 1, 32], dtype=int32), 'dtype': <class 'numpy.int8'>, 'quantization': (0.003921568859368563, -128), 'quantization_parameters': {'scales': array([0.00392157], dtype=float32), 'zero_points': array([-128], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}, {'name': 'StatefulPartitionedCall:0', 'index': 12, 'shape': array([ 1, 32], dtype=int32), 'shape_signature': array([ 1, 32], dtype=int32), 'dtype': <class 'numpy.int8'>, 'quantization': (0.039240699261426926, -25), 'quantization_parameters': {'scales': array([0.0392407], dtype=float32), 'zero_points': array([-25], dtype=int32), 'quantized_dimension': 0}, 'sparsity_parameters': {}}]
+Input x (float): [[1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]]
+Input x (int8): [[127 127 127 127 127 127 127 127 127 127 127 127 127 127 127 127]]
+
+Output membrane potential (float): [[1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.
+  1. 1. 1. 1. 1. 1. 1. 1.]]
+Output spikes (float): [[4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236
+  4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236
+  4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236
+  4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236 4.277236]]
+
+Running 5 more iterations...
+
+Iteration 1:
+Membrane potential range: 1.0 to 1.0
+Number of neurons that spiked: 32
+
+Iteration 2:
+Membrane potential range: 1.0 to 1.0
+Number of neurons that spiked: 32
+
+Iteration 3:
+Membrane potential range: 1.0 to 1.0
+Number of neurons that spiked: 32
+
+Iteration 4:
+Membrane potential range: 1.0 to 1.0
+Number of neurons that spiked: 32
+
+Iteration 5:
+Membrane potential range: 1.0 to 1.0
+Number of neurons that spiked: 32
+Warning: Using internal-default values for system configuration
+Warning: Using internal-default values for memory mode
 Configuration files:
-   original = None
-   used = ['/home/chris/.local/lib/python3.10/site-packages/ethosu/config_files/Arm/vela.ini']
-System Configuration (Ethos_U55_High_End_Embedded):
+   None
+System Configuration (internal-default):
    core_clock = 500000000.0
    axi0_port = Sram
    axi1_port = OffChipFlash
@@ -45,8 +271,8 @@ System Configuration (Ethos_U55_High_End_Embedded):
    OffChipFlash_clock_scales = 0.125
    OffChipFlash_burst_length = 128
    OffChipFlash_read_latency = 64
-   OffChipFlash_write_latency = 0
-Memory Mode (Shared_Sram):
+   OffChipFlash_write_latency = 64
+Memory Mode (internal-default):
    const_mem_area = Axi1
    arena_mem_area = Axi0
    cache_mem_area = Axi0
@@ -56,251 +282,243 @@ Architecture Settings:
    feature_map_storage_mem_area = Sram
    fast_storage_mem_area = Sram
 Operators of Subgraph main
-  0: Quantize       - {'attribute_read_error': []} - tfl.quantize1
-  1: Mul            - {'attribute_read_error': [], 'fused_activation_function': None} - model/lif_layer/mul
-  2: Quantize       - {'attribute_read_error': []} - tfl.quantize
-  3: FullyConnected - {'attribute_read_error': [], 'asymmetric_quantize_inputs': False, 'fused_activation_function': None, 'keep_num_dims': False, 'weights_format': 0, 'quantized_bias_type': 0} - model/lif_layer/MatMul2
-  4: Add            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - model/lif_layer/add
-  5: Add            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - model/lif_layer/add_1
-  6: Sub            - {'attribute_read_error': [], 'fused_activation_function': Relu, 'pot_scale_int16': True} - model/lif_layer/Relu;model/lif_layer/sub
-  7: Sub            - {'attribute_read_error': [], 'fused_activation_function': Relu, 'pot_scale_int16': True} - StatefulPartitionedCall:11
-  8: Sub            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - StatefulPartitionedCall:01
-  9: Quantize       - {'attribute_read_error': []} - StatefulPartitionedCall:0
- 10: Quantize       - {'attribute_read_error': []} - StatefulPartitionedCall:1
+  0: Mul            - {'attribute_read_error': [], 'fused_activation_function': None} - Mul
+  1: FullyConnected - {'attribute_read_error': [], 'asymmetric_quantize_inputs': False, 'fused_activation_function': None, 'keep_num_dims': False, 'weights_format': 0} - MatMul2
+  2: Add            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - add
+  3: Add            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - add_1
+  4: Sub            - {'attribute_read_error': [], 'fused_activation_function': Relu, 'pot_scale_int16': True} - Relu;sub
+  5: Sub            - {'attribute_read_error': [], 'fused_activation_function': Relu, 'pot_scale_int16': True} - StatefulPartitionedCall:1
+  6: Sub            - {'attribute_read_error': [], 'fused_activation_function': None, 'pot_scale_int16': True} - StatefulPartitionedCall:0
+print_graph_with_tensor_quantization() main
+0 Const Const
+    Output 00       int8 min=None max=None scale=0.003921569 zero_point=-128 Const
+
+1 Placeholder serving_default_mem:0
+    Output 00       int8 min=None max=None scale=0.007832886 zero_point=-128 serving_default_mem:0
+
+2 Placeholder serving_default_decay:0
+    Output 00       int8 min=None max=None scale=0.0039215563 zero_point=-128 serving_default_decay:0
+
+3 Mul Mul
+    Input  00       int8 min=None max=None scale=0.007832886 zero_point=-128 serving_default_mem:0
+    Input  01       int8 min=None max=None scale=0.0039215563 zero_point=-128 serving_default_decay:0
+    Output 00       int8 min=None max=None scale=0.043162268 zero_point=-11 Mul
+
+4 Placeholder serving_default_x:0
+    Output 00       int8 min=None max=None scale=0.0078225685 zero_point=-1 serving_default_x:0
+
+5 Const MatMul1_reshape
+    Output 00       int8 min=None max=None scale=0.007874016 zero_point=0 MatMul1_reshape
+
+6 Const MatMul2_bias
+    Output 00      int32 NO QUANTIZATION INFO MatMul2_bias_0
+
+7 FullyConnected MatMul2
+    Input  00       int8 min=None max=None scale=0.0078225685 zero_point=-1 serving_default_x:0
+    Input  01       int8 min=None max=None scale=0.007874016 zero_point=0 MatMul1_reshape
+    Input  02      int32 NO QUANTIZATION INFO MatMul2_bias_0
+    Output 00       int8 min=None max=None scale=0.03666228 zero_point=10 MatMul2
+
+8 Add add
+    Input  00       int8 min=None max=None scale=0.043162268 zero_point=-11 Mul
+    Input  01       int8 min=None max=None scale=0.03666228 zero_point=10 MatMul2
+    Output 00       int8 min=None max=None scale=0.047083836 zero_point=-21 add
+
+9 Const add_1/ReadVariableOp
+    Output 00       int8 min=None max=None scale=0.003921569 zero_point=-128 add_1/ReadVariableOp
+
+10 Add add_1
+    Input  00       int8 min=None max=None scale=0.047083836 zero_point=-21 add
+    Input  01       int8 min=None max=None scale=0.003921569 zero_point=-128 add_1/ReadVariableOp
+    Output 00       int8 min=None max=None scale=0.043162268 zero_point=-34 add_1
+
+11 Sub Relu;sub
+    Input  00       int8 min=None max=None scale=0.003921569 zero_point=-128 Const
+    Input  01       int8 min=None max=None scale=0.043162268 zero_point=-34 add_1
+    Output 00       int8 min=None max=None scale=0.019805014 zero_point=-128 Relu;sub
+
+12 Sub StatefulPartitionedCall:1
+    Input  00       int8 min=None max=None scale=0.003921569 zero_point=-128 Const
+    Input  01       int8 min=None max=None scale=0.019805014 zero_point=-128 Relu;sub
+    Output 00       int8 min=None max=None scale=0.003921569 zero_point=-128 StatefulPartitionedCall:1
+
+13 Sub StatefulPartitionedCall:0
+    Input  00       int8 min=None max=None scale=0.043162268 zero_point=-34 add_1
+    Input  01       int8 min=None max=None scale=0.003921569 zero_point=-128 StatefulPartitionedCall:1
+    Output 00       int8 min=None max=None scale=0.0392407 zero_point=-25 StatefulPartitionedCall:0
+
 print_graph_with_tensors() main
-0 Placeholder serving_default_input_2:0
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_input_2:0' shape=[1, 1008] dtype=uint8>
+0 Const Const
+    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'Const' shape=[] dtype=int8>
 
-1 AvgPool tfl.quantize1
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_input_2:0' shape=[1, 1008] dtype=uint8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'tfl.quantize1' shape=[1, 1008] dtype=int8>
+1 Placeholder serving_default_mem:0
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_mem:0' shape=[1, 32] dtype=int8>
 
-2 Const model/lif_layer/mul/x
-    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/mul/x' shape=[] dtype=int8>
+2 Placeholder serving_default_decay:0
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_decay:0' shape=[1, 32] dtype=int8>
 
-3 Mul model/lif_layer/mul
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'tfl.quantize1' shape=[1, 1008] dtype=int8>
-    Input  01           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/mul/x' shape=[] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/mul' shape=[1, 1008] dtype=int8>
+3 Mul Mul
+    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_mem:0' shape=[1, 32] dtype=int8>
+    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_decay:0' shape=[1, 32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'Mul' shape=[1, 32] dtype=int8>
 
-4 Placeholder serving_default_input_1:0
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_input_1:0' shape=[1, 784] dtype=uint8>
+4 Placeholder serving_default_x:0
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_x:0' shape=[1, 16] dtype=int8>
 
-5 AvgPool tfl.quantize
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_input_1:0' shape=[1, 784] dtype=uint8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'tfl.quantize' shape=[1, 784] dtype=int8>
+5 Const MatMul1_reshape
+    Output 00              Weights         OffChipFlash        Permanent_NPU <nng.Tensor 'MatMul1_reshape' shape=[16, 32] dtype=int8>
 
-6 Const model/lif_layer/MatMul1_reshape
-    Output 00              Weights         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/MatMul1_reshape' shape=[784, 1008] dtype=int8>
+6 Const MatMul2_bias
+    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'MatMul2_bias_0' shape=[32] dtype=int32>
 
-7 Const model/lif_layer/MatMul2_bias
-    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/MatMul2_bias_0' shape=[1008] dtype=int32>
+7 FullyConnected MatMul2
+    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'serving_default_x:0' shape=[1, 16] dtype=int8>
+    Input  01              Weights         OffChipFlash        Permanent_NPU <nng.Tensor 'MatMul1_reshape' shape=[16, 32] dtype=int8>
+    Input  02           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'MatMul2_bias_0' shape=[32] dtype=int32>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'MatMul2' shape=[1, 32] dtype=int8>
 
-8 FullyConnected model/lif_layer/MatMul2
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'tfl.quantize' shape=[1, 784] dtype=int8>
-    Input  01              Weights         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/MatMul1_reshape' shape=[784, 1008] dtype=int8>
-    Input  02           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/MatMul2_bias_0' shape=[1008] dtype=int32>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/MatMul2' shape=[1, 1008] dtype=int8>
+8 Add add
+    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'Mul' shape=[1, 32] dtype=int8>
+    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'MatMul2' shape=[1, 32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'add' shape=[1, 32] dtype=int8>
 
-9 Add model/lif_layer/add
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/mul' shape=[1, 1008] dtype=int8>
-    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/MatMul2' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/add' shape=[1, 1008] dtype=int8>
+9 Const add_1/ReadVariableOp
+    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'add_1/ReadVariableOp' shape=[32] dtype=int8>
 
-10 Const model/lif_layer/add_1/ReadVariableOp
-    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/add_1/ReadVariableOp' shape=[1008] dtype=int8>
+10 Add add_1
+    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'add' shape=[1, 32] dtype=int8>
+    Input  01           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'add_1/ReadVariableOp' shape=[32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'add_1' shape=[1, 32] dtype=int8>
 
-11 Add model/lif_layer/add_1
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/add' shape=[1, 1008] dtype=int8>
-    Input  01           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/add_1/ReadVariableOp' shape=[1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/add_1' shape=[1, 1008] dtype=int8>
+11 Sub Relu;sub
+    Input  00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'Const' shape=[] dtype=int8>
+    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'add_1' shape=[1, 32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'Relu;sub' shape=[1, 32] dtype=int8>
 
-12 Const model/lif_layer/mul_1/y
-    Output 00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/mul_1/y' shape=[] dtype=int8>
+12 Sub StatefulPartitionedCall:1
+    Input  00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'Const' shape=[] dtype=int8>
+    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'Relu;sub' shape=[1, 32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:1' shape=[1, 32] dtype=int8>
 
-13 Sub model/lif_layer/Relu;model/lif_layer/sub
-    Input  00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/mul_1/y' shape=[] dtype=int8>
-    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'tfl.quantize1' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/Relu;model/lif_layer/sub' shape=[1, 1008] dtype=int8>
-
-14 Sub StatefulPartitionedCall:11
-    Input  00           FeatureMap         OffChipFlash        Permanent_NPU <nng.Tensor 'model/lif_layer/mul_1/y' shape=[] dtype=int8>
-    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/Relu;model/lif_layer/sub' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:11' shape=[1, 1008] dtype=int8>
-
-15 Sub StatefulPartitionedCall:01
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'model/lif_layer/add_1' shape=[1, 1008] dtype=int8>
-    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:11' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:01' shape=[1, 1008] dtype=int8>
-
-16 AvgPool StatefulPartitionedCall:0
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:01' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:0' shape=[1, 1008] dtype=uint8>
-
-17 AvgPool StatefulPartitionedCall:1
-    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:11' shape=[1, 1008] dtype=int8>
-    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:1' shape=[1, 1008] dtype=uint8>
+13 Sub StatefulPartitionedCall:0
+    Input  00           FeatureMap                 Sram              Scratch <nng.Tensor 'add_1' shape=[1, 32] dtype=int8>
+    Input  01           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:1' shape=[1, 32] dtype=int8>
+    Output 00           FeatureMap                 Sram              Scratch <nng.Tensor 'StatefulPartitionedCall:0' shape=[1, 32] dtype=int8>
 
 
 ################################################################################
 Tensor Allocation for mem_area Sram, of mem_type_set (Scratch, Scratch_fast), using allocator HillClimb, in Cpu and Npu subgraph:
 Start Time -   End Time: Start Addr -   End Addr: Tensor Size: Memory Usage: Purpose     : Name
-         0 -          3:        0x0 -      0x3f0:        1008:         2800: FeatureMap  : serving_default_input_2:0
-         0 -         11:      0xee0 -     0x11f0:         784:         4592: FeatureMap  : serving_default_input_1:0
-         2 -         15:      0x7e0 -      0xbd0:        1008:         5040: FeatureMap  : tfl.quantize1
-         4 -         21:        0x0 -      0x3f0:        1008:         5040: FeatureMap  : StatefulPartitionedCall:11
-         4 -         21:        0x0 -      0x3f0:        1008:         5040: FeatureMap  : model/lif_layer/Relu;model/lif_layer/sub
-         8 -         25:      0x3f0 -      0x7e0:        1008:         5040: FeatureMap  : StatefulPartitionedCall:1_cpu
-        10 -         13:      0xbd0 -      0xee0:         784:         4816: FeatureMap  : tfl.quantize
-        12 -         17:      0xfc0 -     0x13b0:        1008:         5040: FeatureMap  : model/lif_layer/MatMul2
-        14 -         23:      0xbd0 -      0xfc0:        1008:         5040: FeatureMap  : StatefulPartitionedCall:01
-        14 -         23:      0xbd0 -      0xfc0:        1008:         5040: FeatureMap  : model/lif_layer/add
-        14 -         23:      0xbd0 -      0xfc0:        1008:         5040: FeatureMap  : model/lif_layer/add_1
-        14 -         23:      0xbd0 -      0xfc0:        1008:         5040: FeatureMap  : model/lif_layer/mul
-        22 -         25:        0x0 -      0x3f0:        1008:         3024: FeatureMap  : StatefulPartitionedCall:0_cpu
-Allocation Peak Tensor Size:       5040 (    0x13b0) Bytes     4.92 KiB
-Allocation Peak Memory Usage:      5040 (    0x13b0) Bytes     4.92 KiB
+         0 -          3:        0x0 -       0x10:          16:           80: FeatureMap  : serving_default_x:0
+         0 -          5:       0x20 -       0x40:          32:           80: FeatureMap  : serving_default_mem:0
+         0 -          5:       0x40 -       0x60:          32:           80: FeatureMap  : serving_default_decay:0
+         2 -          7:       0x60 -       0x80:          32:          112: FeatureMap  : MatMul2
+         4 -         15:        0x0 -       0x20:          32:          128: FeatureMap  : Mul
+         4 -         15:        0x0 -       0x20:          32:          128: FeatureMap  : add
+         4 -         15:        0x0 -       0x20:          32:          128: FeatureMap  : add_1
+        10 -         13:       0x40 -       0x60:          32:           64: FeatureMap  : Relu;sub
+        12 -         17:       0x20 -       0x40:          32:           96: FeatureMap  : StatefulPartitionedCall:1_cpu
+        14 -         17:       0x40 -       0x60:          32:           96: FeatureMap  : StatefulPartitionedCall:0_cpu
+Allocation Peak Tensor Size:        128 (      0x80) Bytes     0.12 KiB
+Allocation Peak Memory Usage:       128 (      0x80) Bytes     0.12 KiB
 Allocation Overhead:                  0 Bytes (0.00 %)
 
 ################################################################################
 Tensor Allocation for mem_area OffChipFlash, of mem_type_set (Permanent_NPU), using allocator LinearAlloc, in Npu subgraph:
 Start Time -   End Time: Start Addr -   End Addr: Tensor Size: Memory Usage: Purpose     : Name
-         0 -          1:        0x0 -       0x10:          16:        33824: FeatureMap  : model/lif_layer/mul_1/y_npu
-         0 -          1:     0x2770 -     0x2780:          16:        33824: FeatureMap  : model/lif_layer/mul/x_npu
-         0 -          1:     0x2780 -     0x2b70:        1008:        33824: FeatureMap  : model/lif_layer/add_1/ReadVariableOp_npu
-         0 -          1:       0x10 -     0x2770:       10080:        33824: FeatureMap  : model/lif_layer/MatMul2_bias_0_npu
-         0 -          1:     0x2b70 -     0x8420:       22704:        33824: Weights     : model/lif_layer/MatMul1_reshape_npu_npu_encoded_weights
-Allocation Peak Tensor Size:      33824 (    0x8420) Bytes    33.03 KiB
-Allocation Peak Memory Usage:     33824 (    0x8420) Bytes    33.03 KiB
+         0 -          1:      0x160 -      0x170:          16:          832: FeatureMap  : Const_npu
+         0 -          1:      0x140 -      0x160:          32:          832: FeatureMap  : add_1/ReadVariableOp_npu
+         0 -          1:        0x0 -      0x140:         320:          832: FeatureMap  : MatMul2_bias_0_npu
+         0 -          1:      0x170 -      0x340:         464:          832: Weights     : MatMul1_reshape_npu_npu_encoded_weights
+Allocation Peak Tensor Size:        832 (     0x340) Bytes     0.81 KiB
+Allocation Peak Memory Usage:       832 (     0x340) Bytes     0.81 KiB
 Allocation Overhead:                  0 Bytes (0.00 %)
 print_high_level_command_stream() main_split_1
-  0 <NpuStripe: name=tfl.quantize1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  1 <NpuStripe: name=model/lif_layer/Relu;model/lif_layer/sub, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  2 <NpuStripe: name=StatefulPartitionedCall:11, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  3 <NpuStripe: name=StatefulPartitionedCall:1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  4 <NpuStripe: name=tfl.quantize, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  5 <NpuStripe: name=model/lif_layer/MatMul2, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, block_config=[2, 2, 32, 128]>
-  6 <NpuStripe: name=model/lif_layer/mul, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  7 <NpuStripe: name=model/lif_layer/add, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  8 <NpuStripe: name=model/lif_layer/add_1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-  9 <NpuStripe: name=StatefulPartitionedCall:01, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
- 10 <NpuStripe: name=StatefulPartitionedCall:0, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
+  0 <NpuStripe: name=MatMul2, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 16]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, block_config=[2, 2, 16, 32]>
+  1 <NpuStripe: name=Mul, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+  2 <NpuStripe: name=add, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+  3 <NpuStripe: name=add_1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+  4 <NpuStripe: name=Relu;sub, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+  5 <NpuStripe: name=StatefulPartitionedCall:1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+  6 <NpuStripe: name=StatefulPartitionedCall:0, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
 Register-Level Command Stream: Input
-0 AVERAGE Pooling name=tfl.quantize1: <NpuStripe: name=tfl.quantize1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHWC, UINT8, size=1008, scale: 0.00392153300344944, zero: 0
-         Stride y/x/c: 1008/1008/1, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=serving_default_input_2:0_npu
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x7e0', '0x0', '0x0', '0x0']
-         name=tfl.quantize1
+0 FullyConnected Conv2D name=MatMul2: <NpuStripe: name=MatMul2, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 16]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, block_config=[2, 2, 16, 32]>
+      IFM: h=1,w=1,c=16, region=1, NHWC, INT8, size=16, scale: 0.007822568528354168, zero: -1
+         Stride y/x/c: 16/16/1, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=serving_default_x:0_npu
+      OFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.036662280559539795, zero: 10
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x60', '0x0', '0x0', '0x0']
+         name=MatMul2
       Kernel: w=1, h=1, stride=(1, 1), dilation=(1, 1)
       NpuPadding(top=0, left=0, bottom=0, right=0)
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-1 SUB ElementWise name=model/lif_layer/Relu;model/lif_layer/sub: <NpuStripe: name=model/lif_layer/Relu;model/lif_layer/sub, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x7e0', '0x0', '0x0', '0x0']
-         name=tfl.quantize1
-      IFM2: Scalar=1.0000000591389835 (quantized: 127), NpuQuantization(scale_f32=0.003921569, zero_point=-128)
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.0039214263670146465, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/Relu;model/lif_layer/sub
-      Activation: NONE_OR_RELU, min=0.0, max=None
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-2 SUB ElementWise name=StatefulPartitionedCall:11: <NpuStripe: name=StatefulPartitionedCall:11, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.0039214263670146465, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/Relu;model/lif_layer/sub
-      IFM2: Scalar=1.0000000591389835 (quantized: 127), NpuQuantization(scale_f32=0.003921569, zero_point=-128)
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:11
-      Activation: NONE_OR_RELU, min=0.0, max=None
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-3 AVERAGE Pooling name=StatefulPartitionedCall:1: <NpuStripe: name=StatefulPartitionedCall:1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:11
-      OFM: h=1,w=1,c=1008, region=1, NHWC, UINT8, size=1008, scale: 0.00392153300344944, zero: 0
-         Stride y/x/c: 1008/1008/1, tiles: w0=1, h0=1, h1=1, base=['0x3f0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:1_cpu
-      Kernel: w=1, h=1, stride=(1, 1), dilation=(1, 1)
-      NpuPadding(top=0, left=0, bottom=0, right=0)
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-4 AVERAGE Pooling name=tfl.quantize: <NpuStripe: name=tfl.quantize, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=784, region=1, NHWC, UINT8, size=784, scale: 1.0, zero: 0
-         Stride y/x/c: 784/784/1, tiles: w0=1, h0=1, h1=1, base=['0xee0', '0x0', '0x0', '0x0']
-         name=serving_default_input_1:0_npu
-      OFM: h=1,w=1,c=784, region=1, NHCWB16, INT8, size=784, scale: 1.0, zero: -128
-         Stride y/x/c: 784/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=tfl.quantize
-      Kernel: w=1, h=1, stride=(1, 1), dilation=(1, 1)
-      NpuPadding(top=0, left=0, bottom=0, right=0)
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-5 FullyConnected Conv2D name=model/lif_layer/MatMul2: <NpuStripe: name=model/lif_layer/MatMul2, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 784]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, block_config=[2, 2, 32, 128]>
-      IFM: h=1,w=1,c=784, region=1, NHCWB16, INT8, size=784, scale: 1.0, zero: -128
-         Stride y/x/c: 784/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=tfl.quantize
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 7.84313680668447e-09, zero: 0
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xfc0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/MatMul2
-      Kernel: w=1, h=1, stride=(1, 1), dilation=(1, 1)
-      NpuPadding(top=0, left=0, bottom=0, right=0)
-      Weights: (region=0, address=0x52d0, length=12624)
-      Scales: (region=0, address=0x2b70, length=10080)
+      Weights: (region=0, address=0x2b0, length=144)
+      Scales: (region=0, address=0x170, length=320)
       NpuBlockTraversal.DEPTH_FIRST
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL
-6 MUL ElementWise name=model/lif_layer/mul: <NpuStripe: name=model/lif_layer/mul, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x7e0', '0x0', '0x0', '0x0']
-         name=tfl.quantize1
-      IFM2: Scalar=0.899999993853271 (quantized: 127), NpuQuantization(scale_f32=0.0035294117, zero_point=-128)
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/mul
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-7 ADD ElementWise name=model/lif_layer/add: <NpuStripe: name=model/lif_layer/add, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/mul
-      IFM2: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 7.84313680668447e-09, zero: 0
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xfc0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/MatMul2
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/add
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-8 ADD ElementWise name=model/lif_layer/add_1: <NpuStripe: name=model/lif_layer/add_1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/add
-      IFM2: h=1,w=1,c=1008, region=0, NHWC, INT8, size=1008, scale: 3.921568403342235e-09, zero: 0
-         Stride y/x/c: 1008/1008/1, tiles: w0=1, h0=1, h1=1, base=['0x2780', '0x0', '0x0', '0x0']
-         name=model/lif_layer/add_1/ReadVariableOp_npu
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/add_1
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-9 SUB ElementWise name=StatefulPartitionedCall:01: <NpuStripe: name=StatefulPartitionedCall:01, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.003529379377141595, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=model/lif_layer/add_1
-      IFM2: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.00392153300344944, zero: -128
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:11
-      OFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.0003921534516848624, zero: 127
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:01
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
-10 AVERAGE Pooling name=StatefulPartitionedCall:0: <NpuStripe: name=StatefulPartitionedCall:0, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, ifm2_box=<Box [] - []>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1008]>, weight_box=None, block_config=[2, 2, 128, 128]>
-      IFM: h=1,w=1,c=1008, region=1, NHCWB16, INT8, size=1008, scale: 0.0003921534516848624, zero: 127
-         Stride y/x/c: 1008/16/16, tiles: w0=1, h0=1, h1=1, base=['0xbd0', '0x0', '0x0', '0x0']
-         name=StatefulPartitionedCall:01
-      OFM: h=1,w=1,c=1008, region=1, NHWC, UINT8, size=1008, scale: 0.0003921534516848624, zero: 255
-         Stride y/x/c: 1008/1008/1, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL
+1 MUL ElementWise name=Mul: <NpuStripe: name=Mul, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHWC, INT8, size=32, scale: 0.007832885719835758, zero: -128
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x20', '0x0', '0x0', '0x0']
+         name=serving_default_mem:0_npu
+      IFM2: h=1,w=1,c=32, region=1, NHWC, INT8, size=32, scale: 0.003921556286513805, zero: -128
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x40', '0x0', '0x0', '0x0']
+         name=serving_default_decay:0_npu
+      OFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.0431622676551342, zero: -11
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=Mul
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+2 ADD ElementWise name=add: <NpuStripe: name=add, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.0431622676551342, zero: -11
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=Mul
+      IFM2: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.036662280559539795, zero: 10
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x60', '0x0', '0x0', '0x0']
+         name=MatMul2
+      OFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.047083836048841476, zero: -21
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=add
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+3 ADD ElementWise name=add_1: <NpuStripe: name=add_1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.047083836048841476, zero: -21
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=add
+      IFM2: h=1,w=1,c=32, region=0, NHWC, INT8, size=32, scale: 0.003921568859368563, zero: -128
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x140', '0x0', '0x0', '0x0']
+         name=add_1/ReadVariableOp_npu
+      OFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.0431622676551342, zero: -34
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=add_1
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+4 SUB ElementWise name=Relu;sub: <NpuStripe: name=Relu;sub, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.0431622676551342, zero: -34
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=add_1
+      IFM2: Scalar=1.0000000591389835 (quantized: 127), NpuQuantization(scale_f32=0.003921569, zero_point=-128)
+      OFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.01980501413345337, zero: -128
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x40', '0x0', '0x0', '0x0']
+         name=Relu;sub
+      Activation: NONE_OR_RELU, min=0.0, max=None
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+5 SUB ElementWise name=StatefulPartitionedCall:1: <NpuStripe: name=StatefulPartitionedCall:1, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 1]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.01980501413345337, zero: -128
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x40', '0x0', '0x0', '0x0']
+         name=Relu;sub
+      IFM2: Scalar=1.0000000591389835 (quantized: 127), NpuQuantization(scale_f32=0.003921569, zero_point=-128)
+      OFM: h=1,w=1,c=32, region=1, NHWC, INT8, size=32, scale: 0.003921568859368563, zero: -128
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x20', '0x0', '0x0', '0x0']
+         name=StatefulPartitionedCall:1_cpu
+      Activation: NONE_OR_RELU, min=0.0, max=None
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+6 SUB ElementWise name=StatefulPartitionedCall:0: <NpuStripe: name=StatefulPartitionedCall:0, ifm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ifm2_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, ofm_box=<Box [0, 0, 0, 0] - [1, 1, 1, 32]>, weight_box=None, block_config=[2, 2, 32, 32]>
+      IFM: h=1,w=1,c=32, region=1, NHCWB16, INT8, size=32, scale: 0.0431622676551342, zero: -34
+         Stride y/x/c: 32/16/16, tiles: w0=1, h0=1, h1=1, base=['0x0', '0x0', '0x0', '0x0']
+         name=add_1
+      IFM2: h=1,w=1,c=32, region=1, NHWC, INT8, size=32, scale: 0.003921568859368563, zero: -128
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x20', '0x0', '0x0', '0x0']
+         name=StatefulPartitionedCall:1_cpu
+      OFM: h=1,w=1,c=32, region=1, NHWC, INT8, size=32, scale: 0.039240699261426926, zero: -25
+         Stride y/x/c: 32/32/1, tiles: w0=1, h0=1, h1=1, base=['0x40', '0x0', '0x0', '0x0']
          name=StatefulPartitionedCall:0_cpu
-      Kernel: w=1, h=1, stride=(1, 1), dilation=(1, 1)
-      NpuPadding(top=0, left=0, bottom=0, right=0)
-      Block config: h=2,w=2,c=128, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
+      Block config: h=2,w=2,c=32, NpuResamplingMode.NONE, NpuRoundingMode.TFL, rescale=None
 Register-Level Command Stream: Output
   Offset: Payload Param Code - Command                        Param
 0x000000:          0001 010f - cmd0.NPU_SET_IFM_REGION            1
@@ -311,19 +529,19 @@ Register-Level Command Stream: Output
 0x000024:          0000 010b - cmd0.NPU_SET_IFM_HEIGHT0_M1        0
 0x000028:          0000 010c - cmd0.NPU_SET_IFM_HEIGHT1_M1        0
 0x00002c:          0000 010a - cmd0.NPU_SET_IFM_WIDTH0_M1         0
-0x000030:          03ef 0104 - cmd0.NPU_SET_IFM_DEPTH_M1       1007
+0x000030:          000f 0104 - cmd0.NPU_SET_IFM_DEPTH_M1         15
 0x000034: 00000001 0000 4006 - cmd1.NPU_SET_IFM_STRIDE_C          0
-0x00003c: 000003f0 0000 4005 - cmd1.NPU_SET_IFM_STRIDE_Y          0
-0x000044: 000003f0 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
-0x00004c:          0000 0109 - cmd0.NPU_SET_IFM_ZERO_POINT        0
-0x000050:          0000 0105 - cmd0.NPU_SET_IFM_PRECISION         0
+0x00003c: 00000010 0000 4005 - cmd1.NPU_SET_IFM_STRIDE_Y          0
+0x000044: 00000010 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
+0x00004c:          ffff 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65535
+0x000050:          0001 0105 - cmd0.NPU_SET_IFM_PRECISION         1
 0x000054:          0000 0107 - cmd0.NPU_SET_IFM_UPSCALE           0
 0x000058:          0000 0100 - cmd0.NPU_SET_IFM_PAD_TOP           0
 0x00005c:          0000 0101 - cmd0.NPU_SET_IFM_PAD_LEFT          0
 0x000060:          0000 0103 - cmd0.NPU_SET_IFM_PAD_BOTTOM        0
 0x000064:          0000 0102 - cmd0.NPU_SET_IFM_PAD_RIGHT         0
 0x000068:          0001 011f - cmd0.NPU_SET_OFM_REGION            1
-0x00006c: 000007e0 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
+0x00006c: 00000060 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
 0x000074: 00000000 0000 4011 - cmd1.NPU_SET_OFM_BASE1             0
 0x00007c: 00000000 0000 4012 - cmd1.NPU_SET_OFM_BASE2             0
 0x000084: 00000000 0000 4013 - cmd1.NPU_SET_OFM_BASE3             0
@@ -332,202 +550,171 @@ Register-Level Command Stream: Output
 0x000094:          0000 011a - cmd0.NPU_SET_OFM_WIDTH0_M1         0
 0x000098:          0000 0112 - cmd0.NPU_SET_OFM_HEIGHT_M1         0
 0x00009c:          0000 0111 - cmd0.NPU_SET_OFM_WIDTH_M1          0
-0x0000a0:          03ef 0113 - cmd0.NPU_SET_OFM_DEPTH_M1       1007
+0x0000a0:          001f 0113 - cmd0.NPU_SET_OFM_DEPTH_M1         31
 0x0000a4: 00000010 0000 4016 - cmd1.NPU_SET_OFM_STRIDE_C          0
-0x0000ac: 000003f0 0000 4015 - cmd1.NPU_SET_OFM_STRIDE_Y          0
+0x0000ac: 00000020 0000 4015 - cmd1.NPU_SET_OFM_STRIDE_Y          0
 0x0000b4: 00000010 0000 4014 - cmd1.NPU_SET_OFM_STRIDE_X          0
-0x0000bc:          ff80 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65408
-0x0000c0:          0141 0114 - cmd0.NPU_SET_OFM_PRECISION       321
+0x0000bc:          000a 0118 - cmd0.NPU_SET_OFM_ZERO_POINT       10
+0x0000c0:          0041 0114 - cmd0.NPU_SET_OFM_PRECISION        65
 0x0000c4:          0000 0121 - cmd0.NPU_SET_KERNEL_HEIGHT_M1      0
 0x0000c8:          0000 0120 - cmd0.NPU_SET_KERNEL_WIDTH_M1       0
 0x0000cc:          0000 0122 - cmd0.NPU_SET_KERNEL_STRIDE         0
-0x0000d0:          0000 0125 - cmd0.NPU_SET_ACTIVATION            0
-0x0000d4:          ff80 0126 - cmd0.NPU_SET_ACTIVATION_MIN    65408
-0x0000d8:          007f 0127 - cmd0.NPU_SET_ACTIVATION_MAX      127
-0x0000dc:          0001 0116 - cmd0.NPU_SET_OFM_BLK_HEIGHT_M1     1
-0x0000e0:          0001 0115 - cmd0.NPU_SET_OFM_BLK_WIDTH_M1      1
-0x0000e4:          007f 0117 - cmd0.NPU_SET_OFM_BLK_DEPTH_M1    127
-0x0000e8:          000a 010d - cmd0.NPU_SET_IFM_IB_END           10
-0x0000ec:          001e 012d - cmd0.NPU_SET_AB_START             30
-0x0000f0:          0000 0124 - cmd0.NPU_SET_ACC_FORMAT            0
-0x0000f4: 40000000 001e 4024 - cmd1.NPU_SET_OFM_SCALE            30
-0x0000fc:          0000 012f - cmd0.NPU_SET_BLOCKDEP              0
-0x000100:          0001 0005 - cmd0.NPU_OP_POOL                   1
-0x000104: 7fffb34d 000c 4025 - cmd1.NPU_SET_OPA_SCALE            12
-0x00010c: 00000000 0000 4026 - cmd1.NPU_SET_OPB_SCALE             0
-0x000114: 40009868 0031 4024 - cmd1.NPU_SET_OFM_SCALE            49
-0x00011c: 000007e0 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x000124: 00000010 0000 4006 - cmd1.NPU_SET_IFM_STRIDE_C          0
-0x00012c: 00000010 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
-0x000134:          ff80 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65408
-0x000138:          0241 0105 - cmd0.NPU_SET_IFM_PRECISION       577
-0x00013c: 00000000 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x000144:          002e 010d - cmd0.NPU_SET_IFM_IB_END           46
-0x000148:          002e 012d - cmd0.NPU_SET_AB_START             46
-0x00014c:          ff80 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT   65408
-0x000150:          0001 0185 - cmd0.NPU_SET_IFM2_PRECISION        1
-0x000154:          00c0 0180 - cmd0.NPU_SET_IFM2_BROADCAST      192
-0x000158:          007f 0181 - cmd0.NPU_SET_IFM2_SCALAR         127
-0x00015c:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
-0x000160: 7ffecf32 000c 4025 - cmd1.NPU_SET_OPA_SCALE            12
-0x000168: 4000265a 0031 4024 - cmd1.NPU_SET_OFM_SCALE            49
-0x000170: 00000000 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x000178:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
-0x00017c:          0041 0105 - cmd0.NPU_SET_IFM_PRECISION        65
-0x000180: 000003f0 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x000188: 00000001 0000 4016 - cmd1.NPU_SET_OFM_STRIDE_C          0
-0x000190: 000003f0 0000 4014 - cmd1.NPU_SET_OFM_STRIDE_X          0
-0x000198:          0000 0118 - cmd0.NPU_SET_OFM_ZERO_POINT        0
-0x00019c:          0100 0114 - cmd0.NPU_SET_OFM_PRECISION       256
-0x0001a0:          0000 0126 - cmd0.NPU_SET_ACTIVATION_MIN        0
-0x0001a4:          00ff 0127 - cmd0.NPU_SET_ACTIVATION_MAX      255
-0x0001a8:          000a 010d - cmd0.NPU_SET_IFM_IB_END           10
-0x0001ac:          001e 012d - cmd0.NPU_SET_AB_START             30
-0x0001b0: 40000000 001e 4024 - cmd1.NPU_SET_OFM_SCALE            30
-0x0001b8:          0001 0005 - cmd0.NPU_OP_POOL                   1
-0x0001bc: 00000ee0 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x0001c4:          030f 0104 - cmd0.NPU_SET_IFM_DEPTH_M1        783
-0x0001c8: 00000001 0000 4006 - cmd1.NPU_SET_IFM_STRIDE_C          0
-0x0001d0: 00000310 0000 4005 - cmd1.NPU_SET_IFM_STRIDE_Y          0
-0x0001d8: 00000310 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
-0x0001e0:          0000 0109 - cmd0.NPU_SET_IFM_ZERO_POINT        0
-0x0001e4:          0000 0105 - cmd0.NPU_SET_IFM_PRECISION         0
-0x0001e8: 00000bd0 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x0001f0:          030f 0113 - cmd0.NPU_SET_OFM_DEPTH_M1        783
-0x0001f4: 00000010 0000 4016 - cmd1.NPU_SET_OFM_STRIDE_C          0
-0x0001fc: 00000310 0000 4015 - cmd1.NPU_SET_OFM_STRIDE_Y          0
-0x000204: 00000010 0000 4014 - cmd1.NPU_SET_OFM_STRIDE_X          0
-0x00020c:          ff80 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65408
-0x000210:          0141 0114 - cmd0.NPU_SET_OFM_PRECISION       321
-0x000214:          ff80 0126 - cmd0.NPU_SET_ACTIVATION_MIN    65408
-0x000218:          007f 0127 - cmd0.NPU_SET_ACTIVATION_MAX      127
-0x00021c:          0003 012f - cmd0.NPU_SET_BLOCKDEP              3
-0x000220:          0001 0005 - cmd0.NPU_OP_POOL                   1
-0x000224: 00000bd0 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x00022c: 00000010 0000 4006 - cmd1.NPU_SET_IFM_STRIDE_C          0
-0x000234: 00000010 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
-0x00023c:          ff80 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65408
-0x000240:          0041 0105 - cmd0.NPU_SET_IFM_PRECISION        65
-0x000244: 00000fc0 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x00024c:          03ef 0113 - cmd0.NPU_SET_OFM_DEPTH_M1       1007
-0x000250: 000003f0 0000 4015 - cmd1.NPU_SET_OFM_STRIDE_Y          0
-0x000258:          0000 0118 - cmd0.NPU_SET_OFM_ZERO_POINT        0
-0x00025c:          0041 0114 - cmd0.NPU_SET_OFM_PRECISION        65
-0x000260:          0000 0128 - cmd0.NPU_SET_WEIGHT_REGION         0
-0x000264: 000052d0 0000 4020 - cmd1.NPU_SET_WEIGHT_BASE           0
-0x00026c: 00003150 0000 4021 - cmd1.NPU_SET_WEIGHT_LENGTH         0
-0x000274:          0000 0129 - cmd0.NPU_SET_SCALE_REGION          0
-0x000278: 00002b70 0000 4022 - cmd1.NPU_SET_SCALE_BASE            0
-0x000280: 00002760 0000 4023 - cmd1.NPU_SET_SCALE_LENGTH          0
-0x000288:          0000 0002 - cmd0.NPU_OP_CONV                   0
-0x00028c: 40404080 0026 4024 - cmd1.NPU_SET_OFM_SCALE            38
-0x000294: 000007e0 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x00029c:          03ef 0104 - cmd0.NPU_SET_IFM_DEPTH_M1       1007
-0x0002a0: 000003f0 0000 4005 - cmd1.NPU_SET_IFM_STRIDE_Y          0
-0x0002a8: 00000bd0 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x0002b0:          ff80 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65408
-0x0002b4:          0141 0114 - cmd0.NPU_SET_OFM_PRECISION       321
-0x0002b8:          002e 010d - cmd0.NPU_SET_IFM_IB_END           46
-0x0002bc:          002e 012d - cmd0.NPU_SET_AB_START             46
-0x0002c0:          0080 0180 - cmd0.NPU_SET_IFM2_BROADCAST      128
-0x0002c4:          0000 0006 - cmd0.NPU_OP_ELEMENTWISE            0
-0x0002c8: 4a90eae9 001e 4025 - cmd1.NPU_SET_OPA_SCALE            30
-0x0002d0: 40000000 0031 4024 - cmd1.NPU_SET_OFM_SCALE            49
-0x0002d8: 00000bd0 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
-0x0002e0:          0241 0105 - cmd0.NPU_SET_IFM_PRECISION       577
-0x0002e4:          000a 018d - cmd0.NPU_SET_IFM2_IB_START        10
-0x0002e8:          0001 018f - cmd0.NPU_SET_IFM2_REGION           1
-0x0002ec: 00000fc0 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
-0x0002f4: 00000000 0000 4081 - cmd1.NPU_SET_IFM2_BASE1            0
-0x0002fc: 00000000 0000 4082 - cmd1.NPU_SET_IFM2_BASE2            0
-0x000304: 00000000 0000 4083 - cmd1.NPU_SET_IFM2_BASE3            0
-0x00030c:          0000 018b - cmd0.NPU_SET_IFM2_HEIGHT0_M1       0
-0x000310:          0000 018c - cmd0.NPU_SET_IFM2_HEIGHT1_M1       0
-0x000314:          0000 018a - cmd0.NPU_SET_IFM2_WIDTH0_M1        0
-0x000318: 00000010 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
-0x000320: 000003f0 0000 4085 - cmd1.NPU_SET_IFM2_STRIDE_Y         0
-0x000328: 00000010 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
-0x000330:          0000 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT       0
-0x000334:          0041 0185 - cmd0.NPU_SET_IFM2_PRECISION       65
-0x000338:          0000 0180 - cmd0.NPU_SET_IFM2_BROADCAST        0
-0x00033c:          0000 012f - cmd0.NPU_SET_BLOCKDEP              0
-0x000340:          0001 0006 - cmd0.NPU_OP_ELEMENTWISE            1
-0x000344: 4a90eae9 001f 4025 - cmd1.NPU_SET_OPA_SCALE            31
-0x00034c:          0000 018f - cmd0.NPU_SET_IFM2_REGION           0
-0x000350: 00002780 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
-0x000358: 00000001 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
-0x000360: 000003f0 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
-0x000368:          0001 0185 - cmd0.NPU_SET_IFM2_PRECISION        1
-0x00036c:          0001 0006 - cmd0.NPU_OP_ELEMENTWISE            1
-0x000370: 73333281 000c 4025 - cmd1.NPU_SET_OPA_SCALE            12
-0x000378: 4ffffdfa 002e 4024 - cmd1.NPU_SET_OFM_SCALE            46
-0x000380:          0141 0105 - cmd0.NPU_SET_IFM_PRECISION       321
-0x000384:          007f 0118 - cmd0.NPU_SET_OFM_ZERO_POINT      127
-0x000388:          0001 018f - cmd0.NPU_SET_IFM2_REGION           1
-0x00038c: 00000000 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
-0x000394: 00000010 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
-0x00039c: 00000010 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
-0x0003a4:          ff80 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT   65408
-0x0003a8:          0041 0185 - cmd0.NPU_SET_IFM2_PRECISION       65
-0x0003ac:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
-0x0003b0:          007f 0109 - cmd0.NPU_SET_IFM_ZERO_POINT      127
-0x0003b4:          0041 0105 - cmd0.NPU_SET_IFM_PRECISION        65
-0x0003b8: 00000000 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
-0x0003c0: 00000001 0000 4016 - cmd1.NPU_SET_OFM_STRIDE_C          0
-0x0003c8: 000003f0 0000 4014 - cmd1.NPU_SET_OFM_STRIDE_X          0
-0x0003d0:          00ff 0118 - cmd0.NPU_SET_OFM_ZERO_POINT      255
-0x0003d4:          0100 0114 - cmd0.NPU_SET_OFM_PRECISION       256
-0x0003d8:          0000 0126 - cmd0.NPU_SET_ACTIVATION_MIN        0
-0x0003dc:          00ff 0127 - cmd0.NPU_SET_ACTIVATION_MAX      255
-0x0003e0:          000a 010d - cmd0.NPU_SET_IFM_IB_END           10
-0x0003e4:          001e 012d - cmd0.NPU_SET_AB_START             30
-0x0003e8: 40000000 001e 4024 - cmd1.NPU_SET_OFM_SCALE            30
-0x0003f0:          0001 0005 - cmd0.NPU_OP_POOL                   1
-0x0003f4:          ffff 0000 - cmd0.NPU_OP_STOP               65535
-Number of commands = 181
-Command stream length = 1016 bytes
+0x0000d0:          0000 0128 - cmd0.NPU_SET_WEIGHT_REGION         0
+0x0000d4: 000002b0 0000 4020 - cmd1.NPU_SET_WEIGHT_BASE           0
+0x0000dc: 00000090 0000 4021 - cmd1.NPU_SET_WEIGHT_LENGTH         0
+0x0000e4:          0000 0129 - cmd0.NPU_SET_SCALE_REGION          0
+0x0000e8: 00000170 0000 4022 - cmd1.NPU_SET_SCALE_BASE            0
+0x0000f0: 00000140 0000 4023 - cmd1.NPU_SET_SCALE_LENGTH          0
+0x0000f8:          0000 0125 - cmd0.NPU_SET_ACTIVATION            0
+0x0000fc:          ff80 0126 - cmd0.NPU_SET_ACTIVATION_MIN    65408
+0x000100:          007f 0127 - cmd0.NPU_SET_ACTIVATION_MAX      127
+0x000104:          0001 0116 - cmd0.NPU_SET_OFM_BLK_HEIGHT_M1     1
+0x000108:          0001 0115 - cmd0.NPU_SET_OFM_BLK_WIDTH_M1      1
+0x00010c:          001f 0117 - cmd0.NPU_SET_OFM_BLK_DEPTH_M1     31
+0x000110:          000a 010d - cmd0.NPU_SET_IFM_IB_END           10
+0x000114:          001e 012d - cmd0.NPU_SET_AB_START             30
+0x000118:          0000 0124 - cmd0.NPU_SET_ACC_FORMAT            0
+0x00011c:          0000 012f - cmd0.NPU_SET_BLOCKDEP              0
+0x000120:          0000 0002 - cmd0.NPU_OP_CONV                   0
+0x000124: 5d478980 0029 4024 - cmd1.NPU_SET_OFM_SCALE            41
+0x00012c: 00000020 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
+0x000134:          001f 0104 - cmd0.NPU_SET_IFM_DEPTH_M1         31
+0x000138: 00000020 0000 4005 - cmd1.NPU_SET_IFM_STRIDE_Y          0
+0x000140: 00000020 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
+0x000148:          ff80 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65408
+0x00014c: 00000000 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
+0x000154:          fff5 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65525
+0x000158:          0141 0114 - cmd0.NPU_SET_OFM_PRECISION       321
+0x00015c:          002e 010d - cmd0.NPU_SET_IFM_IB_END           46
+0x000160:          002e 012d - cmd0.NPU_SET_AB_START             46
+0x000164:          000a 018d - cmd0.NPU_SET_IFM2_IB_START        10
+0x000168:          0001 018f - cmd0.NPU_SET_IFM2_REGION           1
+0x00016c: 00000040 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
+0x000174: 00000000 0000 4081 - cmd1.NPU_SET_IFM2_BASE1            0
+0x00017c: 00000000 0000 4082 - cmd1.NPU_SET_IFM2_BASE2            0
+0x000184: 00000000 0000 4083 - cmd1.NPU_SET_IFM2_BASE3            0
+0x00018c:          0000 018b - cmd0.NPU_SET_IFM2_HEIGHT0_M1       0
+0x000190:          0000 018c - cmd0.NPU_SET_IFM2_HEIGHT1_M1       0
+0x000194:          0000 018a - cmd0.NPU_SET_IFM2_WIDTH0_M1        0
+0x000198: 00000001 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
+0x0001a0: 00000020 0000 4085 - cmd1.NPU_SET_IFM2_STRIDE_Y         0
+0x0001a8: 00000020 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
+0x0001b0:          ff80 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT   65408
+0x0001b4:          0001 0185 - cmd0.NPU_SET_IFM2_PRECISION        1
+0x0001b8:          0000 0180 - cmd0.NPU_SET_IFM2_BROADCAST        0
+0x0001bc:          0003 012f - cmd0.NPU_SET_BLOCKDEP              3
+0x0001c0:          0000 0006 - cmd0.NPU_OP_ELEMENTWISE            0
+0x0001c4: 6cb9544e 000c 4025 - cmd1.NPU_SET_OPA_SCALE            12
+0x0001cc: 00000000 0000 4026 - cmd1.NPU_SET_OPB_SCALE             0
+0x0001d4: 7556c8bc 0032 4024 - cmd1.NPU_SET_OFM_SCALE            50
+0x0001dc: 00000000 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
+0x0001e4: 00000010 0000 4006 - cmd1.NPU_SET_IFM_STRIDE_C          0
+0x0001ec: 00000010 0000 4004 - cmd1.NPU_SET_IFM_STRIDE_X          0
+0x0001f4:          fff5 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65525
+0x0001f8:          0241 0105 - cmd0.NPU_SET_IFM_PRECISION       577
+0x0001fc:          ffeb 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65515
+0x000200: 00000060 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
+0x000208: 00000010 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
+0x000210: 00000010 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
+0x000218:          000a 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT      10
+0x00021c:          0041 0185 - cmd0.NPU_SET_IFM2_PRECISION       65
+0x000220:          0000 012f - cmd0.NPU_SET_BLOCKDEP              0
+0x000224:          0001 0006 - cmd0.NPU_OP_ELEMENTWISE            1
+0x000228: 5549baca 000f 4025 - cmd1.NPU_SET_OPA_SCALE            15
+0x000230: 45d09760 0031 4024 - cmd1.NPU_SET_OFM_SCALE            49
+0x000238:          ffeb 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65515
+0x00023c:          ffde 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65502
+0x000240:          0000 018f - cmd0.NPU_SET_IFM2_REGION           0
+0x000244: 00000140 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
+0x00024c: 00000001 0000 4086 - cmd1.NPU_SET_IFM2_STRIDE_C         0
+0x000254: 00000020 0000 4084 - cmd1.NPU_SET_IFM2_STRIDE_X         0
+0x00025c:          ff80 0189 - cmd0.NPU_SET_IFM2_ZERO_POINT   65408
+0x000260:          0001 0185 - cmd0.NPU_SET_IFM2_PRECISION        1
+0x000264:          0001 0006 - cmd0.NPU_OP_ELEMENTWISE            1
+0x000268: 5d0976bb 000f 4025 - cmd1.NPU_SET_OPA_SCALE            15
+0x000270: 45bd5276 0030 4024 - cmd1.NPU_SET_OFM_SCALE            48
+0x000278:          ffde 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65502
+0x00027c:          0141 0105 - cmd0.NPU_SET_IFM_PRECISION       321
+0x000280: 00000040 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
+0x000288:          ff80 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65408
+0x00028c:          00c0 0180 - cmd0.NPU_SET_IFM2_BROADCAST      192
+0x000290:          007f 0181 - cmd0.NPU_SET_IFM2_SCALAR         127
+0x000294:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
+0x000298: 65616bd3 000e 4025 - cmd1.NPU_SET_OPA_SCALE            14
+0x0002a0: 50cdf0a0 002f 4024 - cmd1.NPU_SET_OFM_SCALE            47
+0x0002a8: 00000040 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
+0x0002b0:          ff80 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65408
+0x0002b4: 00000020 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
+0x0002bc: 00000001 0000 4016 - cmd1.NPU_SET_OFM_STRIDE_C          0
+0x0002c4: 00000020 0000 4014 - cmd1.NPU_SET_OFM_STRIDE_X          0
+0x0002cc:          0101 0114 - cmd0.NPU_SET_OFM_PRECISION       257
+0x0002d0:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
+0x0002d4: 5d0976bb 000f 4025 - cmd1.NPU_SET_OPA_SCALE            15
+0x0002dc: 46655b05 0031 4024 - cmd1.NPU_SET_OFM_SCALE            49
+0x0002e4: 00000000 0000 4000 - cmd1.NPU_SET_IFM_BASE0             0
+0x0002ec:          ffde 0109 - cmd0.NPU_SET_IFM_ZERO_POINT    65502
+0x0002f0:          0241 0105 - cmd0.NPU_SET_IFM_PRECISION       577
+0x0002f4: 00000040 0000 4010 - cmd1.NPU_SET_OFM_BASE0             0
+0x0002fc:          ffe7 0118 - cmd0.NPU_SET_OFM_ZERO_POINT    65511
+0x000300:          0001 018f - cmd0.NPU_SET_IFM2_REGION           1
+0x000304: 00000020 0000 4080 - cmd1.NPU_SET_IFM2_BASE0            0
+0x00030c:          0000 0180 - cmd0.NPU_SET_IFM2_BROADCAST        0
+0x000310:          0002 0006 - cmd0.NPU_OP_ELEMENTWISE            2
+0x000314:          ffff 0000 - cmd0.NPU_OP_STOP               65535
+Number of commands = 140
+Command stream length = 792 bytes
 
 ################################################################################
 Tensor Allocation for mem_area OffChipFlash, of mem_type_set (Permanent_CPU), using allocator LinearAlloc, in Cpu subgraph:
 Start Time -   End Time: Start Addr -   End Addr: Tensor Size: Memory Usage: Purpose     : Name
-         0 -          3:        0x0 -      0x420:        1056:        34880: FeatureMap  : main_split_1_command_stream
-         0 -          3:      0x420 -     0x8840:       33824:        34880: FeatureMap  : main_split_1_flash
-Allocation Peak Tensor Size:      34880 (    0x8840) Bytes    34.06 KiB
-Allocation Peak Memory Usage:     34880 (    0x8840) Bytes    34.06 KiB
+         0 -          3:        0x0 -      0x340:         832:         1664: FeatureMap  : main_split_1_command_stream
+         0 -          3:      0x340 -      0x680:         832:         1664: FeatureMap  : main_split_1_flash
+Allocation Peak Tensor Size:       1664 (     0x680) Bytes     1.62 KiB
+Allocation Peak Memory Usage:      1664 (     0x680) Bytes     1.62 KiB
 Allocation Overhead:                  0 Bytes (0.00 %)
 
 Network summary for tflite_model
 Accelerator configuration               Ethos_U55_256
-System configuration             Ethos_U55_High_End_Embedded
-Memory mode                               Shared_Sram
+System configuration                 internal-default
+Memory mode                          internal-default
 Accelerator clock                                 500 MHz
-Design peak SRAM bandwidth                       3.73 GB/s
-Design peak Off-chip Flash bandwidth             0.47 GB/s
+Design peak SRAM bandwidth                       4.00 GB/s
+Design peak Off-chip Flash bandwidth             0.50 GB/s
 
-Total SRAM used                                  4.92 KiB
-Total Off-chip Flash used                       34.06 KiB
+Total SRAM used                                  0.12 KiB
+Total Off-chip Flash used                        1.62 KiB
 
 CPU operators = 0 (0.0%)
-NPU operators = 11 (100.0%)
+NPU operators = 7 (100.0%)
 
-Average SRAM bandwidth                           0.12 GB/s
-Input   SRAM bandwidth                           0.02 MB/batch
+Average SRAM bandwidth                           0.38 GB/s
+Input   SRAM bandwidth                           0.00 MB/batch
 Weight  SRAM bandwidth                           0.00 MB/batch
-Output  SRAM bandwidth                           0.01 MB/batch
-Total   SRAM bandwidth                           0.03 MB/batch
-Total   SRAM bandwidth            per input      0.03 MB/inference (batch size 1)
+Output  SRAM bandwidth                           0.00 MB/batch
+Total   SRAM bandwidth                           0.00 MB/batch
+Total   SRAM bandwidth            per input      0.00 MB/inference (batch size 1)
 
-Average Off-chip Flash bandwidth                 0.10 GB/s
+Average Off-chip Flash bandwidth                 0.35 GB/s
 Input   Off-chip Flash bandwidth                 0.00 MB/batch
-Weight  Off-chip Flash bandwidth                 0.01 MB/batch
+Weight  Off-chip Flash bandwidth                 0.00 MB/batch
 Output  Off-chip Flash bandwidth                 0.00 MB/batch
-Total   Off-chip Flash bandwidth                 0.02 MB/batch
-Total   Off-chip Flash bandwidth  per input      0.02 MB/inference (batch size 1)
+Total   Off-chip Flash bandwidth                 0.00 MB/batch
+Total   Off-chip Flash bandwidth  per input      0.00 MB/inference (batch size 1)
 
-Original Weights Size                          771.75 KiB
-NPU Encoded Weights Size                        12.33 KiB
+Original Weights Size                            0.50 KiB
+NPU Encoded Weights Size                         0.45 KiB
 
-Neural network macs                            794080 MACs/batch
+Neural network macs                               512 MACs/batch
+Network Tops/s                                   0.00 Tops/s
+
+NPU cycles                                        340 cycles/batch
+SRAM Access cycles                                 76 cycles/batch
+DRAM Access cycles                                  0 cycles/batch
+On-chip Flash Access cycles                         0 cycles/batch
+Off-chip Flash Access cycles                      592 cycles/batch
+Total cycles                                      700 cycles/batch
+
+Batch Inference time                 0.00 ms, 714285.71 inferences/s (batch size 1)
 
 Illustrate Vela Compiled Model in Netron? (y/n)
 ++ Converting tflite_model_vela.tflite to    tflite_model_vela.tflite.cc
