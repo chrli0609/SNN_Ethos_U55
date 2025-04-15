@@ -113,3 +113,7 @@ solution:
     #- project: ./fixed_point_mlp/fixed_point_mlp.cproject.yml
     #  for-context:
     #    - +Alif-E7-M55-HP
+
+    #- project: ./float_int16/float_int16.cproject.yml
+    #  for-context:
+    #  - +Alif-E7-M55-HP

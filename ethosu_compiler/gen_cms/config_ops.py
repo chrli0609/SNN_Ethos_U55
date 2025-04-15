@@ -96,7 +96,7 @@ def gen_weights_and_biases(
         bias_bytearr_list.append(npu_encode_bias(
             bias=np.int64(0),
             scale=scale,
-            shift=shift,
+            shift=shift+1,
         ))
 
 
@@ -140,6 +140,38 @@ def zero_point_quant(max_val, min_val):
     #print("scale", scale, "zero_point", zero_point)
 
     return scale, zero_point
+
+
+
+
+
+def symmetric_zero_point_quant_int16(max_val, min_val):
+    zero_point = 0
+
+    scale = (max_val - min_val) / 255
+
+    return scale, zero_point
+
+
+
+def zero_point_quant_int16(max_val, min_val):
+    #print("max_val", max_val, "min_val", min_val)
+    scale = (max_val - min_val) / (32767 - (-32768))
+    zero_point = -round(min_val / scale)
+    print("This part is not working")
+    exit()
+
+
+    #print("scale", scale, "zero_point", zero_point)
+
+    return scale, zero_point
+
+
+
+
+
+
+
 
 
 import numpy as np

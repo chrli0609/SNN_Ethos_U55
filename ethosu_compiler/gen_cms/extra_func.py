@@ -34,7 +34,7 @@ def get_includes_str():
     return "#include <stddef.h>\n#include <stdint.h>\n\n\n\n\n"
 
 def get_tensor_arena_size_str(basename):
-    from define_op import TENSOR_ARENA_SIZE, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE
+    from mem_u_int8 import TENSOR_ARENA_SIZE, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE
 
     ret_str = "#define " + basename.upper() + "_TENSOR_ARENA_SIZE " + str(TENSOR_ARENA_SIZE) + "\n"
     ret_str += "#define " + basename.upper() + "_INPUT_LAYER_SIZE " + str(INPUT_LAYER_SIZE) + "\n"

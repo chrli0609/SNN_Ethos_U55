@@ -1,8 +1,8 @@
 build:
   generated-by: csolution version 2.6.0
   solution: ../mlek.csolution.yml
-  project: simple_code_test.cproject.yml
-  context: simple_code_test.debug+Alif-E7-M55-HP
+  project: float_int16.cproject.yml
+  context: float_int16.debug+Alif-E7-M55-HP
   compiler: GCC
   device: AE722F80F55D5LS:M55_HP
   device-pack: AlifSemiconductor::Ensemble@1.3.0
@@ -165,13 +165,13 @@ build:
     - ${CMSIS_PACK_ROOT}/tensorflow/tensorflow-lite-micro/1.22.8/tensorflow/lite/schema
   output-dirs:
     intdir: ../tmp
-    outdir: ../out/simple_code_test/Alif-E7-M55-HP/debug
+    outdir: ../out/float_int16/Alif-E7-M55-HP/debug
     rtedir: RTE
   output:
     - type: bin
-      file: simple_code_test.bin
+      file: float_int16.bin
     - type: elf
-      file: simple_code_test.elf
+      file: float_int16.elf
   components:
     - component: ARM::CMSIS:CORE@5.6.0
       condition: ARMv6_7_8-M Device
@@ -1409,12 +1409,12 @@ build:
           category: header
           attr: template
           version: 1.3.0
-          select: MT9M114 Camera Sensor FreeRTOS Demo
+          select: ARX3A0 Camera Sensor FreeRTOS Demo
         - file: ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Boards/DevKit-e7/Templates/bayer2rgb/bayer2rgb.c
           category: source
           attr: template
           version: 1.3.0
-          select: ARX3A0 Camera Sensor FreeRTOS Demo
+          select: MT9M114 Camera Sensor FreeRTOS Demo
         - file: ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Boards/DevKit-e7/Templates/lwip/httpd/fs.c
           category: source
           attr: template
@@ -2040,10 +2040,6 @@ build:
         - file: src/nn_ops.c
           category: sourceC
         - file: src/extra_funcs.c
-          category: sourceC
-        - file: nn_ops/matmul.c
-          category: sourceC
-        - file: nn_ops/elementwise_mul.c
           category: sourceC
         - file: nn_ops/my_mem_u.c
           category: sourceC

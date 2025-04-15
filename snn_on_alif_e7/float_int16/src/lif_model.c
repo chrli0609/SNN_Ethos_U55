@@ -7,12 +7,10 @@
 
 
 #include "include/lif_model.h"
-#include "include/matmul.h"
 #include "include/nn_ops.h"
 #include "include/extra_funcs.h"
 
 
-//#include "nn_ops/membrane_update_python.h"
 #include "include/my_mem_u.h"
 
 
@@ -29,7 +27,7 @@ typedef struct {
 } tuple;
 
 typedef struct {
-    int8_t** tensor_ptrs;   // Array of int8_t pointers
+    int16_t** tensor_ptrs;   // Array of int8_t pointers
     size_t* tensor_sizes;   // Array of tensor sizes
     tuple* quant_params;    // Array of quantization parameter tuples
     char** tensor_names;    // Array of tensor names
@@ -44,7 +42,7 @@ NNLayer* NNLayer_Init(size_t num_tensors) {
     }
     
     // Allocate memory for tensor pointers array
-    layer->tensor_ptrs = (int8_t**)malloc(num_tensors * sizeof(int8_t*));
+    layer->tensor_ptrs = (int16_t**)malloc(num_tensors * sizeof(int16_t*));
     if (!layer->tensor_ptrs) {
         free(layer);
         return NULL;
@@ -92,7 +90,7 @@ NNLayer* NNLayer_Init(size_t num_tensors) {
 }
 
 // Assign a tensor to a specific element in the NNLayer
-int NNLayer_Assign(NNLayer* layer, size_t element, int8_t* tensor_ptr, size_t tensor_size, 
+int NNLayer_Assign(NNLayer* layer, size_t element, int16_t* tensor_ptr, size_t tensor_size, 
                    float scale, int zero_point, const char* tensor_name) {
     // Check if layer is valid
     if (!layer) {
@@ -190,7 +188,7 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
         }
         
         // Get tensor data and parameters
-        int8_t* tensor_data = layer->tensor_ptrs[tensor_idx];
+        int16_t* tensor_data = layer->tensor_ptrs[tensor_idx];
         size_t tensor_size = layer->tensor_sizes[tensor_idx];
         float scale = layer->quant_params[tensor_idx].scale;
         int zero_point = layer->quant_params[tensor_idx].zero_point;
@@ -206,7 +204,7 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
         }
         
         // Dequantize the tensor
-        dequantize_array_int8_to_float(tensor_data, dequantized, tensor_size, scale, zero_point);
+        dequantize_array_int16_to_float(tensor_data, dequantized, tensor_size, scale, zero_point);
         
         // Print tensor information and values
         printf("  Tensor %zu (%s): size=%zu, scale=%.6f, zero_point=%d\n", 
@@ -240,9 +238,9 @@ int my_mem_update(
     float* in_spk,
     float* v_mem,
     float* decay,
-    //int8_t* v_mem,
+    //int16_t* v_mem,
     //size_t v_mem_tensor_size,
-    //int8_t* decay,
+    //int16_t* decay,
     //size_t decay_tensor_size,
 
     //relative addressing
@@ -253,14 +251,14 @@ int my_mem_update(
 
 
 
-    //int8_t* v_mem_new,
+    //int16_t* v_mem_new,
     //size_t v_mem_new_tensor_size,
     float* out_spk
 ) {
 
 
         size_t tensor_arena_size = MY_MEM_U_TENSOR_ARENA_SIZE;
-        int8_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
+        int16_t tensor_arena[tensor_arena_size] __attribute__((aligned(16)));
 
 
 
@@ -271,51 +269,40 @@ int my_mem_update(
 
 
         // Manually set the relative addresses
-        int8_t* in_spk_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        int16_t* in_spk_quant = PersistentAllocator_GetAbsPointer(&allocator, 
             MY_MEM_U_IN_SPK_ADDR);
         
-        int8_t* bias_arena = PersistentAllocator_GetAbsPointer(&allocator, 
+        int16_t* bias_arena = PersistentAllocator_GetAbsPointer(&allocator, 
             MY_MEM_U_BIAS_ADDR);
 
-        int8_t* weight_arena = PersistentAllocator_GetAbsPointer(&allocator, 
+        int16_t* weight_arena = PersistentAllocator_GetAbsPointer(&allocator, 
             MY_MEM_U_WEIGHT_ADDR);
 
 
-        int8_t* in_curr_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        int16_t* in_curr_quant = PersistentAllocator_GetAbsPointer(&allocator, 
             MY_MEM_U_IN_CURR_ADDR);
 
 
-        int8_t* v_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-            MY_MEM_U_V_MEM_ADDR);
+        //int16_t* v_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //    MY_MEM_U_V_MEM_ADDR);
 
 
-        int8_t* decay_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-            MY_MEM_U_DECAY_ADDR);
+        //int16_t* decay_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //    MY_MEM_U_DECAY_ADDR);
 
 
-        int8_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-                MY_MEM_U_DECAYED_MEM_ADDR);
+        //int16_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //        MY_MEM_U_DECAYED_MEM_ADDR);
 
         //int16_t* v_mem_new_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
          //   0x40);
 
         
-        
-
-
-
-
-
-        //In_spk:   scale: 0.007822568528354168, zero: -1
-        //V_mem:    scale: 0.007832885719835758, zero: -128 
-        //Decay:    scale: 0.003921556286513805, zero: -128
-        
-
 
         // Quantize
-        quantize_array_float_to_int8(in_spk, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT);
-        quantize_array_float_to_int8(v_mem, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
-        quantize_array_float_to_int8(decay, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT);
+        quantize_array_float_to_int16(in_spk, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT);
+        //quantize_array_float_to_int8(v_mem, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
+        //quantize_array_float_to_int8(decay, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT);
 
 
 
@@ -329,12 +316,12 @@ int my_mem_update(
 
         NNLayer* nnlayer = NNLayer_Init(7);
         NNLayer_Assign(nnlayer, 0, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT, "in_spk_quant");
-        NNLayer_Assign(nnlayer, 1, bias_arena, MY_MEM_U_BIAS_LEN, MY_MEM_U_WEIGHT_SCALE, MY_MEM_U_WEIGHT_ZERO_POINT, "bias_arena");
-        NNLayer_Assign(nnlayer, 2, weight_arena, MY_MEM_U_WEIGHT_LEN, MY_MEM_U_WEIGHT_SCALE, MY_MEM_U_WEIGHT_ZERO_POINT, "weight_arena");
+        NNLayer_Assign(nnlayer, 1, bias_arena, MY_MEM_U_BIAS_LEN, 1, 0, "bias_arena");
+        NNLayer_Assign(nnlayer, 2, weight_arena, MY_MEM_U_WEIGHT_LEN, 0.003937007859349251, 0, "weight_arena");
         NNLayer_Assign(nnlayer, 3, in_curr_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT, "in_curr_quant");
-        NNLayer_Assign(nnlayer, 4, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT, "v_mem_quant");
-        NNLayer_Assign(nnlayer, 5, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT, "decay_quant");
-        NNLayer_Assign(nnlayer, 6, decayed_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT, "decayed_mem_quant");
+        //NNLayer_Assign(nnlayer, 4, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT, "v_mem_quant");
+        //NNLayer_Assign(nnlayer, 5, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT, "decay_quant");
+        //NNLayer_Assign(nnlayer, 6, decayed_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT, "decayed_mem_quant");
 
         
 
@@ -383,9 +370,9 @@ int my_mem_update(
         //float decayed_mem [MY_MEM_U_OUTPUT_LAYER_SIZE];
 
         // Dequant outputs
-        //dequantize_array_int8_to_float(v_mem_quant, v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
-        //dequantize_array_int8_to_float(in_curr_quant, in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT);
-        //dequantize_array_int8_to_float(decayed_mem_quant, decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT);
+        //dequantize_array_int16_to_float(v_mem_quant, v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
+        //dequantize_array_int16_to_float(in_curr_quant, in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT);
+        //dequantize_array_int16_to_float(decayed_mem_quant, decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT);
 
         // Print output
         //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
@@ -421,12 +408,12 @@ int my_mem_update(
 //    size_t* beta_idx,
 //
 //
-//    int8_t* in_spk,
-//    int8_t* v_mem,
+//    int16_t* in_spk,
+//    int16_t* v_mem,
 //
-//    const int8_t* weight_tensor_ptr,
+//    const int16_t* weight_tensor_ptr,
 //
-//    int8_t* out_spk
+//    int16_t* out_spk
 //) {
 //
 //
@@ -435,7 +422,7 @@ int my_mem_update(
 //    for (size_t i = 0; i < output_layer_size; i++) {
 //        decay[i] = LUT_decay[beta_idx[i]][num_time_steps_since_update];
 //    }
-//    //int8_t decay_quant = quantize_array_float_to_int8(decay, )
+//    //int16_t decay_quant = quantize_array_float_to_int8(decay, )
 //
 //
 //
