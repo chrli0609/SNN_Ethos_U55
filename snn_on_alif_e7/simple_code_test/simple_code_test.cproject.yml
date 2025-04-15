@@ -63,7 +63,7 @@ project:
   - .
   - include/
   #- ../../ethosu_compiler/command_stream/
-  - ../
+  #- ../
   - ../device/alif-ensemble-custom/src
   - ../board/
   - ../libs/board/

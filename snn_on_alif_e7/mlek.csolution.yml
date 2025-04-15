@@ -110,6 +110,6 @@ solution:
       for-context:
         - +Alif-E7-M55-HP
 
-    #- project: ./tensorflow_test/tensorflow_test.cproject.yml
+    #- project: ./fixed_point_mlp/fixed_point_mlp.cproject.yml
     #  for-context:
     #    - +Alif-E7-M55-HP

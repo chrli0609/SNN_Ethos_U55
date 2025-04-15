@@ -43,7 +43,6 @@ target_include_directories(${CONTEXT} PUBLIC
   $<$<COMPILE_LANGUAGE:C,CXX>:
     ${SOLUTION_ROOT}/simple_code_test
     ${SOLUTION_ROOT}/simple_code_test/include
-    ${SOLUTION_ROOT}/.
     ${SOLUTION_ROOT}/board
     ${SOLUTION_ROOT}/libs/board
     ${SOLUTION_ROOT}/libs/common_app_utils/logging

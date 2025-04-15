@@ -285,22 +285,23 @@ int my_mem_update(
             MY_MEM_U_IN_CURR_ADDR);
 
 
-        int8_t* v_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-            MY_MEM_U_V_MEM_ADDR);
+        //int16_t* v_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //    MY_MEM_U_V_MEM_ADDR);
 
 
-        int8_t* decay_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-            MY_MEM_U_DECAY_ADDR);
+        //int16_t* decay_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //    MY_MEM_U_DECAY_ADDR);
 
 
-        int8_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
-                MY_MEM_U_DECAYED_MEM_ADDR);
+        //int16_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+        //        MY_MEM_U_DECAYED_MEM_ADDR);
 
-        //int8_t* v_mem_new_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
+        //int16_t* v_mem_new_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
          //   0x40);
 
         
         
+
 
 
 
@@ -313,21 +314,27 @@ int my_mem_update(
 
         // Quantize
         quantize_array_float_to_int8(in_spk, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT);
-        quantize_array_float_to_int8(v_mem, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
-        quantize_array_float_to_int8(decay, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT);
+        //quantize_array_float_to_int8(v_mem, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
+        //quantize_array_float_to_int8(decay, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT);
 
 
 
+
+        // Inject my integer values here!!!
+        //for (size_t i = 0; i < MY_MEM_U_INPUT_LAYER_SIZE; i++){
+        //    in_spk_quant[i] = 1;
+        //}
+        
 
 
         NNLayer* nnlayer = NNLayer_Init(7);
         NNLayer_Assign(nnlayer, 0, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT, "in_spk_quant");
         NNLayer_Assign(nnlayer, 1, bias_arena, MY_MEM_U_BIAS_LEN, 1, 0, "bias_arena");
-        NNLayer_Assign(nnlayer, 2, weight_arena, MY_MEM_U_WEIGHT_LEN, 1, 0, "weight_arena");
+        NNLayer_Assign(nnlayer, 2, weight_arena, MY_MEM_U_WEIGHT_LEN, 0.003937007859349251, 0, "weight_arena");
         NNLayer_Assign(nnlayer, 3, in_curr_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT, "in_curr_quant");
-        NNLayer_Assign(nnlayer, 4, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT, "v_mem_quant");
-        NNLayer_Assign(nnlayer, 5, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT, "decay_quant");
-        NNLayer_Assign(nnlayer, 6, decayed_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT, "decayed_mem_quant");
+        //NNLayer_Assign(nnlayer, 4, v_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT, "v_mem_quant");
+        //NNLayer_Assign(nnlayer, 5, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT, "decay_quant");
+        //NNLayer_Assign(nnlayer, 6, decayed_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT, "decayed_mem_quant");
 
         
 
@@ -344,14 +351,13 @@ int my_mem_update(
 
 
         // Set start and end for input tensors
-        int8_t* input_tensor = in_spk_quant;    //first
 
         // Run NPU Membrane Update
         my_mem_u_npu(
             tensor_arena,
             tensor_arena_size,
-            in_spk_quant,
-            MY_MEM_U_INPUT_LAYER_SIZE,
+            //in_spk_quant,
+            //MY_MEM_U_INPUT_LAYER_SIZE,
             //v_mem_quant,
             //MEM_UPDATE_PYTHON_OUTPUT_LAYER_SIZE,
             //decay_quant,
@@ -363,31 +369,34 @@ int my_mem_update(
             Getmy_mem_uCMSPointer(),
             Getmy_mem_uCMSLen(),
             Getmy_mem_uWeightsPointer(),
-            Getmy_mem_uWeightsLen(),
+            Getmy_mem_uWeightsLen()
 
             //v_mem_out_quant,
             //MEM_UPDATE_PYTHON_OUTPUT_LAYER_SIZE,
-            in_curr_quant,
-            MY_MEM_U_OUTPUT_LAYER_SIZE
+            //in_curr_quant,
+            //MY_MEM_U_OUTPUT_LAYER_SIZE
         );
 
 
 
-        float in_curr [MY_MEM_U_OUTPUT_LAYER_SIZE];
-        float decayed_mem [MY_MEM_U_OUTPUT_LAYER_SIZE];
+        //float in_curr [MY_MEM_U_OUTPUT_LAYER_SIZE];
+        //float decayed_mem [MY_MEM_U_OUTPUT_LAYER_SIZE];
 
         // Dequant outputs
-        dequantize_array_int8_to_float(v_mem_quant, v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
-        dequantize_array_int8_to_float(in_curr_quant, in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT);
-        dequantize_array_int8_to_float(decayed_mem_quant, decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT);
+        //dequantize_array_int8_to_float(v_mem_quant, v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
+        //dequantize_array_int8_to_float(in_curr_quant, in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT);
+        //dequantize_array_int8_to_float(decayed_mem_quant, decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT);
 
         // Print output
         //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
         //PrintFloatTensor("out_spk", out_spk, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        PrintFloatTensor("in_curr", in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        PrintFloatTensor("decayed_mem", decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("in_curr", in_curr, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("decayed_mem", decayed_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
 
 
+
+        NNLayer_DequantizeAndPrint(nnlayer);
+        //NNLayer_Free(nnlayer);
 }
 
 

@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath('../'))
 
 from cms_interpreter import register_cms_2_assembly
 from extra_func import float_to_int_safe
-from extra_func import print_includes
-from extra_func import print_methods
+#from extra_func import print_includes
+#from extra_func import print_methods
 
 from get_weights import *
 
@@ -108,7 +108,7 @@ BLOCK_TRAVERSAL = NpuBlockTraversal.DEPTH_FIRST
 
 
 # Print includes
-print_includes()
+#print_includes()
 
 
 ### Generate weights and biases
@@ -343,7 +343,7 @@ print("};\n\n\n")
 
 
 # Print Methods
-print_methods("MatMul", "matmul")
+#print_methods("MatMul", "matmul")
 
 
 

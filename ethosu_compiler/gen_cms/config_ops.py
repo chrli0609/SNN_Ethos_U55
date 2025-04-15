@@ -31,9 +31,14 @@ def gen_weights_and_biases(
         op_type,
         block_traversal,
 
-        bias_list,
-        scale_list,
-        shift_list,
+        ofm_size,
+
+        #ifm_scale,
+        #ifm_zero_point,
+        #ofm_scale,
+        #ofm_zero_point,
+        weight_scale,
+        weight_zero_point,
 
         is_debug_mode=False,
 ):
@@ -47,21 +52,28 @@ def gen_weights_and_biases(
         exit()
 
 
-    num_biases = len(bias_list)
-    ofm_depth = weights_volume_ohwi.shape[0]
+    num_biases = ofm_size
+
+    #num_biases = len(bias_list)
+    #ofm_depth = weights_volume_ohwi.shape[0]
 
 
     # Make checks
-    if num_biases != ofm_depth:
-        print("Error: Incorrect Dim(Bias), expected len(bias_tensor) == len(weights_volume_ohwi.shape[0]), instead got:\n\tlen(bias_tenosr):", num_biases, "\n\tweights_tensor_ohwi.shape[0]:", ofm_depth)
-        exit()
+    #if num_biases != ofm_depth:
+    #    print("Error: Incorrect Dim(Bias), expected len(bias_tensor) == len(weights_volume_ohwi.shape[0]), instead got:\n\tlen(bias_tenosr):", num_biases, "\n\tweights_tensor_ohwi.shape[0]:", ofm_depth)
+    #    exit()
 
 
+
+
+
+    # Quantize the values
+    weights_volume_quantized = quantize_array_float_to_int8(weights_volume_ohwi, weight_scale, weight_zero_point)
 
 
     weight_bytearr = npu_encode_weights(
             accelerator=accelerator,
-            weights_volume=weights_volume_ohwi,
+            weights_volume=weights_volume_quantized,
             dilation_xy=dilation_xy,
             ifm_bitdepth=ifm_bitdepth,
             ofm_block_depth=ofm_block_depth,
@@ -72,15 +84,19 @@ def gen_weights_and_biases(
 
 
 
-
+    #print("bias_quant params: scale", ofm_scale, " zero_point", ofm_zero_point)
+    #bias_quantized = quantize_array_float_to_int8(np.array(bias_list, dtype='float32'), ofm_scale, ofm_zero_point).astype(np.int64)
     
 
     bias_bytearr_list = []
     for i in range(num_biases):
+
+        # convert floating point scale value to fixed point
+        scale, shift = float_to_fixed(weight_scale)
         bias_bytearr_list.append(npu_encode_bias(
-            bias=bias_list[i],
-            scale=scale_list[i],
-            shift=shift_list[i]
+            bias=np.int64(0),
+            scale=scale,
+            shift=shift,
         ))
 
 
@@ -95,23 +111,165 @@ def gen_weights_and_biases(
         print("//len(biases):", len(bias_byte_arr), " as hex: (" + hex(len(bias_byte_arr)) + ")\n")
         print("//len(weights):", len(weight_bytearr), " as hex: (" + hex(len(weight_bytearr)) + ")\n")
         print("//tot len:", tot_tensor_byte_len, " as hex: (" + hex(tot_tensor_byte_len) + ")\n\n")
+        #print("quantized biases:", bias_quantized)
+        print("quantized weights:\n\tweight_scale:", 
+              weight_scale, "scale_fixed_point:", scale, "shift:", shift, "converted back to float", fixed_to_float(scale, shift), 
+              "\n\tzero_point:", weight_zero_point, "\n", weights_volume_quantized
+              )
 
 
 
     return weight_bytearr, bias_byte_arr
 
 
-def zero_point_quant(max_val, min_val):
-    print("max_val", max_val, "min_val", min_val)
+def symmetric_zero_point_quant(max_val, min_val):
+    zero_point = 0
+
     scale = (max_val - min_val) / 255
-    zero_point = -round(min_val / scale) - 128
-
-
-    print("scale", scale, "zero_point", zero_point)
 
     return scale, zero_point
 
 
+
+def zero_point_quant(max_val, min_val):
+    #print("max_val", max_val, "min_val", min_val)
+    scale = (max_val - min_val) / 255
+    zero_point = -round(min_val / scale) - 128
+
+
+    #print("scale", scale, "zero_point", zero_point)
+
+    return scale, zero_point
+
+
+import numpy as np
+def quantize_array_float_to_int8(input_array, scale, zero_point):
+    """
+    Quantize an array of floats to int8 values.
+
+    Parameters:
+    - input_array: NumPy array of floats
+    - scale: quantization scale (float)
+    - zero_point: quantization zero point (int)
+
+    Returns:
+    - output_array: NumPy array of int8 values
+    """
+    input_array = np.asarray(input_array, dtype=np.float32)
+    quantized = np.round(input_array / scale).astype(np.int32) + zero_point
+    quantized = np.clip(quantized, -128, 127)
+    return quantized.astype(np.int8)
+
+
+def quantize_array_float_to_int64(input_array, scale, zero_point):
+    """
+    Quantize an array of floats to int64 values.
+
+    Parameters:
+    - input_array: NumPy array of floats
+    - scale: quantization scale (float)
+    - zero_point: quantization zero point (int)
+
+    Returns:
+    - output_array: NumPy array of int64 values
+    """
+    input_array = np.asarray(input_array, dtype=np.float32)
+    quantized = np.round(input_array / scale).astype(np.int64) + zero_point
+    return quantized
+
+
+
+def float_to_fixed(value):
+    """
+    Convert a floating-point number to fixed-point representation.
+    
+    Returns:
+        tuple: (int_part, shift) where:
+            - int_part is a 32-bit signed integer
+            - shift is a 6-bit unsigned integer (0-63)
+    
+    The original value can be recovered with: int_part * 2^(-shift)
+    """
+    import math
+    
+    # Handle special cases
+    if value == 0:
+        return 0, 0
+    
+    # Determine if value is negative
+    sign = -1 if value < 0 else 1
+    value = abs(value)
+    
+    # Find appropriate shift to maximize precision
+    # We want to use as much of the 32-bit range as possible
+    max_shift = 63  # 6-bit shift value can represent 0-63
+    max_int = 0x7FFFFFFF  # Maximum 31-bit positive value (saving 1 bit for sign)
+    
+    # Find the exponent in the binary representation
+    exponent = math.floor(math.log2(value)) if value != 0 else 0
+    
+    # Calculate initial shift and int_part
+    shift = 0
+    int_part = 0
+    
+    if exponent >= 31:
+        # Value is too large, use maximum precision
+        shift = 0
+        int_part = sign * max_int
+    elif exponent < -max_shift:
+        # Value is too small, use minimum non-zero representation
+        shift = max_shift
+        int_part = sign * 1
+    else:
+        # Normal case: maximize precision
+        shift = max(0, -exponent + 30)
+        shift = min(shift, max_shift)  # Ensure shift is within 6-bit range
+        
+        # Calculate the integer part with the calculated shift
+        scaled_value = value * (2 ** shift)
+        
+        # Round to nearest integer
+        int_part = int(scaled_value + 0.5) if sign > 0 else int(scaled_value - 0.5)
+        
+        # Ensure int_part fits in 32-bit signed int
+        if abs(int_part) > max_int:
+            if shift > 0:
+                # Try to adjust shift to make int_part fit
+                shift -= 1
+                scaled_value = value * (2 ** shift)
+                int_part = int(scaled_value + 0.5) if sign > 0 else int(scaled_value - 0.5)
+                
+                # If still too large, cap at max value
+                if abs(int_part) > max_int:
+                    int_part = sign * max_int
+            else:
+                # Can't reduce shift further, cap at max value
+                int_part = sign * max_int
+    
+    # Apply sign to int_part
+    int_part = sign * abs(int_part)
+    
+    # Ensure int_part fits in 32 bits (-2^31 to 2^31-1)
+    int_part = max(min(int_part, 0x7FFFFFFF), -0x80000000)
+    
+    # Ensure shift fits in 6 bits (0-63)
+    shift = max(min(shift, 63), 0)
+    
+    return int_part, shift
+
+
+def fixed_to_float(int_part, shift):
+    """
+    Convert a fixed-point representation back to a floating-point number.
+    
+    Args:
+        int_part: 32-bit signed integer
+        shift: 6-bit unsigned integer (0-63)
+    
+    Returns:
+        float: The original floating-point value
+    """
+    return int_part * (2 ** (-shift))
 
 
 def create_feature_map(height: int, width: int, depth: int, 
@@ -122,8 +280,10 @@ def create_feature_map(height: int, width: int, depth: int,
                       #zero_point: Optional[int] = None,
                       fm_elem_size: int,
                       fm_addr,
-                      max_fm_value,
-                      min_fm_value,
+                      #max_fm_value,
+                      #min_fm_value,
+                      scale,
+                      zero_point,
                       name: Optional[str] = None) -> NpuFeatureMap:
     """
     Create an NpuFeatureMap with the given parameters.
@@ -138,7 +298,7 @@ def create_feature_map(height: int, width: int, depth: int,
     if data_type is not None:
         fm.data_type = data_type
     
-    scale, zero_point = zero_point_quant(max_fm_value, min_fm_value)
+    #scale, zero_point = zero_point_quant(max_fm_value, min_fm_value)
     if scale is not None and zero_point is not None:
         fm.quantization = NpuQuantization(scale_f32=scale, zero_point=zero_point)
     

@@ -77,35 +77,18 @@ def get_addr_macros(addr_dict):
     
 
 
-def get_quant_vars(npu_op_list, basename):
+def get_quant_vars(quant_params_dict):
 
     
     
     ret_str = "//Quantization Params\n"
     # Skip first because first op is DMA
-    for i in range(1, len(npu_op_list)):
-        npu_op = npu_op_list[i]
-        ret_str += "#define " + basename.upper() + "_" + npu_op.ifm.name.upper() + "_SCALE "
-        ret_str += str(npu_op.ifm.quantization.scale_f32) + "\n"
-
-        ret_str += "#define " + basename.upper() + "_" + npu_op.ifm.name.upper() + "_ZERO_POINT "
-        ret_str += str(npu_op.ifm.quantization.zero_point) + "\n"
-
-        if npu_op.ifm2:
-            ret_str += "#define " + basename.upper() + "_" + npu_op.ifm2.name.upper() + "_SCALE "
-            ret_str += str(npu_op.ifm2.quantization.scale_f32) + "\n"
-
-            ret_str += "#define " + basename.upper() + "_" + npu_op.ifm2.name.upper() + "_ZERO_POINT "
-            ret_str += str(npu_op.ifm2.quantization.zero_point) + "\n"
-        
-        ret_str += "#define " + basename.upper() + "_" + npu_op.ofm.name.upper() + "_SCALE "
-        ret_str += str(npu_op.ofm.quantization.scale_f32) + "\n"
-
-        ret_str += "#define " + basename.upper() + "_" + npu_op.ofm.name.upper() + "_ZERO_POINT "
-        ret_str += str(npu_op.ofm.quantization.zero_point) + "\n"
-
+    for key, value in quant_params_dict.items():
+        ret_str += "#define "
+        ret_str += key + " " + str(value) + "\n"
     
-    return ret_str
+    
+    return ret_str + "\n"
 
 
 
@@ -121,13 +104,15 @@ def format_bytearr_for_printout(byte_arr):
 
 
 
-def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_payload_byte_array, register_cms, base_name, addr_dict, weight_byte_arr=None, bias_byte_arr=None):
+def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_payload_byte_array, register_cms, base_name, addr_dict, quant_params_dict, weight_byte_arr=None, bias_byte_arr=None):
     
     formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
     
     if weight_byte_arr:
         formatted_biases = format_bytearr_for_printout(bias_byte_arr)
         formatted_weights = format_bytearr_for_printout(weight_byte_arr)
+        print(bias_byte_arr)
+        print(weight_byte_arr)
         
 
     with open(header_filepath, 'w') as f:
@@ -138,7 +123,7 @@ def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_pa
         f.write(get_tensor_arena_size_str(base_name))
 
         f.write(get_addr_macros(addr_dict))
-        f.write(get_quant_vars(npu_op_list, base_name))
+        f.write(get_quant_vars(quant_params_dict))
 
         f.write(get_cms_methods_declare_str(base_name))
         f.write(get_weight_methods_declare_str(base_name))
@@ -192,3 +177,20 @@ def gen_cms(npu_op_list, accelerator, debug_mode=False):
 
 
 
+
+def check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr):
+
+    weight_addr = addr_dict[cms_name.upper()+"_WEIGHT_ADDR"]
+    bias_addr = addr_dict[cms_name.upper()+"_BIAS_ADDR"]
+    in_curr_addr = addr_dict[cms_name.upper()+"_IN_CURR_ADDR"]
+
+    if (weight_addr - bias_addr) != len(bias_byte_arr):
+        print("Incorrect bias length or bias addressing is incorrect")
+        print("\t BIAS_LEN set:", len(bias_byte_arr), "but addressing implies bias_len:", (weight_addr - bias_addr))
+        exit()
+    
+    if (in_curr_addr - weight_addr) != len(weight_byte_arr):
+        print("Incorrect weight length or weight addressing is incorrect")
+        print("\t WEIGHT_LEN set:", len(weight_byte_arr), "but addressing implies weight_len:", (in_curr_addr - weight_addr))
+        exit()
+    

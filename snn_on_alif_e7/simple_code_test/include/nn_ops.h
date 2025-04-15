@@ -48,8 +48,8 @@ int my_mem_u_npu(
     int8_t* tensor_arena,
     size_t tensor_arena_size,
 
-    int8_t* in_spk,
-    size_t in_spk_tensor_size,
+    //int8_t* in_spk,
+    //size_t in_spk_tensor_size,
     //int8_t* v_mem,
     //size_t v_mem_tensor_size,
     //int8_t* decay,
@@ -64,15 +64,15 @@ int my_mem_u_npu(
     const uint8_t* command_stream,
     size_t command_stream_size,
     const int8_t* weight_tensor,
-    size_t weight_tensor_size,
+    size_t weight_tensor_size
 
 
 
 
     //int8_t* v_mem_new,
     //size_t v_mem_new_tensor_size,
-    int8_t* out_spk,
-    size_t out_spk_tensor_size
+    //int8_t* out_spk,
+    //size_t out_spk_tensor_size
 );
 
 
