@@ -31,14 +31,14 @@ def gen_weights_and_biases(
         op_type,
         block_traversal,
 
-        ofm_size,
+        bias_list,
 
-        #ifm_scale,
-        #ifm_zero_point,
-        #ofm_scale,
-        #ofm_zero_point,
+        ifm_scale,
+        ifm_zero_point,
         weight_scale,
         weight_zero_point,
+        ofm_scale,
+        ofm_zero_point,
 
         is_debug_mode=False,
 ):
@@ -52,9 +52,8 @@ def gen_weights_and_biases(
         exit()
 
 
-    num_biases = ofm_size
 
-    #num_biases = len(bias_list)
+    num_biases = len(bias_list)
     #ofm_depth = weights_volume_ohwi.shape[0]
 
 
@@ -92,11 +91,11 @@ def gen_weights_and_biases(
     for i in range(num_biases):
 
         # convert floating point scale value to fixed point
-        scale, shift = float_to_fixed(weight_scale)
+        scale, shift = float_to_fixed(ifm_scale*weight_scale/ofm_scale)
         bias_bytearr_list.append(npu_encode_bias(
-            bias=np.int64(0),
+            bias=np.int64(bias_list[i]),
             scale=scale,
-            shift=shift+1,
+            shift=shift,
         ))
 
 

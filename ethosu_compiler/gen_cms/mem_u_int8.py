@@ -20,20 +20,20 @@ CMS_NAME = "my_mem_u"
 
 
 
-#TENSOR_ARENA_SIZE = 16 + 464 + 32 
 
 
-TENSOR_ARENA_SIZE	=	640
-		
+TENSOR_ARENA_SIZE	=	640		
 		
 IN_SPK_ADDR	=	0
 BIAS_ADDR	=	16
 WEIGHT_ADDR	=	336
-IN_CURR_ADDR	=	480
+TMP1_ADDR	=	480
 V_MEM_ADDR	=	512
 DECAY_ADDR	=	544
-DECAYED_MEM_ADDR	=	576
+TMP2_ADDR	=	576
 VTH_ADDR	=	608
+
+
 
 # Tensor arena allocation
 '''
@@ -52,14 +52,15 @@ Start Address	Tensor name	Size
 
 # Set FM Quantization Params
 
-IN_SPK_MAX_VAL = 2
+IN_SPK_MAX_VAL = 1
 IN_SPK_MIN_VAL = 0
 
-WEIGHT_MAX_VAL = 1
-WEIGHT_MIN_VAL = 0
+#Must be symmetric
+WEIGHT_MAX_VAL = 127/100
+WEIGHT_MIN_VAL = -128/100
 
-IN_CURR_MAX_VAL = 3
-IN_CURR_MIN_VAL = 0
+IN_CURR_MAX_VAL = 4
+IN_CURR_MIN_VAL = -0.5
 
 V_MEM_MAX_VAL = 4
 V_MEM_MIN_VAL = 0
@@ -70,9 +71,12 @@ DECAY_MIN_VAL = 0
 DECAYED_MEM_MAX_VAL = 1
 DECAYED_MEM_MIN_VAL = 0
 
+VTH_MAX_VAL = 2
+VTH_MIN_VAL = 0.5
 
-CHECK_SPK_SUB_INNER_MAX_VAL =
-CHECK_SPK_SUB_INNER_MIN_VAL =
+
+CHECK_SPK_SUB_INNER_MAX_VAL = 3
+CHECK_SPK_SUB_INNER_MIN_VAL = 0
 
 
 
@@ -124,6 +128,99 @@ QUANT_PARAM_DICT = {
 
 
 
+
+
+'''
+def def_decay_lut():
+
+    IFM2_IS_FIRST_OPERAND = False
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=LN_BETA_ADDR,
+        scale=LN_BETA_SCALE,
+        zero_point=LN_BETA_ZERO_POINT,
+        name="ln_beta"
+    )
+
+
+    ifm2 = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=TIME_ADDR,
+        scale=TIME_SCALE,
+        zero_point=TIME_ZERO_POINT,
+        name="time"
+    )
+
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_Type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=DECAY_ADDR,
+        scale=DECAY_SCALE,
+        zero_point=DECAY_ZERO_POINT,
+        name="decay"
+    )
+
+    #DMA for LUT
+    dma_src = NpuAddressRange(region=0, address=0, length=EXP_LUT_LEN)
+    dma_dst = NpuAddressRange(region=1, address=WEIGHT_N_BIAS_ADDR, length=EXP_LUT_LEN)
+    dma_lut_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
+
+
+
+    block_config = NpuShape3D(2, 2, 32)
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.TABLE_LOOKUP,
+        min_val=None,
+        max_val=None,
+        lookup_table_index=0
+    )
+
+
+
+
+    exp_mul_lnb_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
+    
+    #elementwise operation
+    exp_mul_lnb_time_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+    exp_mul_lnb_time_op.rescale = None
+
+    #NpuBlockOperation
+    exp_mul_lnb_time_op.ifm = ifm
+    exp_mul_lnb_time_op.ifm2 = ifm2
+    exp_mul_lnb_time_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    exp_mul_lnb_time_op.ofm = ofm
+    exp_mul_lnb_time_op.kernel = None
+    exp_mul_lnb_time_op.weights = []
+    exp_mul_lnb_time_op.biases = []
+    exp_mul_lnb_time_op.padding = None
+    exp_mul_lnb_time_op.activation = activation
+    exp_mul_lnb_time_op.block_config = block_config
+    exp_mul_lnb_time_op.rounding_mode = NpuRoundingMode.TFL
+    exp_mul_lnb_time_op.fused_quantize = False
+    exp_mul_lnb_time_op.ifm_upscale = NpuResamplingMode.NONE
+    exp_mul_lnb_time_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    check_block_config_legal(block_config, exp_mul_lnb_time_op, ACCELERATOR)
+
+    return exp_mul_lnb_time_op
+'''
+
+
 def def_fullyconnected():
 
 
@@ -173,7 +270,7 @@ def def_fullyconnected():
     # Define Weights
 
 
-    weights_volume_ohwi = 0.2*np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+    weights_volume_ohwi = np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
     #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
     #print("weights_volume_ohwi", weights_volume_ohwi.shape)
     #print(weights_volume_ohwi)
@@ -189,12 +286,10 @@ def def_fullyconnected():
     #print("scale", scale)
 
     #Biases
-    #bias_list = []
-    #wnbscale_list = []
-    #for i in range(ofm.shape.depth):
+    bias_list = []
+    for i in range(ofm.shape.depth):
     #    #bias_list.append(np.int64(i%4))
-    #    bias_list.append(np.int64(0))
-    #    wnbscale_list.append(WEIGHT_SCALE)
+        bias_list.append(np.int64(0))
 
 
 
@@ -208,10 +303,15 @@ def def_fullyconnected():
                             block_traversal=block_traversal,
 
                             #ONLY FOR 1 DIM FMs!!!!
-                            ofm_size=ofm.shape.depth,
+                            bias_list=bias_list,
 
+                            ifm_scale=ifm.quantization.scale_f32,
+                            ifm_zero_point=ifm.quantization.zero_point,
                             weight_scale=WEIGHT_SCALE,
                             weight_zero_point=WEIGHT_ZERO_POINT,
+                            ofm_scale=ofm.quantization.scale_f32,
+                            ofm_zero_point=ofm.quantization.zero_point,
+
 
                             is_debug_mode=DEBUG_MODE
     )
@@ -260,6 +360,15 @@ def def_fullyconnected():
         min_val=None,
         max_val=None,
     )
+
+    #activation = create_activation(
+        #activation_op=NpuActivationOp.TABLE_LOOKUP,
+        #min_val=None,
+        #max_val=None,
+        #lookup_table_index=0
+    #)
+    
+
 
     fused_quantize = False
 
@@ -479,8 +588,8 @@ def def_add_decayed_mem_in_curr():
     return add_decayed_mem_in_curr
 
 
-
-def def_relu_sub_vth_vmem():
+'''
+def def_relu_sub_inner_vth_vmem():
     IFM2_IS_FIRST_OPERAND = False
 
     ifm = create_feature_map(
@@ -534,7 +643,7 @@ def def_relu_sub_vth_vmem():
 
 
 
-    check_spk_sub_inner_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
+    check_spk_sub_inner_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
 
     #elementwise operation
     check_spk_sub_inner_op.reversed_operands = IFM2_IS_FIRST_OPERAND
@@ -562,6 +671,103 @@ def def_relu_sub_vth_vmem():
 
 
     return check_spk_sub_inner_op
+'''
+
+
+
+
+
+
+
+'''
+def def_relu_sub_outer_vth_vmem():
+    IFM2_IS_FIRST_OPERAND = False
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=VTH_ADDR,
+        scale = VTH_SCALE,
+        zero_point = VTH_ZERO_POINT,
+        name="v_th"
+    )
+
+    ifm2 = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=SPK_SUB_TMP_ADDR,
+        scale = SPK_SUB_TMP_SCALE,
+        zero_point = SPK_SUB_TMP_ZERO_POINT,
+        name="spk_sub_tmp"
+    )
+
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        #layout=NpuLayout.NHCWB16,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=CHECK_SPK_SUB_INNER_ADDR,
+        scale=CHECK_SPK_SUB_INNER_SCALE,
+        zero_point=CHECK_SPK_SUB_INNER_ZERO_POINT,
+        name="check_spk_sub_inner"
+    )
+
+    block_config = NpuShape3D(2, 2, 32)
+
+
+    # ReLu
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=0,
+        max_val=None,
+    )
+
+
+
+
+    check_spk_sub_inner_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
+
+    #elementwise operation
+    check_spk_sub_inner_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+    check_spk_sub_inner_op.rescale = None
+
+    #NpuBlockOperation
+    check_spk_sub_inner_op.ifm = ifm
+    check_spk_sub_inner_op.ifm2 = ifm2
+    check_spk_sub_inner_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    check_spk_sub_inner_op.ofm = ofm
+    check_spk_sub_inner_op.kernel = None
+    check_spk_sub_inner_op.weights = []
+    check_spk_sub_inner_op.biases = []
+    check_spk_sub_inner_op.padding = None
+    check_spk_sub_inner_op.activation = activation
+    check_spk_sub_inner_op.block_config = block_config
+    check_spk_sub_inner_op.rounding_mode = NpuRoundingMode.TFL
+    check_spk_sub_inner_op.fused_quantize = False
+    check_spk_sub_inner_op.ifm_upscale = NpuResamplingMode.NONE
+    check_spk_sub_inner_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    check_block_config_legal(block_config, check_spk_sub_inner_op, ACCELERATOR)
+
+
+
+    return check_spk_sub_inner_op
+'''
+
+
+
+
+
 
 
 
@@ -571,10 +777,10 @@ if __name__ == '__main__':
     mul_decay_op = def_mul_decay_Vmem()
     add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
     
-    check_spk_sub_inner_op = def_relu_sub_vth_vmem()
+    #check_spk_sub_inner_op = def_relu_sub_inner_vth_vmem()
 
-    npu_op_list = [dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr]
-
+    #npu_op_list = [dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr]
+    npu_op_list = [dma_op, fully_connected_op]
 
 
 

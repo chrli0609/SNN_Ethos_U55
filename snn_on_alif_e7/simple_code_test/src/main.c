@@ -100,22 +100,23 @@ int main() {
 
         printf("Test my_mem_u\n");
         float in_spk [MY_MEM_U_INPUT_LAYER_SIZE] = {
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
-            0.8,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1,
+            0.1        
+        
         };
 
         float v_mem [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
@@ -193,6 +194,36 @@ int main() {
         PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
         PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
         PrintFloatTensor("decay", decay, MY_MEM_U_OUTPUT_LAYER_SIZE);
+
+
+        //bias = 0, scale = 1, shift = 0 --> -112
+        //bias = 3, scale = 1, shift = 0 --> -109
+        //bias = 10, scale = 1, shift = 0 --> -102
+        //bias = 10, scale = 2, shift = 1 --> -102
+        //bias = 10, scale = 2**7, shift = 7 --> -102
+        //bias = 10, scale = 2, shift = 0 --> -76
+
+        // Set output scale = 1, zero_point = 0
+
+        //bias = 10, scale = 2, shift = 0 --> 52
+        //bias = 0, scale = 1, shift = 0 --> 16
+        //bias = 0, scale = 2, shift = 0 --> 32
+        //bias = 3, scale = 2, shift = 0 --> 38
+        //bias = 3, scale = 2, shift = 1 --> 19 (16 + 3)
+
+        // ( sum[(ifm - Z_x) * (w - Z_w)] + bias ) * (scale >> shift) + Z_out
+
+        // Set IFM scale = 2, zero_point = 0
+
+        // Set OFM scale = 0.005, zero_point = -128
+        //bias = 3, scale = 1, shift = 0 --> -109   (16 + 3*1 -128)
+        //bias = 3, scale = 8, shift = 3 --> -109
+        //bias = 3, scale = 8, shift = 2 --> -90    (16 + 3)*2 + (-128))
+
+        // Set OFM scale = 0.01, zero_point = 0
+
+        //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
+
 
 
 

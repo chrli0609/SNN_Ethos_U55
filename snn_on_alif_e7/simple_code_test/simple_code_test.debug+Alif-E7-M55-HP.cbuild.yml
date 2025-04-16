@@ -1224,7 +1224,7 @@ build:
           category: source
           attr: template
           version: 1.3.0
-          select: ADC External Trigger FreeRTOS Demo
+          select: ADC Potentiometer FreeRTOS Demo
         - file: ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Boards/DevKit-e7/Templates/FreeRTOS/ADC_testApp.c
           category: source
           attr: template
@@ -1409,7 +1409,7 @@ build:
           category: header
           attr: template
           version: 1.3.0
-          select: MT9M114 Camera Sensor FreeRTOS Demo
+          select: ARX3A0 Camera Sensor FreeRTOS Demo
         - file: ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Boards/DevKit-e7/Templates/bayer2rgb/bayer2rgb.c
           category: source
           attr: template
