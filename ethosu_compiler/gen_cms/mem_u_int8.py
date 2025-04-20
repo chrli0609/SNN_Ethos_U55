@@ -22,16 +22,18 @@ CMS_NAME = "my_mem_u"
 
 
 
-TENSOR_ARENA_SIZE	=	640		
+TENSOR_ARENA_SIZE	=	704
 		
 IN_SPK_ADDR	=	0
 BIAS_ADDR	=	16
 WEIGHT_ADDR	=	336
-TMP1_ADDR	=	480
-V_MEM_ADDR	=	512
-DECAY_ADDR	=	544
-TMP2_ADDR	=	576
-VTH_ADDR	=	608
+LN_BETA_ADDR	=	480
+VTH_ADDR	=	512
+V_MEM_ADDR	=	544
+TIME_NOT_UPDATED_ADDR	=	576
+TMP1_ADDR	=	608
+TMP2_ADDR	=	640
+OUT_SPK_ADDR	=	672
 
 
 
@@ -44,6 +46,7 @@ Start Address	Tensor name	Size
 480	curr (tmp)	32
 512	v_mem	32
 544	decay	32
+
 576	decayed_mem (tmp)	32
 
 '''
@@ -58,6 +61,12 @@ IN_SPK_MIN_VAL = 0
 #Must be symmetric
 WEIGHT_MAX_VAL = 127/100
 WEIGHT_MIN_VAL = -128/100
+
+LN_BETA_MAX_VAL = 0
+LN_BETA_MIN_VAL = -4
+
+TIME_NOT_UPDATED_MAX_VAL = 16
+TIME_NOT_UPDATED_MIN_VAL = 0
 
 IN_CURR_MAX_VAL = 4
 IN_CURR_MIN_VAL = -0.5
@@ -83,45 +92,82 @@ CHECK_SPK_SUB_INNER_MIN_VAL = 0
 
 ##############
 # Assign Tmp tensors here!
-IN_CURR_ADDR = TMP1_ADDR
-DECAYED_MEM_ADDR = TMP2_ADDR
-CHECK_SPK_SUB_INNER_ADDR = TMP1_ADDR
-
+DECAY_ADDR = TMP1_ADDR
+IN_CURR_ADDR = TMP2_ADDR
+DECAYED_MEM_ADDR = TMP1_ADDR
 
 ##############
 
 
 ADDR_DICT = {
+    # Input Feature map
     CMS_NAME.upper()+"_IN_SPK_ADDR" : IN_SPK_ADDR,
-    CMS_NAME.upper()+"_WEIGHT_ADDR" : WEIGHT_ADDR,
+
+    # Layer params
     CMS_NAME.upper()+"_BIAS_ADDR" : BIAS_ADDR,
-    CMS_NAME.upper()+"_IN_CURR_ADDR" : IN_CURR_ADDR,
+    CMS_NAME.upper()+"_WEIGHT_ADDR" : WEIGHT_ADDR,
+    CMS_NAME.upper()+"_LN_BETA_ADDR" : LN_BETA_ADDR,
+    CMS_NAME.upper()+"_VTH_ADDR" : VTH_ADDR,
+
+    # Layer status
     CMS_NAME.upper()+"_V_MEM_ADDR" : V_MEM_ADDR,
+    CMS_NAME.upper()+"_TIME_NOT_UPDATED_ADDR" : TIME_NOT_UPDATED_ADDR,
+
+    # TMP Feature maps
+    CMS_NAME.upper()+"_IN_CURR_ADDR" : IN_CURR_ADDR,
     CMS_NAME.upper()+"_DECAY_ADDR" : DECAY_ADDR,
     CMS_NAME.upper()+"_DECAYED_MEM_ADDR" : DECAYED_MEM_ADDR
+
+    # Output Feature Map
+
 }
 
 
 IN_SPK_SCALE, IN_SPK_ZERO_POINT = zero_point_quant(IN_SPK_MAX_VAL, IN_SPK_MIN_VAL)
-WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
-IN_CURR_SCALE, IN_CURR_ZERO_POINT = zero_point_quant(IN_CURR_MAX_VAL, IN_CURR_MIN_VAL)
+
+
+# Layer params
+LN_BETA_SCALE, LN_BETA_ZERO_POINT = zero_point_quant(LN_BETA_MAX_VAL, LN_BETA_MIN_VAL)
+VTH_SCALE, VTH_ZERO_POINT = zero_point_quant(VTH_MAX_VAL, VTH_MIN_VAL)
+
+# Layer status
 V_MEM_SCALE, V_MEM_ZERO_POINT = zero_point_quant(V_MEM_MAX_VAL, V_MEM_MIN_VAL)
+TIME_NOT_UPDATED_SCALE, TIME_NOT_UPDATED_ZERO_POINT = zero_point_quant(TIME_NOT_UPDATED_MAX_VAL, TIME_NOT_UPDATED_MIN_VAL)
+
+# TMP Feature maps
 DECAY_SCALE, DECAY_ZERO_POINT = zero_point_quant(DECAY_MAX_VAL, DECAY_MIN_VAL)
+IN_CURR_SCALE, IN_CURR_ZERO_POINT = zero_point_quant(IN_CURR_MAX_VAL, IN_CURR_MIN_VAL)
 DECAYED_MEM_SCALE, DECAYED_MEM_ZERO_POINT = zero_point_quant(DECAYED_MEM_MAX_VAL, DECAYED_MEM_MIN_VAL)
+
+WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
+BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE/IN_CURR_SCALE, 0
 
 CHECK_SPK_SUB_INNER_SCALE, CHECK_SPK_SUB_INNER_ZERO_POINT = zero_point_quant(CHECK_SPK_SUB_INNER_MAX_VAL, CHECK_SPK_SUB_INNER_MIN_VAL)
 
 QUANT_PARAM_DICT = {
     CMS_NAME.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
     CMS_NAME.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
+
+
+    CMS_NAME.upper()+"_BIAS_SCALE" : BIAS_SCALE,
+    CMS_NAME.upper()+"_BIAS_ZERO_POINT" : BIAS_ZERO_POINT,
     CMS_NAME.upper()+"_WEIGHT_SCALE" : WEIGHT_SCALE,
     CMS_NAME.upper()+"_WEIGHT_ZERO_POINT" : WEIGHT_ZERO_POINT,
-    CMS_NAME.upper()+"_IN_CURR_SCALE" : IN_CURR_SCALE,
-    CMS_NAME.upper()+"_IN_CURR_ZERO_POINT" : IN_CURR_ZERO_POINT,
+
+
+    CMS_NAME.upper()+"_LN_BETA_SCALE" : LN_BETA_SCALE,
+    CMS_NAME.upper()+"_LN_BETA_ZERO_POINT" : LN_BETA_ZERO_POINT,
+    CMS_NAME.upper()+"_VTH_SCALE" : VTH_SCALE,
+    CMS_NAME.upper()+"_VTH_ZERO_POINT" : VTH_ZERO_POINT,
     CMS_NAME.upper()+"_V_MEM_SCALE" : V_MEM_SCALE,
     CMS_NAME.upper()+"_V_MEM_ZERO_POINT" : V_MEM_ZERO_POINT,
+    CMS_NAME.upper()+"_TIME_NOT_UPDATED_SCALE" : TIME_NOT_UPDATED_SCALE,
+    CMS_NAME.upper()+"_TIME_NOT_UPDATED_ZERO_POINT" : TIME_NOT_UPDATED_ZERO_POINT,
+
     CMS_NAME.upper()+"_DECAY_SCALE" : DECAY_SCALE,
     CMS_NAME.upper()+"_DECAY_ZERO_POINT" : DECAY_ZERO_POINT,
+    CMS_NAME.upper()+"_IN_CURR_SCALE" : IN_CURR_SCALE,
+    CMS_NAME.upper()+"_IN_CURR_ZERO_POINT" : IN_CURR_ZERO_POINT,
     CMS_NAME.upper()+"_DECAYED_MEM_SCALE" : DECAYED_MEM_SCALE,
     CMS_NAME.upper()+"_DECAYED_MEM_ZERO_POINT" : DECAYED_MEM_ZERO_POINT,
 }
@@ -130,7 +176,6 @@ QUANT_PARAM_DICT = {
 
 
 
-'''
 def def_decay_lut():
 
     IFM2_IS_FIRST_OPERAND = False
@@ -154,10 +199,10 @@ def def_decay_lut():
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
-        fm_addr=TIME_ADDR,
-        scale=TIME_SCALE,
-        zero_point=TIME_ZERO_POINT,
-        name="time"
+        fm_addr=TIME_NOT_UPDATED_ADDR,
+        scale=TIME_NOT_UPDATED_SCALE,
+        zero_point=TIME_NOT_UPDATED_ZERO_POINT,
+        name="time_not_updated"
     )
 
 
@@ -165,7 +210,7 @@ def def_decay_lut():
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region=1,
         layout=NpuLayout.NHWC,
-        data_Type=NpuDataType.INT8,
+        data_type=NpuDataType.INT8,
         fm_elem_size=1,
         fm_addr=DECAY_ADDR,
         scale=DECAY_SCALE,
@@ -174,10 +219,34 @@ def def_decay_lut():
     )
 
     #DMA for LUT
-    dma_src = NpuAddressRange(region=0, address=0, length=EXP_LUT_LEN)
-    dma_dst = NpuAddressRange(region=1, address=WEIGHT_N_BIAS_ADDR, length=EXP_LUT_LEN)
-    dma_lut_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
+    decay_lut_index = 0
+    decay_lut_len = 256
 
+    if ofm.data_type == NpuDataType.INT8 or ofm.data_type == NpuDataType.UINT8:
+        lut_slot_size = 256
+    else:
+        print("Not using INT8 --> dont know how big each LUT is")
+        exit()
+
+    from ethosu.vela.architecture_features import create_default_arch
+    from ethosu.vela.architecture_features import Accelerator
+    from ethosu.vela.architecture_features import ArchitectureFeatures
+    from ethosu.vela.register_command_stream_util import BASE_PTR_INDEX_MEM2MEM
+
+    import math
+    import tensorflow as tf
+
+
+    default_arch = create_default_arch(Accelerator.from_npu_accelerator(ACCELERATOR))
+    # LUT stored at the end of the Shared Buffer
+    lut_shared_buffer_start_addr = default_arch.shram_lut_address
+
+    # LUT storage = start of LUT segment in shared buffer + which lut it is
+    decay_lut_addr = lut_shared_buffer_start_addr + decay_lut_index * lut_slot_size
+    dma_src = NpuAddressRange(region=3, address=0, length=decay_lut_len)
+    dma_dst = NpuAddressRange(region=BASE_PTR_INDEX_MEM2MEM, address=decay_lut_addr, length=decay_lut_len)
+    #dma_dst = NpuAddressRange(region=1, address=IN_SPK_ADDR, length=decay_lut_len)
+    dma_lut_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
 
 
     block_config = NpuShape3D(2, 2, 32)
@@ -186,10 +255,47 @@ def def_decay_lut():
         activation_op=NpuActivationOp.TABLE_LOOKUP,
         min_val=None,
         max_val=None,
-        lookup_table_index=0
+        lookup_table_index=decay_lut_index
     )
 
 
+    #int8 --> [-128, 127], uint8 --> [0, 255]
+    decay_lut = []
+    #scale_in = ifm.quantization.scale_f32 * ifm2.quantization.scale_f32
+    scale_out = ofm.quantization.scale_f32
+    zero_point_out = ofm.quantization.zero_point
+    y_quant_max = 127
+    y_quant_min = -128
+    for x_quant in range(-128, 128):
+        print("x_quant", x_quant)
+        x_real = scale * (x_quant - zero_point)
+        y_real = math.exp(x_real)
+        print("x_real", x_real)
+        print("y_real", y_real)
+        y_quant = tf.round(y_real / scale) + zero_point
+        print("y_quant", y_quant)
+
+        # Cap
+        if y_quant < y_quant_min:
+            y_quant = y_quant_min
+        elif y_quant > y_quant_max:
+            y_quant = y_quant_max
+
+        decay_lut.append(y_quant)
+
+
+    
+    #now print it so i can copy it in
+    #for val in decay_lut:
+        #print(str(int(tf.get_static_value(val))) + ",")
+
+    
+   # activation = create_activation(
+        #activation_op=NpuActivationOp.NONE_OR_RELU,
+        #min_val=None,
+        #max_val=None
+        ##lookup_table_index=decay_lut_index
+    #)
 
 
     exp_mul_lnb_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
@@ -217,8 +323,7 @@ def def_decay_lut():
 
     check_block_config_legal(block_config, exp_mul_lnb_time_op, ACCELERATOR)
 
-    return exp_mul_lnb_time_op
-'''
+    return dma_lut_op, exp_mul_lnb_time_op
 
 
 def def_fullyconnected():
@@ -416,10 +521,6 @@ def def_fullyconnected():
 def def_mul_decay_Vmem():
     
     IFM2_IS_FIRST_OPERAND = False
-
-    #V_MEM_ADDR = 0x00
-    #DECAY_ADDR = 0x00
-    #DECAYED_MEM_ADDR = 0x00
 
 
     ifm = create_feature_map(
@@ -773,6 +874,7 @@ def def_relu_sub_outer_vth_vmem():
 
 
 if __name__ == '__main__':
+    dma_lut_op, exp_mul_lnb_time_op = def_decay_lut()
     fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected()
     mul_decay_op = def_mul_decay_Vmem()
     add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
@@ -780,8 +882,8 @@ if __name__ == '__main__':
     #check_spk_sub_inner_op = def_relu_sub_inner_vth_vmem()
 
     #npu_op_list = [dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr]
-    npu_op_list = [dma_op, fully_connected_op]
-
+    #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op]
+    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op]
 
 
     check_weight_and_bias_len_correct(CMS_NAME, ADDR_DICT, weight_byte_arr, bias_byte_arr)

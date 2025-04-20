@@ -180,17 +180,32 @@ def gen_cms(npu_op_list, accelerator, debug_mode=False):
 
 def check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr):
 
-    weight_addr = addr_dict[cms_name.upper()+"_WEIGHT_ADDR"]
+    # Assume that the SRAM Looks like this:
+    '''
+    In_spk
+    Bias
+    Weights
+    ln_beta
+    v_th
+    v_mem
+    time_not_updated
+    tmp1
+    tmp2
+    out_spk
+    '''
+
+
     bias_addr = addr_dict[cms_name.upper()+"_BIAS_ADDR"]
-    in_curr_addr = addr_dict[cms_name.upper()+"_IN_CURR_ADDR"]
+    weight_addr = addr_dict[cms_name.upper()+"_WEIGHT_ADDR"]
+    ln_beta_addr = addr_dict[cms_name.upper()+"_LN_BETA_ADDR"]
 
     if (weight_addr - bias_addr) != len(bias_byte_arr):
         print("Incorrect bias length or bias addressing is incorrect")
         print("\t BIAS_LEN set:", len(bias_byte_arr), "but addressing implies bias_len:", (weight_addr - bias_addr))
         exit()
     
-    if (in_curr_addr - weight_addr) != len(weight_byte_arr):
+    if (ln_beta_addr - weight_addr) != len(weight_byte_arr):
         print("Incorrect weight length or weight addressing is incorrect")
-        print("\t WEIGHT_LEN set:", len(weight_byte_arr), "but addressing implies weight_len:", (in_curr_addr - weight_addr))
+        print("\t WEIGHT_LEN set:", len(weight_byte_arr), "but addressing implies weight_len:", (ln_beta_addr - weight_addr))
         exit()
     

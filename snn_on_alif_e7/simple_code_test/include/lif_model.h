@@ -16,25 +16,13 @@
 
 int my_mem_update(
     float* in_spk,
+
+    float* ln_beta,
+    float* vth,
     float* v_mem,
-    float* decay,
-    //int8_t* v_mem,
-    //size_t v_mem_tensor_size,
-    //int8_t* decay,
-    //size_t decay_tensor_size,
+    float* time_not_updated,
 
-    //relative addressing
-    //size_t in_spk_rel_addr,
-    //size_t out_spk_rel_addr,
-
-
-
-
-
-    //int8_t* v_mem_new,
-    //size_t v_mem_new_tensor_size,
     float* out_spk
-
 );
 
 

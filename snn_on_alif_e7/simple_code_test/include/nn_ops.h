@@ -64,9 +64,11 @@ int my_mem_u_npu(
     const uint8_t* command_stream,
     size_t command_stream_size,
     const int8_t* weight_tensor,
-    size_t weight_tensor_size
+    size_t weight_tensor_size,
 
 
+    const int8_t* exp_lut,
+    size_t exp_lut_size
 
 
     //int8_t* v_mem_new,

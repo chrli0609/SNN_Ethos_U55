@@ -995,7 +995,11 @@ int my_mem_u_npu(
     const uint8_t* command_stream,
     size_t command_stream_size,
     const int8_t* weight_tensor,
-    size_t weight_tensor_size
+    size_t weight_tensor_size,
+
+
+    const int8_t* exp_lut,
+    size_t exp_lut_size
 
 
 
@@ -1039,21 +1043,19 @@ int my_mem_u_npu(
 
 
     // Assign base addrs
-    const size_t num_tensors = 3;
+    const size_t num_tensors = 4;
     uint64_t base_addrs[num_tensors];
     size_t base_addrs_size[num_tensors];
 
     base_addrs[0] = (uint64_t)(intptr_t)weight_tensor;   // Model weights
     base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
     base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
-    //base_addrs[3] = (uint64_t)(intptr_t)input_tensor;   // Input tensor (in tensor arena)
-    //base_addrs[4] = (uint64_t)(intptr_t)output_tensor;  
+    base_addrs[3] = (uint64_t)(intptr_t)exp_lut;
 
     base_addrs_size[0] = weight_tensor_size;
     base_addrs_size[1] = tensor_arena_size;
     base_addrs_size[2] = tensor_arena_size;
-    //base_addrs_size[3] = input_tensor_size;
-    //base_addrs_size[4] = output_tensor_size;
+    base_addrs_size[3] = exp_lut_size;
 
 
 

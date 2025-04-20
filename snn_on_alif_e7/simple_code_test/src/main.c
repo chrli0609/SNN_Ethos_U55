@@ -1,6 +1,8 @@
 
 #include <stdio.h>
 
+#include <math.h> //for log()
+
 
 #include "BoardInit.h"
 //#include "gpio_wrapper.h"    /* GPIO wrapper for LED control */
@@ -66,8 +68,6 @@ const int DEBUG_MODE = 1;
 
 
 
-
-
 int main() {
 
 
@@ -119,6 +119,80 @@ int main() {
         
         };
 
+        printf("0.5");
+
+        float ln_beta [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+            log(0.44),
+        };
+
+        printf("1");
+
+        float vth [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+        };
+        printf("2");
         float v_mem [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
             0.5,
             0.5,
@@ -154,46 +228,47 @@ int main() {
             0.5,
         };
 
-        float decay [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
-            0.9,
+        printf("3");
+        float time_not_updated [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
+            5.3,
         };
-        
+        printf("4");
         float out_spk [MY_MEM_U_OUTPUT_LAYER_SIZE];
 
-        PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
-        PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        PrintFloatTensor("decay", decay, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
+        //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("decay", decay, MY_MEM_U_OUTPUT_LAYER_SIZE);
 
 
         //bias = 0, scale = 1, shift = 0 --> -112
@@ -225,22 +300,24 @@ int main() {
         //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
 
 
+            printf("5");
 
 
         my_mem_update(
             in_spk,
+
+            ln_beta,
+            vth,
             v_mem,
-            decay,
-            //MY_MEM_U_IN_SPK_ADDR,
-            //MY_MEM_U_IN_CURR_ADDR,
+            time_not_updated,
 
             out_spk
         );
 
 
         // expected v_mem = v_mem * decay + in_spk x weights = 0.5 * 0.9 + 16 * (0.8 * 0.2) = 0.45 + 2.56 = 3.01
-        PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        PrintFloatTensor("out_spk", out_spk, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        //PrintFloatTensor("out_spk", out_spk, MY_MEM_U_OUTPUT_LAYER_SIZE);
 
 
         
