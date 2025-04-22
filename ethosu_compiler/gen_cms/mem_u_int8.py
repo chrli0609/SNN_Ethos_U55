@@ -53,6 +53,17 @@ Start Address	Tensor name	Size
 '''
 
 
+##############
+# Assign Tmp tensors here!
+DECAY_ADDR = TMP1_ADDR
+IN_CURR_ADDR = TMP2_ADDR
+DECAYED_MEM_ADDR = TMP1_ADDR
+RESET_ADDR = TMP2_ADDR
+
+##############
+
+
+
 
 # Set FM Quantization Params
 
@@ -91,15 +102,19 @@ OUT_SPK_MAX_VAL = 1
 OUT_SPK_MIN_VAL = 0
 
 
+###########
+# Autoset Params (depends on the previously set quantization params)
 
 
-##############
-# Assign Tmp tensors here!
-DECAY_ADDR = TMP1_ADDR
-IN_CURR_ADDR = TMP2_ADDR
-DECAYED_MEM_ADDR = TMP1_ADDR
+# Reset is either 0 or VTH --> same quantization params as VTH
+RESET_MAX_VAL = VTH_MAX_VAL
+RESET_MIN_VAL = 0
 
-##############
+
+###########
+
+
+
 
 
 ADDR_DICT = {
@@ -144,6 +159,9 @@ DECAY_SCALE, DECAY_ZERO_POINT = zero_point_quant(DECAY_MAX_VAL, DECAY_MIN_VAL)
 DECAY_ACC_SCALE, DECAY_ACC_ZERO_POINT = zero_point_quant(DECAY_ACC_MAX_VAL, DECAY_ACC_MIN_VAL)
 IN_CURR_SCALE, IN_CURR_ZERO_POINT = zero_point_quant(IN_CURR_MAX_VAL, IN_CURR_MIN_VAL)
 DECAYED_MEM_SCALE, DECAYED_MEM_ZERO_POINT = zero_point_quant(DECAYED_MEM_MAX_VAL, DECAYED_MEM_MIN_VAL)
+
+
+RESET_SCALE, RESET_ZERO_POINT = zero_point_quant(RESET_MAX_VAL, RESET_MIN_VAL)
 
 WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
 BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE/IN_CURR_SCALE, 0
@@ -877,7 +895,8 @@ def def_check_spk_sub_v_mem_updated_vth():
         
         return y_real
 
-
+    # It might be problematic to have the same scaling before and after LUT, currently is working though
+    # if scale = 1, zero_point = 0, and dif = (v_mem - vth), where dif < 1, then it will only spike if dif is rounded to 1 (and not 0)
     check_spk_lut_dma_op, check_spk_lut_values = create_lut_and_dma(approximated_func=check_positive, lut_index=check_spk_lut_index, lut_region=LUT_REGION, data_type=ofm.data_type, 
                        scale_pre_lut=OUT_SPK_SCALE, zero_point_pre_lut=OUT_SPK_ZERO_POINT,
                        scale_post_lut=OUT_SPK_SCALE, zero_point_post_lut=OUT_SPK_ZERO_POINT,
@@ -919,16 +938,217 @@ def def_check_spk_sub_v_mem_updated_vth():
 
 
 
+def def_mul_vth_out_spk():
+
+    IFM2_IS_FIRST_OPERAND = False
+
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=VTH_ADDR,
+        scale = VTH_SCALE,
+        zero_point = VTH_ZERO_POINT,
+        name="vth"
+    )
+
+    ifm2 = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=OUT_SPK_ADDR,
+        scale = OUT_SPK_SCALE,
+        zero_point = OUT_SPK_ZERO_POINT,
+        name="out_spk"
+    )
+
+
+    # Same scaling as VTH (since reset is either 0 or 1)
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=RESET_ADDR,
+        scale = RESET_SCALE,
+        zero_point = RESET_ZERO_POINT,
+        name="reset"
+    )
+
+    print("RESET_SCALE",RESET_SCALE)
+    print("RESET_ZERO_POINT", RESET_ZERO_POINT)
+
+    block_config = NpuShape3D(2, 2, 32)
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=None,
+        max_val=None,
+    )
+
+
+
+
+    mul_vth_out_spk_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
+    
+    #elementwise operation
+    mul_vth_out_spk_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+    mul_vth_out_spk_op.rescale = None
+
+    #NpuBlockOperation
+    mul_vth_out_spk_op.ifm = ifm
+    mul_vth_out_spk_op.ifm2 = ifm2
+    mul_vth_out_spk_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    mul_vth_out_spk_op.ofm = ofm
+    mul_vth_out_spk_op.kernel = None
+    mul_vth_out_spk_op.weights = []
+    mul_vth_out_spk_op.biases = []
+    mul_vth_out_spk_op.padding = None
+    mul_vth_out_spk_op.activation = activation
+    mul_vth_out_spk_op.block_config = block_config
+    mul_vth_out_spk_op.rounding_mode = NpuRoundingMode.TFL
+    mul_vth_out_spk_op.fused_quantize = False
+    mul_vth_out_spk_op.ifm_upscale = NpuResamplingMode.NONE
+    mul_vth_out_spk_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+
+
+
+    return mul_vth_out_spk_op
+
+    
+
+def def_sub_mem_updated_reset():
+
+    IFM2_IS_FIRST_OPERAND = False
+
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=V_MEM_ADDR,
+        scale = V_MEM_SCALE,
+        zero_point = V_MEM_ZERO_POINT,
+        name="v_mem"
+    )
+
+
+    # Same scaling as VTH (since reset is either 0 or 1)
+    ifm2 = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=RESET_ADDR,
+        scale = RESET_SCALE,
+        zero_point = RESET_ZERO_POINT,
+        name="reset"
+    )
+
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=V_MEM_ADDR,
+        scale = V_MEM_SCALE,
+        zero_point = V_MEM_ZERO_POINT,
+        name="v_mem_post_reset"
+    )
+
+    block_config = NpuShape3D(2, 2, 32)
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=None,
+        max_val=None,
+    )
+
+
+
+
+    sub_v_mem_reset_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
+    
+    #elementwise operation
+    sub_v_mem_reset_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+    sub_v_mem_reset_op.rescale = None
+
+    #NpuBlockOperation
+    sub_v_mem_reset_op.ifm = ifm
+    sub_v_mem_reset_op.ifm2 = ifm2
+    sub_v_mem_reset_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    sub_v_mem_reset_op.ofm = ofm
+    sub_v_mem_reset_op.kernel = None
+    sub_v_mem_reset_op.weights = []
+    sub_v_mem_reset_op.biases = []
+    sub_v_mem_reset_op.padding = None
+    sub_v_mem_reset_op.activation = activation
+    sub_v_mem_reset_op.block_config = block_config
+    sub_v_mem_reset_op.rounding_mode = NpuRoundingMode.TFL
+    sub_v_mem_reset_op.fused_quantize = False
+    sub_v_mem_reset_op.ifm_upscale = NpuResamplingMode.NONE
+    sub_v_mem_reset_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+
+
+
+    return sub_v_mem_reset_op
+    
+
+
+'''
+def def_reduce_sum_out_spk():
+
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        data_type=NpuDataType.INT8, fm_elem_size=1,
+        fm_addr=OUT_SPK_ADDR,
+        scale=OUT_SPK_ADDR, zero_point=OUT_SPK_ZERO_POINT,
+        name="out_spk"
+    )
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=1,
+        region=1,
+        data_type=NpuDataType.INT8, fm_elem_size=1,
+        scale=OUTPUT_SPK
+    )
+'''
+
+
 
 if __name__ == '__main__':
+
+    # Define the individual NPU Operations
     dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
     fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected()
     mul_decay_op = def_mul_decay_Vmem()
     add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
     check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()
+    reset_mul_vth_out_spk_op = def_mul_vth_out_spk()
+    sub_v_mem_reset_op = def_sub_mem_updated_reset()
 
 
-    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth]
+
+    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op]
 
 
 
