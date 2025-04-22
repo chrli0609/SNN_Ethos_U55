@@ -43,6 +43,11 @@ def get_tensor_arena_size_str(basename):
     return ret_str
 
 
+
+def get_lut_methods_definition_str(base_name):
+    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LUTPointer()\n{\n\treturn lut_" + base_name + ";\n}\nsize_t Get" + base_name + "LUTLen()\n{\n\treturn sizeof(lut_" + base_name + ");\n}\n\n"
+
+
 def get_cms_methods_definition_str(base_name):
     return "\n\n\n\n\nconst uint8_t * Get" + base_name + "CMSPointer()\n{\n\treturn cms_" + base_name + ";\n}\n\nsize_t Get"+ base_name +"CMSLen()\n{\n\treturn sizeof(cms_" + base_name + ");\n}\n\n"
 
@@ -50,6 +55,8 @@ def get_weight_methods_definition_str(base_name):
     return "\n\n\n\nconst int8_t * Get" + base_name + "WeightsPointer()\n{\n\treturn weight_" + base_name + ";\n}\n\nsize_t Get"+ base_name +"WeightsLen()\n{\n\treturn sizeof(weight_" + base_name + ");\n}\n\n"
 
 
+def get_lut_methods_declare_str(base_name):
+    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LUTPointer();\n\n\nsize_t Get" + base_name + "LUTLen();\n\n\n"
 
 def get_cms_methods_declare_str(base_name):
     return "\n\n\n\n\nconst uint8_t * Get" + base_name + "CMSPointer();\n\n\nsize_t Get"+ base_name +"CMSLen();\n\n\n"
@@ -65,6 +72,9 @@ def get_cms_arr_def_str(base_name):
 
 def get_weights_arr_def_str(base_name):
     return "\n\n\n\nstatic const int8_t weight_" + base_name + "[] __attribute__((aligned(16))) = \n{\n"
+
+def get_lut_arr_def_str(base_name):
+    return "\n\n\n\nstatic const int8_t lut_" + base_name + "[] __attribute__((aligned(16))) = \n{\n" 
 
 
 def get_addr_macros(addr_dict):
@@ -139,7 +149,7 @@ def parse_formatted_hex(formatted_str):
 
 
 
-def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_payload_byte_array, register_cms, base_name, addr_dict, quant_params_dict, weight_byte_arr=None, bias_byte_arr=None):
+def write_cms_to_files(header_filepath, imp_filepath, cms_driver_payload_byte_array, register_cms, base_name, addr_dict, quant_params_dict, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
     
     formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
     
@@ -162,6 +172,7 @@ def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_pa
 
         f.write(get_cms_methods_declare_str(base_name))
         f.write(get_weight_methods_declare_str(base_name))
+        f.write(get_lut_methods_declare_str(base_name))
 
 
         
@@ -189,6 +200,16 @@ def write_cms_to_files(header_filepath, imp_filepath, npu_op_list, cms_driver_pa
             f.write(get_weight_methods_definition_str(base_name))
 
         
+
+        # Write LUT
+        if lut_arr_contents_str:
+            f.write(get_lut_arr_def_str(base_name) + "\n")
+            f.write(lut_arr_contents_str)
+            f.write("\n\n};\n\n\n")
+
+            f.write(get_lut_methods_definition_str(base_name))
+
+
         f.write(register_cms_2_assembly(register_cms))
 
 

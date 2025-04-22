@@ -290,8 +290,8 @@ int my_mem_update(
         int8_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
                 MY_MEM_U_DECAYED_MEM_ADDR);
 
-        //int16_t* v_mem_new_tensor = PersistentAllocator_GetAbsPointer(&allocator, 
-         //   0x40);
+        int8_t* out_spk_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+                MY_MEM_U_OUT_SPK_ADDR);
 
         
         
@@ -314,7 +314,7 @@ int my_mem_update(
         
 
 
-        NNLayer* nnlayer = NNLayer_Init(9);
+        NNLayer* nnlayer = NNLayer_Init(10);
         NNLayer_Assign(nnlayer, 0, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT, "in_spk_quant");
 
         NNLayer_Assign(nnlayer, 1, bias_arena, MY_MEM_U_BIAS_LEN, MY_MEM_U_WEIGHT_SCALE, MY_MEM_U_WEIGHT_ZERO_POINT, "bias_arena");
@@ -330,8 +330,9 @@ int my_mem_update(
         NNLayer_Assign(nnlayer, 7, decay_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAY_SCALE, MY_MEM_U_DECAY_ZERO_POINT, "decay_quant");
         // Tmp2
         NNLayer_Assign(nnlayer, 8, in_curr_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT, "in_curr_quant");
-
-        //NNLayer_Assign(nnlayer, 6, decayed_mem_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_DECAYED_MEM_SCALE, MY_MEM_U_DECAYED_MEM_ZERO_POINT, "decayed_mem_quant");
+        
+        // Output
+        NNLayer_Assign(nnlayer, 9, out_spk_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_OUT_SPK_SCALE, MY_MEM_U_OUT_SPK_ZERO_POINT, "out_spk_quant");
 
         
 
@@ -351,22 +352,12 @@ int my_mem_update(
         
 
 
-        #include "include/exp_lut.h"
         // Set start and end for input tensors
 
         // Run NPU Membrane Update
         my_mem_u_npu(
             tensor_arena,
             tensor_arena_size,
-            //in_spk_quant,
-            //MY_MEM_U_INPUT_LAYER_SIZE,
-            //v_mem_quant,
-            //MEM_UPDATE_PYTHON_OUTPUT_LAYER_SIZE,
-            //decay_quant,
-            //MEM_UPDATE_PYTHON_OUTPUT_LAYER_SIZE,
-
-            //MY_MEM_U_IN_SPK_ADDR,
-            //MY_MEM_U_IN_CURR_ADDR,
 
             Getmy_mem_uCMSPointer(),
             Getmy_mem_uCMSLen(),
@@ -374,15 +365,8 @@ int my_mem_update(
             Getmy_mem_uWeightsLen(),
 
 
-            //exp_lut,
-            //exp_lut_size
-            exp_lut,
-            EXP_LUT_LEN
-
-            //v_mem_out_quant,
-            //MEM_UPDATE_PYTHON_OUTPUT_LAYER_SIZE,
-            //in_curr_quant,
-            //MY_MEM_U_OUTPUT_LAYER_SIZE
+            Getmy_mem_uLUTPointer(),
+            Getmy_mem_uLUTLen()
         );
 
 

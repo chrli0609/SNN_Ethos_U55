@@ -268,7 +268,7 @@ static const int8_t exp_lut [EXP_LUT_LEN] __attribute__((aligned(16))) = {
 112,
 117,
 122,
-127
+127,
 #endif
 
 #ifdef LUT_IS_MANUALLY_SET

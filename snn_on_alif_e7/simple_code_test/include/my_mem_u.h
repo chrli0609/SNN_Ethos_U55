@@ -20,6 +20,7 @@
 #define MY_MEM_U_IN_CURR_ADDR 640
 #define MY_MEM_U_DECAY_ADDR 608
 #define MY_MEM_U_DECAYED_MEM_ADDR 608
+#define MY_MEM_U_OUT_SPK_ADDR 672
 #define MY_MEM_U_WEIGHT_LEN 144
 #define MY_MEM_U_BIAS_LEN 320
 
@@ -44,6 +45,8 @@
 #define MY_MEM_U_IN_CURR_ZERO_POINT -128
 #define MY_MEM_U_DECAYED_MEM_SCALE 0.00392156862745098
 #define MY_MEM_U_DECAYED_MEM_ZERO_POINT -128
+#define MY_MEM_U_OUT_SPK_SCALE 0.00392156862745098
+#define MY_MEM_U_OUT_SPK_ZERO_POINT -128
 
 
 
@@ -63,5 +66,16 @@ size_t Getmy_mem_uCMSLen();
 const int8_t * Getmy_mem_uWeightsPointer();
 
 size_t Getmy_mem_uWeightsLen();
+
+
+
+
+
+
+
+const int8_t* Getmy_mem_uLUTPointer();
+
+
+size_t Getmy_mem_uLUTLen();
 
 

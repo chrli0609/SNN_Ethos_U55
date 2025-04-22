@@ -18,7 +18,121 @@ from extra_func import float_to_int_safe
 
 # Helper functions/builders for easier creation of NPU operations
 
+def merge_lut_values_to_str(lut_list: List[Tuple[List[int], int]]) -> str:
+    '''
+    input: List of tuple (each element is one LUT entry):
+        tuple value 0: LUT values
+        tuple value 1: LUT index
 
+    output: string of how the contents of the static C array should look like
+    '''
+    NUM_VALS_PER_LINE = 8
+
+    return_string = "\n"
+    for i in range(len(lut_list)):
+        lut_values_list = lut_list[i][0]
+        lut_index = lut_list[i][1]
+
+        # Comment to help debugging
+        return_string += "//lut index " + str(lut_index) + "\n"
+
+        # Add LUT Values
+        for j in range(len(lut_values_list)):
+            
+            return_string += str(lut_values_list[j]) + ", "
+            if j % NUM_VALS_PER_LINE == 0:
+                return_string += "\n"
+
+        return_string += "\n"
+
+    
+    return return_string
+        
+
+
+    
+
+
+
+
+
+def create_lut_and_dma(approximated_func, lut_index, lut_region, data_type, scale_pre_lut, zero_point_pre_lut, scale_post_lut, zero_point_post_lut, accelerator, debug_mode):
+
+    if data_type == NpuDataType.INT8 or data_type == NpuDataType.UINT8:
+        lut_slot_size = 256
+    else:
+        print("Not using INT8 --> dont know how big each LUT is")
+        exit()
+
+    from ethosu.vela.architecture_features import create_default_arch
+    from ethosu.vela.architecture_features import Accelerator
+    from ethosu.vela.register_command_stream_util import BASE_PTR_INDEX_MEM2MEM
+
+    import tensorflow as tf
+
+
+    default_arch = create_default_arch(Accelerator.from_npu_accelerator(accelerator))
+    # LUT stored at the end of the Shared Buffer
+    lut_shared_buffer_start_addr = default_arch.shram_lut_address
+
+    # LUT storage = start of LUT segment in shared buffer + which lut it is
+    lut_addr = lut_shared_buffer_start_addr + lut_index * lut_slot_size
+    dma_src = NpuAddressRange(region=lut_region, address=(lut_index * lut_slot_size), length=lut_slot_size)
+    dma_dst = NpuAddressRange(region=BASE_PTR_INDEX_MEM2MEM, address=lut_addr, length=lut_slot_size)
+    dma_lut_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
+
+
+
+
+    #int8 --> [-128, 127], uint8 --> [0, 255]
+    lut_values = []
+
+    #scale_out = DECAY_SCALE
+    #zero_point_out = DECAY_ZERO_POINT
+    #scale_tmp = DECAY_ACC_SCALE
+    #zero_point_tmp = DECAY_ACC_ZERO_POINT
+
+    if data_type == NpuDataType.INT8:
+        input_value_range = range(-128, 128)
+    elif data_type == NpuDataType.UINT8:
+        input_value_range = range(0, 256)
+    else:
+        print("LUT generation only supported for INT8 and UINT8")
+        exit()
+
+
+    y_quant_max = max(input_value_range)
+    y_quant_min = min(input_value_range)
+
+    for x_quant in input_value_range:
+        x_real = scale_pre_lut * (x_quant - zero_point_pre_lut)
+        y_real = approximated_func(x_real)
+        y_quant = tf.round(y_real / scale_post_lut) + zero_point_post_lut
+
+        # Cap
+        if y_quant < y_quant_min:
+            y_quant = y_quant_min
+        elif y_quant > y_quant_max:
+            y_quant = y_quant_max
+
+        lut_values.append(int(tf.get_static_value(y_quant)))
+        if debug_mode:
+            print("x_quant", x_quant)
+            print("x_real", x_real)
+            print("y_real", y_real)
+            print("y_quant", y_quant)
+
+
+
+
+
+    #now print it so i can copy it in
+    if debug_mode:
+        print("LUT values:")
+        for val in lut_values:
+            print(val, ",")
+
+    return dma_lut_op, lut_values
 
 
 
