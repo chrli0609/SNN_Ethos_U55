@@ -63,24 +63,26 @@ WEIGHT_MAX_VAL = 127/100
 WEIGHT_MIN_VAL = -128/100
 
 LN_BETA_MAX_VAL = 0
-LN_BETA_MIN_VAL = -4
+LN_BETA_MIN_VAL = -5
 
 TIME_NOT_UPDATED_MAX_VAL = 16
 TIME_NOT_UPDATED_MIN_VAL = 0
 
-IN_CURR_MAX_VAL = 4
-IN_CURR_MIN_VAL = -0.5
+IN_CURR_MAX_VAL = 3
+IN_CURR_MIN_VAL = 0
 
 V_MEM_MAX_VAL = 4
 V_MEM_MIN_VAL = 0
 
+DECAY_ACC_MAX_VAL = 0
+DECAY_ACC_MIN_VAL = -5
 DECAY_MAX_VAL = 1
 DECAY_MIN_VAL = 0
 
 DECAYED_MEM_MAX_VAL = 1
 DECAYED_MEM_MIN_VAL = 0
 
-VTH_MAX_VAL = 2
+VTH_MAX_VAL = 3
 VTH_MIN_VAL = 0.5
 
 
@@ -136,6 +138,7 @@ TIME_NOT_UPDATED_SCALE, TIME_NOT_UPDATED_ZERO_POINT = zero_point_quant(TIME_NOT_
 
 # TMP Feature maps
 DECAY_SCALE, DECAY_ZERO_POINT = zero_point_quant(DECAY_MAX_VAL, DECAY_MIN_VAL)
+DECAY_ACC_SCALE, DECAY_ACC_ZERO_POINT = zero_point_quant(DECAY_ACC_MAX_VAL, DECAY_ACC_MIN_VAL)
 IN_CURR_SCALE, IN_CURR_ZERO_POINT = zero_point_quant(IN_CURR_MAX_VAL, IN_CURR_MIN_VAL)
 DECAYED_MEM_SCALE, DECAYED_MEM_ZERO_POINT = zero_point_quant(DECAYED_MEM_MAX_VAL, DECAYED_MEM_MIN_VAL)
 
@@ -213,8 +216,8 @@ def def_decay_lut():
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
         fm_addr=DECAY_ADDR,
-        scale=DECAY_SCALE,
-        zero_point=DECAY_ZERO_POINT,
+        scale=DECAY_ACC_SCALE,
+        zero_point=DECAY_ACC_ZERO_POINT,
         name="decay"
     )
 
@@ -262,18 +265,16 @@ def def_decay_lut():
     #int8 --> [-128, 127], uint8 --> [0, 255]
     decay_lut = []
     #scale_in = ifm.quantization.scale_f32 * ifm2.quantization.scale_f32
-    scale_out = ofm.quantization.scale_f32
-    zero_point_out = ofm.quantization.zero_point
+    scale_out = DECAY_SCALE
+    zero_point_out = DECAY_ZERO_POINT
+    scale_tmp = DECAY_ACC_SCALE
+    zero_point_tmp = DECAY_ACC_ZERO_POINT
     y_quant_max = 127
     y_quant_min = -128
     for x_quant in range(-128, 128):
-        print("x_quant", x_quant)
-        x_real = scale * (x_quant - zero_point)
+        x_real = scale_tmp * (x_quant - zero_point_tmp)
         y_real = math.exp(x_real)
-        print("x_real", x_real)
-        print("y_real", y_real)
-        y_quant = tf.round(y_real / scale) + zero_point
-        print("y_quant", y_quant)
+        y_quant = tf.round(y_real / scale_out) + zero_point_out
 
         # Cap
         if y_quant < y_quant_min:
@@ -282,12 +283,18 @@ def def_decay_lut():
             y_quant = y_quant_max
 
         decay_lut.append(y_quant)
+        if DEBUG_MODE:
+            print("x_quant", x_quant)
+            print("x_real", x_real)
+            print("y_real", y_real)
+            print("y_quant", y_quant)
 
 
-    
+
+
     #now print it so i can copy it in
-    #for val in decay_lut:
-        #print(str(int(tf.get_static_value(val))) + ",")
+    for val in decay_lut:
+        print(str(int(tf.get_static_value(val))) + ",")
 
     
    # activation = create_activation(
@@ -375,7 +382,7 @@ def def_fullyconnected():
     # Define Weights
 
 
-    weights_volume_ohwi = np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+    weights_volume_ohwi = 0.5 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
     #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
     #print("weights_volume_ohwi", weights_volume_ohwi.shape)
     #print(weights_volume_ohwi)
@@ -644,7 +651,7 @@ def def_add_decayed_mem_in_curr():
         fm_elem_size=1,
         fm_addr=V_MEM_ADDR,
         scale=V_MEM_SCALE,
-        zero_point=V_MEM_SCALE,
+        zero_point=V_MEM_ZERO_POINT,
         name="updated_mem"
     )
 
@@ -659,7 +666,7 @@ def def_add_decayed_mem_in_curr():
 
 
 
-    add_decayed_mem_in_curr = NpuElementWiseOperation(NpuElementWiseOp.MUL)
+    add_decayed_mem_in_curr = NpuElementWiseOperation(NpuElementWiseOp.ADD)
 
     #elementwise operation
     add_decayed_mem_in_curr.reversed_operands = IFM2_IS_FIRST_OPERAND
@@ -869,6 +876,88 @@ def def_relu_sub_outer_vth_vmem():
 
 
 
+def add_test():
+    IFM2_IS_FIRST_OPERAND = False 
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=LN_BETA_ADDR,
+        scale = LN_BETA_SCALE,
+        zero_point = LN_BETA_ZERO_POINT,
+        name="ln_beta"
+    )
+
+    ifm2 = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=VTH_ADDR,
+        scale = VTH_SCALE,
+        zero_point = VTH_ZERO_POINT,
+        name="vth"
+    )
+
+
+
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=1,
+        #layout=NpuLayout.NHCWB16,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=V_MEM_ADDR,
+        scale=V_MEM_SCALE,
+        zero_point=V_MEM_ZERO_POINT,
+        name="updated_mem"
+    )
+
+    block_config = NpuShape3D(2, 2, 32)
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=None,
+        max_val=None,
+    )
+
+
+
+
+    add_decayed_mem_in_curr = NpuElementWiseOperation(NpuElementWiseOp.ADD)
+
+    #elementwise operation
+    add_decayed_mem_in_curr.reversed_operands = IFM2_IS_FIRST_OPERAND
+    add_decayed_mem_in_curr.rescale = None
+
+    #NpuBlockOperation
+    add_decayed_mem_in_curr.ifm = ifm
+    add_decayed_mem_in_curr.ifm2 = ifm2
+    add_decayed_mem_in_curr.ifm2_scalar = None   #set if ifm2 is a scalar
+    add_decayed_mem_in_curr.ofm = ofm
+    add_decayed_mem_in_curr.kernel = None
+    add_decayed_mem_in_curr.weights = []
+    add_decayed_mem_in_curr.biases = []
+    add_decayed_mem_in_curr.padding = None
+    add_decayed_mem_in_curr.activation = activation
+    add_decayed_mem_in_curr.block_config = block_config
+    add_decayed_mem_in_curr.rounding_mode = NpuRoundingMode.TFL
+    add_decayed_mem_in_curr.fused_quantize = False
+    add_decayed_mem_in_curr.ifm_upscale = NpuResamplingMode.NONE
+    add_decayed_mem_in_curr.accumulator_type = NpuAccumulatorType.Int32
+
+
+    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+
+
+
+    return add_decayed_mem_in_curr
 
 
 
@@ -881,14 +970,13 @@ if __name__ == '__main__':
     
     #check_spk_sub_inner_op = def_relu_sub_inner_vth_vmem()
 
-    #npu_op_list = [dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr]
-    #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op]
-    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op]
-
+    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr]
+    #npu_op_list = [add_test()]
 
     check_weight_and_bias_len_correct(CMS_NAME, ADDR_DICT, weight_byte_arr, bias_byte_arr)
 
     cms_bytearr, register_cms = gen_cms(npu_op_list, ACCELERATOR, DEBUG_MODE)
+
 
     header_out_filepath = "../../snn_on_alif_e7/simple_code_test/include/" + CMS_NAME + ".h"
     imp_out_filepath = "../../snn_on_alif_e7/simple_code_test/nn_ops/" + CMS_NAME + ".c"

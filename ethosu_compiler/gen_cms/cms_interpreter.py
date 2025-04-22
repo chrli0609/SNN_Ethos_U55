@@ -1,7 +1,7 @@
 from prettytable import PrettyTable
 
-
-
+from typing import List
+import struct
 
 cmd0_dict = {
     0x000: "NPU_OP_STOP",
@@ -184,3 +184,62 @@ def register_cms_2_assembly(register_cms):
     ret_str += "\n*/\n"
 
     return ret_str
+
+
+
+
+
+
+def extract_register_command_stream(driver_payload: bytes) -> List[int]:
+    """
+    Extract the register command stream from a driver payload.
+    This is the opposite of npu_create_driver_payload().
+    
+    Args:
+        driver_payload (bytes): The driver payload created by npu_create_driver_payload()
+        
+    Returns:
+        List[int]: The extracted register command stream as a list of 32-bit integers
+    """
+    # First, convert bytes to a list of 32-bit integers (little-endian)
+    words = list(struct.unpack(f"<{len(driver_payload)//4}I", driver_payload))
+    
+    # Check for the COP1 fourcc at the beginning
+    if len(words) < 1:
+        raise ValueError("Driver payload is too short")
+    
+    # Check for the "COP1" fourcc
+    fourcc_value = words[0]
+    fourcc = chr(fourcc_value & 0xFF) + chr((fourcc_value >> 8) & 0xFF) + \
+             chr((fourcc_value >> 16) & 0xFF) + chr((fourcc_value >> 24) & 0xFF)
+    if fourcc != "COP1":
+        raise ValueError(f"Invalid fourcc in driver payload: {fourcc}")
+    
+    # Look for the command stream header (DACommands.CmdStream = 0x02)
+    cmd_stream_idx = None
+    for i in range(1, len(words)):
+        cmd_id = words[i] & 0xFF
+        if cmd_id == 0x02:  # CmdStream command
+            cmd_stream_idx = i
+            break
+    
+    if cmd_stream_idx is None:
+        raise ValueError("Could not find command stream header in driver payload")
+    
+    # Extract the length from the command stream header
+    cs_header = words[cmd_stream_idx]
+    length_high = ((cs_header >> 8) & 0xFF) << 16
+    length_low = (cs_header >> 16) & 0xFFFF
+    length = length_high | length_low
+    
+    # The command stream starts after the header
+    cmd_stream_start = cmd_stream_idx + 1
+    cmd_stream_end = cmd_stream_start + length
+    
+    if cmd_stream_end > len(words):
+        raise ValueError(f"Command stream length ({length}) exceeds available data")
+    
+    # Extract the command stream
+    register_command_stream = words[cmd_stream_start:cmd_stream_end]
+    
+    return register_command_stream

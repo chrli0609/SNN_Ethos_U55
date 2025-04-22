@@ -97,63 +97,64 @@ int main() {
 
 
 
-
         printf("Test my_mem_u\n");
         float in_spk [MY_MEM_U_INPUT_LAYER_SIZE] = {
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1,
-            0.1        
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
         
         };
 
         printf("0.5");
 
         float ln_beta [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
-            log(0.44),
+
+
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
+            log(0.72),
         };
 
         printf("1");
@@ -320,6 +321,8 @@ int main() {
         //PrintFloatTensor("out_spk", out_spk, MY_MEM_U_OUTPUT_LAYER_SIZE);
 
 
+        //printf("Just before entering elementwise_add()\n");
+        //elementwise_add();
         
 
 

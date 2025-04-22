@@ -100,6 +100,41 @@ def format_bytearr_for_printout(byte_arr):
     )
 
     return formatted + ", "
+
+
+
+def parse_formatted_hex(formatted_str):
+    """
+    Parse a formatted string of hexadecimal bytes back into a byte array.
+    This is the inverse of format_bytearr_for_printout.
+    
+    Args:
+        formatted_str (str): A string formatted as "0xXX, 0xXX, ..., 0xXX, "
+    
+    Returns:
+        bytearray: The original byte array
+    """
+    # Remove any whitespace and newlines
+    cleaned_str = formatted_str.replace("\n", "").replace(" ", "")
+    
+    # Remove trailing comma if it exists
+    if cleaned_str.endswith(","):
+        cleaned_str = cleaned_str[:-1]
+    
+    # Split by commas
+    hex_values = cleaned_str.split(",")
+    
+    # Filter out any empty strings
+    hex_values = [val for val in hex_values if val]
+    
+    # Convert each hex string to integer and then to byte
+    byte_arr = bytearray()
+    for hex_val in hex_values:
+        if hex_val.startswith("0x"):
+            byte_val = int(hex_val, 16)
+            byte_arr.append(byte_val)
+    
+    return byte_arr
     
 
 

@@ -39,7 +39,7 @@ void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t r
 
 
 
-
+int elementwise_add();
 
 
 
