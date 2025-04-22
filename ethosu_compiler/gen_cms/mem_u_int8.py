@@ -23,7 +23,10 @@ CMS_NAME = "my_mem_u"
 # Assign Memory Regions (0 - 7)
 LUT_REGION = 3
 
-TENSOR_ARENA_SIZE	=	704
+
+
+# Assign Memory segments in SRAM Scratch
+TENSOR_ARENA_SIZE	=	705
 		
 IN_SPK_ADDR	=	0
 BIAS_ADDR	=	16
@@ -34,7 +37,8 @@ V_MEM_ADDR	=	544
 TIME_NOT_UPDATED_ADDR	=	576
 TMP1_ADDR	=	608
 TMP2_ADDR	=	640
-OUT_SPK_ADDR	=	672
+UPDATE_NXT_LAYER_ADDR	=	672
+OUT_SPK_ADDR	=	673
 
 
 
@@ -98,6 +102,8 @@ VTH_MAX_VAL = 3
 VTH_MIN_VAL = 0.5
 
 
+
+
 OUT_SPK_MAX_VAL = 1
 OUT_SPK_MIN_VAL = 0
 
@@ -110,6 +116,10 @@ OUT_SPK_MIN_VAL = 0
 RESET_MAX_VAL = VTH_MAX_VAL
 RESET_MIN_VAL = 0
 
+
+# Only need to differentiate between 0 and anything else
+UPDATE_NXT_LAYER_MAX_VAL = 1
+UPDATE_NXT_LAYER_MIN_VAL = 0
 
 ###########
 
@@ -138,6 +148,7 @@ ADDR_DICT = {
 
 
     # Output Feature Map
+    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_ADDR" : UPDATE_NXT_LAYER_ADDR,
     CMS_NAME.upper()+"_OUT_SPK_ADDR" : OUT_SPK_ADDR
 
 }
@@ -167,8 +178,10 @@ WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEI
 BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE/IN_CURR_SCALE, 0
 
 # Output Feature Map
+UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)
 OUT_SPK_SCALE, OUT_SPK_ZERO_POINT = zero_point_quant(OUT_SPK_MAX_VAL, OUT_SPK_MIN_VAL)
-#CHECK_SPK_SUB_INNER_SCALE, CHECK_SPK_SUB_INNER_ZERO_POINT = zero_point_quant(CHECK_SPK_SUB_INNER_MAX_VAL, CHECK_SPK_SUB_INNER_MIN_VAL)
+
+
 
 QUANT_PARAM_DICT = {
     CMS_NAME.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
@@ -197,6 +210,10 @@ QUANT_PARAM_DICT = {
     CMS_NAME.upper()+"_DECAYED_MEM_SCALE" : DECAYED_MEM_SCALE,
     CMS_NAME.upper()+"_DECAYED_MEM_ZERO_POINT" : DECAYED_MEM_ZERO_POINT,
 
+
+    # Output
+    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_SCALE" : UPDATE_NXT_LAYER_SCALE,
+    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_ZERO_POINT" : UPDATE_NXT_LAYER_ZERO_POINT,
     CMS_NAME.upper()+"_OUT_SPK_SCALE" : OUT_SPK_SCALE,
     CMS_NAME.upper()+"_OUT_SPK_ZERO_POINT" : OUT_SPK_ZERO_POINT,
 }
@@ -349,7 +366,7 @@ def def_fullyconnected():
     # Define Weights
 
 
-    weights_volume_ohwi = 0.1 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+    weights_volume_ohwi = 0.5 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
     #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
     #print("weights_volume_ohwi", weights_volume_ohwi.shape)
     #print(weights_volume_ohwi)
@@ -1112,13 +1129,13 @@ def def_sub_mem_updated_reset():
     
 
 
-'''
-def def_reduce_sum_out_spk():
+def def_update_nxt_layer_reduce_sum_out_spk():
 
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region=1,
+        layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8, fm_elem_size=1,
         fm_addr=OUT_SPK_ADDR,
         scale=OUT_SPK_ADDR, zero_point=OUT_SPK_ZERO_POINT,
@@ -1128,11 +1145,54 @@ def def_reduce_sum_out_spk():
     ofm = create_feature_map(
         height=1, width=1, depth=1,
         region=1,
+        layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8, fm_elem_size=1,
-        scale=OUTPUT_SPK
+        fm_addr=UPDATE_NXT_LAYER_ADDR,
+        scale=UPDATE_NXT_LAYER_SCALE,
+        zero_point=UPDATE_NXT_LAYER_ZERO_POINT,
+        name="update_nxt_layer"
     )
-'''
 
+
+    kernel = NpuKernel(
+        w=1, h=1, stride_x=1, stride_y=1,
+        dilation_x=1, dilation_y=1
+    )
+
+    padding = NpuPadding(top=0, left=0, bottom=0, right=0)
+   
+    block_config = NpuShape3D(2, 2, 32)
+
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=None,
+        max_val=None
+    )
+
+    update_nxt_layer_reduce_sum_op = NpuPoolingOperation(NpuPoolingOp.REDUCE_SUM)
+    
+    #Pooling operation
+    update_nxt_layer_reduce_sum_op.rescale = None
+
+    #NpuBlockOperation
+    update_nxt_layer_reduce_sum_op.ifm = ifm
+    update_nxt_layer_reduce_sum_op.ifm2 = None
+    update_nxt_layer_reduce_sum_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    update_nxt_layer_reduce_sum_op.ofm = ofm
+    update_nxt_layer_reduce_sum_op.kernel = kernel
+    update_nxt_layer_reduce_sum_op.weights = []
+    update_nxt_layer_reduce_sum_op.biases = []
+    update_nxt_layer_reduce_sum_op.padding = padding
+    update_nxt_layer_reduce_sum_op.activation = activation
+    update_nxt_layer_reduce_sum_op.block_config = block_config
+    update_nxt_layer_reduce_sum_op.rounding_mode = NpuRoundingMode.TFL
+    update_nxt_layer_reduce_sum_op.fused_quantize = False
+    update_nxt_layer_reduce_sum_op.ifm_upscale = NpuResamplingMode.NONE
+    update_nxt_layer_reduce_sum_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    return update_nxt_layer_reduce_sum_op
 
 
 if __name__ == '__main__':
@@ -1145,10 +1205,11 @@ if __name__ == '__main__':
     check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()
     reset_mul_vth_out_spk_op = def_mul_vth_out_spk()
     sub_v_mem_reset_op = def_sub_mem_updated_reset()
+    update_nxt_layer_reduce_sum_out_spk = def_update_nxt_layer_reduce_sum_out_spk()
 
 
 
-    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op]
+    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk]
 
 
 

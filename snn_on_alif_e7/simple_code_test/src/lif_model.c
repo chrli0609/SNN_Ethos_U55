@@ -290,6 +290,9 @@ int my_mem_update(
         int8_t* decayed_mem_quant = PersistentAllocator_GetAbsPointer(&allocator, 
                 MY_MEM_U_DECAYED_MEM_ADDR);
 
+
+        int8_t* update_nxt_layer_quant = PersistentAllocator_GetAbsPointer(&allocator, 
+                MY_MEM_U_UPDATE_NXT_LAYER_ADDR);
         int8_t* out_spk_quant = PersistentAllocator_GetAbsPointer(&allocator, 
                 MY_MEM_U_OUT_SPK_ADDR);
 
@@ -314,7 +317,7 @@ int my_mem_update(
         
 
 
-        NNLayer* nnlayer = NNLayer_Init(10);
+        NNLayer* nnlayer = NNLayer_Init(11);
         NNLayer_Assign(nnlayer, 0, in_spk_quant, MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT, "in_spk_quant");
 
         NNLayer_Assign(nnlayer, 1, bias_arena, MY_MEM_U_BIAS_LEN, MY_MEM_U_WEIGHT_SCALE, MY_MEM_U_WEIGHT_ZERO_POINT, "bias_arena");
@@ -332,7 +335,8 @@ int my_mem_update(
         NNLayer_Assign(nnlayer, 8, in_curr_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_IN_CURR_SCALE, MY_MEM_U_IN_CURR_ZERO_POINT, "in_curr_quant");
         
         // Output
-        NNLayer_Assign(nnlayer, 9, out_spk_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_OUT_SPK_SCALE, MY_MEM_U_OUT_SPK_ZERO_POINT, "out_spk_quant");
+        NNLayer_Assign(nnlayer, 9, update_nxt_layer_quant, 1, MY_MEM_U_UPDATE_NXT_LAYER_SCALE, MY_MEM_U_UPDATE_NXT_LAYER_ZERO_POINT, "update_nxt_layer_quant");
+        NNLayer_Assign(nnlayer, 10, out_spk_quant, MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_OUT_SPK_SCALE, MY_MEM_U_OUT_SPK_ZERO_POINT, "out_spk_quant");
 
         
 
