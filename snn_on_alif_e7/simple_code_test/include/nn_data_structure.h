@@ -32,6 +32,8 @@ typedef struct {
     size_t num_tensors;     // Number of tensors
 
     PersistentAllocator allocator;
+
+    struct NNLayer* next_layer;
 } NNLayer;
 
 typedef struct {

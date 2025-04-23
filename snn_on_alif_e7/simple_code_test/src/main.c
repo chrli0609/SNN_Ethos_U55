@@ -18,8 +18,6 @@
 
 
 
-#include "include/nn_ops.h"
-#include "include/lif_model.h"
 #include "include/extra_funcs.h"
 
 
@@ -301,7 +299,7 @@ int main() {
 
 
 
-        my_mem_update(
+        MLP_Inference(
             mlp_model,
             in_spk,
 

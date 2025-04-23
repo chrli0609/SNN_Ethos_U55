@@ -366,7 +366,7 @@ def def_fullyconnected():
     # Define Weights
 
 
-    weights_volume_ohwi = 0.5 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+    weights_volume_ohwi = 0.2 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
     #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
     #print("weights_volume_ohwi", weights_volume_ohwi.shape)
     #print(weights_volume_ohwi)

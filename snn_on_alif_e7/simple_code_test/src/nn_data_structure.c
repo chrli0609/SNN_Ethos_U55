@@ -312,7 +312,6 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
 
 
 
-
 NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     // Init Total Tensor Arena and store its pointer
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));

@@ -3,7 +3,6 @@
 # group Main
 add_library(Group_Main OBJECT
   "${SOLUTION_ROOT}/simple_code_test/src/main.c"
-  "${SOLUTION_ROOT}/simple_code_test/src/lif_model.c"
   "${SOLUTION_ROOT}/simple_code_test/src/nn_ops.c"
   "${SOLUTION_ROOT}/simple_code_test/src/extra_funcs.c"
   "${SOLUTION_ROOT}/simple_code_test/src/nn_data_structure.c"
