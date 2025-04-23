@@ -91,6 +91,8 @@ int main() {
     /* Initialise the UART module to allow printf related functions (if using retarget) */
     BoardInit();
 
+    #include "include/init_nn_model.h"
+    NN_Model* mlp_model = MLP_Init();
     //while (1) {
 
         printf("============ new iteration start =======================\n");
@@ -118,7 +120,6 @@ int main() {
         
         };
 
-        printf("0.5");
 
         float ln_beta [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
 
@@ -157,7 +158,6 @@ int main() {
             log(0.72),
         };
 
-        printf("1");
 
         float vth [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
             1.3,
@@ -193,7 +193,6 @@ int main() {
             1.3,
             1.3,
         };
-        printf("2");
         float v_mem [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
             0.5,
             0.5,
@@ -229,7 +228,6 @@ int main() {
             0.5,
         };
 
-        printf("3");
         float time_not_updated [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
             5.3,
             5.3,
@@ -264,7 +262,6 @@ int main() {
             5.3,
             5.3,
         };
-        printf("4");
         float out_spk [MY_MEM_U_OUTPUT_LAYER_SIZE];
 
         //PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
@@ -301,10 +298,11 @@ int main() {
         //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
 
 
-            printf("5");
+
 
 
         my_mem_update(
+            mlp_model,
             in_spk,
 
             ln_beta,
@@ -316,16 +314,9 @@ int main() {
         );
 
 
-        // expected v_mem = v_mem * decay + in_spk x weights = 0.5 * 0.9 + 16 * (0.8 * 0.2) = 0.45 + 2.56 = 3.01
-        //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        //PrintFloatTensor("out_spk", out_spk, MY_MEM_U_OUTPUT_LAYER_SIZE);
+        MLP_Free(mlp_model);
 
-
-        //printf("Just before entering elementwise_add()\n");
-        //elementwise_add();
         
-
-
 
 
 

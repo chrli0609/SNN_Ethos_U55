@@ -29,10 +29,12 @@ project:
         - file: src/lif_model.c
         - file: src/nn_ops.c
         - file: src/extra_funcs.c
+        - file: src/nn_data_structure.c
+        - file: src/init_nn_model.c
 
 
-        - file: nn_ops/matmul.c
-        - file: nn_ops/elementwise_mul.c
+        #- file: nn_ops/matmul.c
+        #- file: nn_ops/elementwise_mul.c
         - file: nn_ops/my_mem_u.c
 
 

@@ -12,29 +12,11 @@
 
 
 #include "ethosu_driver.h"
-
-
-//try using tensorflow memory allocator
-//include "tensorflow/lite/micro/micro_allocator.h"
-//#include "micro_allocator.h"
-
-
-
-
-//#include "src/maxpool2d_vela.hpp"
-//#include "nn_ops/conv2d_vela_api.hpp"
-//#include "nn_ops/elementwise_add.hpp"
-//#include "nn_ops/matmul_vela.hpp"
-#include "include/matmul.h"
-
-
-
 #include "include/extra_funcs.h"
 
 
 
 
-#define MEM_ALIGNMENT 16
 
 
 extern int DEBUG_MODE;
@@ -44,98 +26,7 @@ extern int DEBUG_MODE;
 
 
 
-/*
-// Aligns a pointer down to the nearest aligned address
-void* AlignPointerDown(void* ptr, size_t alignment) {
-    return reinterpret_cast<void*>(
-        reinterpret_cast<uintptr_t>(ptr) & ~(alignment - 1));
-}
 
-// Simple Persistent Buffer Allocator (like PersistentArenaBufferAllocator)
-class PersistentAllocator {
- public:
-  PersistentAllocator(uint8_t* arena, size_t size)
-      : buffer_head_(arena), tail_temp_(arena + size) {}
-
-  void* AllocatePersistentBuffer(size_t size, size_t alignment) {
-    uint8_t* aligned_result = static_cast<uint8_t*>(
-        AlignPointerDown(tail_temp_ - size, alignment));
-    
-    if (aligned_result < buffer_head_) {
-      printf("Memory allocation failed! Requested: %zu bytes\n", size);
-      return nullptr;
-    }
-
-    tail_temp_ = aligned_result;
-    return aligned_result;
-  }
-
-  //Getters
-  uint8_t* GetBufferHead(){
-    return buffer_head_;
-  }
-
-  uint8_t* GetTailTemp(){
-    return tail_temp_;
-  }
-
-
- private:
-  uint8_t* buffer_head_;  // Start of buffer
-  uint8_t* tail_temp_;    // Current tail position
-};
-
-*/
-
-
-// Aligns a pointer down to the nearest aligned address
-void* AlignPointerDown(void* ptr, size_t alignment) {
-    return (void*)((uintptr_t)ptr & ~(alignment - 1));
-}
-
-// Initializes the PersistentAllocator
-void PersistentAllocator_Init(PersistentAllocator* allocator, int8_t* arena, size_t size) {
-    allocator->buffer_head = arena;
-    allocator->tail_temp = arena + size;
-}
-
-// Allocates a persistent buffer
-void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, size_t alignment) {
-    int8_t* aligned_result = (int8_t*)AlignPointerDown(allocator->tail_temp - size, alignment);
-    
-    if (aligned_result < allocator->buffer_head) {
-        printf("Memory allocation failed! Requested: %zu bytes\n", size);
-        return NULL;
-    }
-
-    allocator->tail_temp = aligned_result;
-    return aligned_result;
-}
-
-
-// Manually allocate relative addressing
-void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t relative_addr) {
-
-    void* absolute_ptr = allocator->buffer_head + relative_addr;
-
-    if (absolute_ptr != AlignPointerDown(absolute_ptr, MEM_ALIGNMENT)) {
-        printf("Error: manually set pointer is not 16-bit aligned\n");
-    }
-
-    return absolute_ptr;
-}
-
-
-
-
-// Getters
-int8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator) {
-    return allocator->buffer_head;
-}
-
-int8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator) {
-    return allocator->tail_temp;
-}
 
 
 
@@ -182,6 +73,74 @@ int run_cms(
     return 0;
 
 }
+
+
+
+
+int my_mem_u_npu(
+    int8_t* tensor_arena,
+    size_t tensor_arena_size,
+
+    const uint8_t* command_stream,
+    size_t command_stream_size,
+    const int8_t* weight_tensor,
+    size_t weight_tensor_size,
+
+    const int8_t* exp_lut,
+    size_t exp_lut_size
+
+)
+{
+
+
+
+    if (DEBUG_MODE) {
+
+        // print values
+        printf("BEFORE INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+    }
+
+
+
+    // Assign base addrs
+    const size_t num_tensors = 4;
+    uint64_t base_addrs[num_tensors];
+    size_t base_addrs_size[num_tensors];
+
+    base_addrs[0] = (uint64_t)(intptr_t)weight_tensor;   // Model weights
+    base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
+    base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
+    base_addrs[3] = (uint64_t)(intptr_t)exp_lut;
+
+    base_addrs_size[0] = weight_tensor_size;
+    base_addrs_size[1] = tensor_arena_size;
+    base_addrs_size[2] = tensor_arena_size;
+    base_addrs_size[3] = exp_lut_size;
+
+
+
+
+    // Run NPU commands
+    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
+        printf("run_cms call failed\n");
+        return -1;
+    }
+
+
+    if (DEBUG_MODE) {
+        //print tensor values after
+        printf("AFTER INVOKE\n");
+        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
+    }
+
+
+    return 0;
+
+
+
+}
+
 
 
 
@@ -448,6 +407,8 @@ int conv2d(size_t input_size, size_t output_size)
 
 
 */
+
+/*
 #include "nn_ops/elementwise_add.h"
 int elementwise_add()
 {
@@ -603,8 +564,6 @@ int elementwise_add()
 
 
 
-
-
 int run_npu_op(
     uint8_t* command_stream,
     size_t command_stream_size,
@@ -665,7 +624,6 @@ int run_npu_op(
      return 0;
 
 }
-
 
 
 
@@ -954,74 +912,7 @@ int membrane_update_npu(
 }
 
 
-
-
-
-
-int my_mem_u_npu(
-    int8_t* tensor_arena,
-    size_t tensor_arena_size,
-
-    const uint8_t* command_stream,
-    size_t command_stream_size,
-    const int8_t* weight_tensor,
-    size_t weight_tensor_size,
-
-    const int8_t* exp_lut,
-    size_t exp_lut_size
-
-)
-{
-
-
-
-    if (DEBUG_MODE) {
-
-        // print values
-        printf("BEFORE INVOKE\n");
-        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
-    }
-
-
-
-    // Assign base addrs
-    const size_t num_tensors = 4;
-    uint64_t base_addrs[num_tensors];
-    size_t base_addrs_size[num_tensors];
-
-    base_addrs[0] = (uint64_t)(intptr_t)weight_tensor;   // Model weights
-    base_addrs[1] = (uint64_t)(intptr_t)tensor_arena;   // Tensor arena pointer
-    base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
-    base_addrs[3] = (uint64_t)(intptr_t)exp_lut;
-
-    base_addrs_size[0] = weight_tensor_size;
-    base_addrs_size[1] = tensor_arena_size;
-    base_addrs_size[2] = tensor_arena_size;
-    base_addrs_size[3] = exp_lut_size;
-
-
-
-
-    // Run NPU commands
-    if(run_cms(command_stream, command_stream_size, base_addrs, base_addrs_size, num_tensors) != 0) {
-        printf("run_cms call failed\n");
-        return -1;
-    }
-
-
-    if (DEBUG_MODE) {
-        //print tensor values after
-        printf("AFTER INVOKE\n");
-        PrintTensor("tensor_arena", tensor_arena, tensor_arena_size);
-    }
-
-
-    return 0;
-
-
-
-
-}
+*/
 
 
 
@@ -1035,6 +926,11 @@ int my_mem_u_npu(
 
 
 
+
+
+
+
+/*
 
 
 
@@ -1175,7 +1071,6 @@ int matmul(uint8_t* input, uint8_t* output)
 
 
 
-/*
 
 int matmul_vela(uint8_t* input, uint8_t* output)
 {
