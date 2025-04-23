@@ -33,8 +33,8 @@ NN_Model* MLP_Init() {
     size_t in_spk_relative_addr = MY_MEM_U_IN_SPK_ADDR;
     size_t bias_relative_addr = MY_MEM_U_BIAS_ADDR;
     size_t weight_relative_addr = MY_MEM_U_WEIGHT_ADDR;
-    size_t ln_beta_relative_addr = MY_MEM_U_LN_BETA_ADDR;
-    size_t vth_relative_addr = MY_MEM_U_VTH_ADDR;
+    //size_t ln_beta_relative_addr = MY_MEM_U_LN_BETA_ADDR;
+    //size_t vth_relative_addr = MY_MEM_U_VTH_ADDR;
     size_t v_mem_relative_addr = MY_MEM_U_V_MEM_ADDR;
     size_t time_not_updated_relative_addr = MY_MEM_U_TIME_NOT_UPDATED_ADDR;
     //size_t tmp1_relative_addr = MY_MEM_U_TMP1_ADDR;
@@ -54,10 +54,10 @@ NN_Model* MLP_Init() {
     float in_spk_scale = MY_MEM_U_IN_SPK_SCALE;
     int in_spk_zero_point = MY_MEM_U_IN_SPK_ZERO_POINT;
 
-    float ln_beta_scale = MY_MEM_U_LN_BETA_SCALE;
-    int ln_beta_zero_point = MY_MEM_U_LN_BETA_ZERO_POINT;
-    float vth_scale = MY_MEM_U_VTH_SCALE;
-    int vth_zero_point = MY_MEM_U_VTH_ZERO_POINT;
+    //float ln_beta_scale = MY_MEM_U_LN_BETA_SCALE;
+    //int ln_beta_zero_point = MY_MEM_U_LN_BETA_ZERO_POINT;
+    //float vth_scale = MY_MEM_U_VTH_SCALE;
+    //int vth_zero_point = MY_MEM_U_VTH_ZERO_POINT;
     float v_mem_scale = MY_MEM_U_V_MEM_SCALE;
     int v_mem_zero_point = MY_MEM_U_V_MEM_ZERO_POINT;
     float time_not_updated_scale = MY_MEM_U_TIME_NOT_UPDATED_SCALE;
@@ -68,7 +68,7 @@ NN_Model* MLP_Init() {
 
 
 
-    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, 11);
+    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, 7);
     if (nnlayer == NULL) { printf("Error when initializing NN_layer\n"); }
 
 
@@ -81,10 +81,10 @@ NN_Model* MLP_Init() {
 
     int8_t* weight_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
         weight_relative_addr);
-    int8_t* ln_beta_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-        ln_beta_relative_addr);
-    int8_t* vth_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-        vth_relative_addr);
+    //int8_t* ln_beta_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+        //ln_beta_relative_addr);
+    //int8_t* vth_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+        //vth_relative_addr);
     int8_t* v_mem_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
         v_mem_relative_addr);
     int8_t* time_not_updated_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
@@ -106,10 +106,10 @@ NN_Model* MLP_Init() {
     NNLayer_Assign(nnlayer, 1, bias_arena, bias_tensor_size, 1, 0, "bias_arena");
     NNLayer_Assign(nnlayer, 2, weight_arena, weight_tensor_size, 1, 0, "weight_arena");
 
-    NNLayer_Assign(nnlayer, 3, ln_beta_quant, output_layer_size, ln_beta_scale, ln_beta_zero_point, "ln_beta_quant");
-    NNLayer_Assign(nnlayer, 4, vth_quant, output_layer_size, vth_scale, vth_zero_point, "vth_quant");
-    NNLayer_Assign(nnlayer, 5, v_mem_quant, output_layer_size, v_mem_scale, v_mem_zero_point, "v_mem_quant");
-    NNLayer_Assign(nnlayer, 6, time_not_updated_quant, output_layer_size, time_not_updated_scale, time_not_updated_zero_point, "time_not_updated_quant");
+    //NNLayer_Assign(nnlayer, 3, ln_beta_quant, output_layer_size, ln_beta_scale, ln_beta_zero_point, "ln_beta_quant");
+    //NNLayer_Assign(nnlayer, 4, vth_quant, output_layer_size, vth_scale, vth_zero_point, "vth_quant");
+    NNLayer_Assign(nnlayer, 3, v_mem_quant, output_layer_size, v_mem_scale, v_mem_zero_point, "v_mem_quant");
+    NNLayer_Assign(nnlayer, 4, time_not_updated_quant, output_layer_size, time_not_updated_scale, time_not_updated_zero_point, "time_not_updated_quant");
 
         
     // Tmp1 & Tmp2, no quantization params needed
@@ -117,8 +117,8 @@ NN_Model* MLP_Init() {
     //NNLayer_Assign(nnlayer, 8, tmp2_quant, output_layer_size, 1, 0, "tmp2_quant");
         
     // Output
-    NNLayer_Assign(nnlayer, 9, update_nxt_layer_quant, 1, 1, 0, "update_nxt_layer_quant");
-    NNLayer_Assign(nnlayer, 10, out_spk_quant, output_layer_size, out_spk_scale, out_spk_zero_point, "out_spk_quant");
+    NNLayer_Assign(nnlayer, 5, update_nxt_layer_quant, 1, 1, 0, "update_nxt_layer_quant");
+    NNLayer_Assign(nnlayer, 6, out_spk_quant, output_layer_size, out_spk_scale, out_spk_zero_point, "out_spk_quant");
 
 
 
@@ -130,16 +130,16 @@ NN_Model* MLP_Init() {
 }
 
 
-int MLP_Quantize_Inputs(NN_Model* mlp_model, float* in_spk, float* ln_beta, float* vth, float* v_mem, float* time_not_updated) {
+int MLP_Quantize_Inputs(NN_Model* mlp_model, float* in_spk, float* v_mem, float* time_not_updated) {
 
     NNLayer* nnlayer = mlp_model->first_nnlayer;
 
     // Quantize
     quantize_array_float_to_int8(in_spk, nnlayer->tensor_ptrs[0], MY_MEM_U_INPUT_LAYER_SIZE, MY_MEM_U_IN_SPK_SCALE, MY_MEM_U_IN_SPK_ZERO_POINT);
-    quantize_array_float_to_int8(ln_beta, nnlayer->tensor_ptrs[3], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_LN_BETA_SCALE, MY_MEM_U_LN_BETA_ZERO_POINT);
-    quantize_array_float_to_int8(vth, nnlayer->tensor_ptrs[4], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_VTH_SCALE, MY_MEM_U_VTH_ZERO_POINT);
-    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[5], MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
-    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[6], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_TIME_NOT_UPDATED_SCALE, MY_MEM_U_TIME_NOT_UPDATED_ZERO_POINT);
+    //quantize_array_float_to_int8(ln_beta, nnlayer->tensor_ptrs[3], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_LN_BETA_SCALE, MY_MEM_U_LN_BETA_ZERO_POINT);
+    //quantize_array_float_to_int8(vth, nnlayer->tensor_ptrs[4], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_VTH_SCALE, MY_MEM_U_VTH_ZERO_POINT);
+    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[3], MY_MEM_U_OUTPUT_LAYER_SIZE, MY_MEM_U_V_MEM_SCALE, MY_MEM_U_V_MEM_ZERO_POINT);
+    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[4], MY_MEM_U_OUTPUT_LAYER_SIZE,MY_MEM_U_TIME_NOT_UPDATED_SCALE, MY_MEM_U_TIME_NOT_UPDATED_ZERO_POINT);
 
     return 0;
 }
@@ -156,15 +156,13 @@ int MLP_Inference(
 
     float* in_spk,
 
-    float* ln_beta,
-    float* vth,
     float* v_mem,
     float* time_not_updated,
 
     float* out_spk
 ) {
 
-        MLP_Quantize_Inputs(mlp_model, in_spk, ln_beta, vth, v_mem, time_not_updated);
+        MLP_Quantize_Inputs(mlp_model, in_spk, v_mem, time_not_updated);
 
 
         // First layer
@@ -187,7 +185,8 @@ int MLP_Inference(
             Getmy_mem_uWeightsPointer(),
             Getmy_mem_uWeightsLen(),
 
-
+            Getmy_mem_uLIFParamPointer(),
+            Getmy_mem_uLIFParamLen(),
             Getmy_mem_uLUTPointer(),
             Getmy_mem_uLUTLen()
         );

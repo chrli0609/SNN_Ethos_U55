@@ -21,24 +21,23 @@ CMS_NAME = "my_mem_u"
 
 
 # Assign Memory Regions (0 - 7)
-LUT_REGION = 3
+PARAMS_REGION = 3
+LUT_REGION = 4
 
 
-
-# Assign Memory segments in SRAM Scratch
-TENSOR_ARENA_SIZE	=	705
+# Assign Memory segments in SRAM Scratch (region 1)
+TENSOR_ARENA_SIZE	=	641
 		
 IN_SPK_ADDR	=	0
 BIAS_ADDR	=	16
 WEIGHT_ADDR	=	336
-LN_BETA_ADDR	=	480
-VTH_ADDR	=	512
-V_MEM_ADDR	=	544
-TIME_NOT_UPDATED_ADDR	=	576
-TMP1_ADDR	=	608
-TMP2_ADDR	=	640
-UPDATE_NXT_LAYER_ADDR	=	672
-OUT_SPK_ADDR	=	673
+V_MEM_ADDR	=	480
+TIME_NOT_UPDATED_ADDR	=	512
+TMP1_ADDR	=	544
+TMP2_ADDR	=	576
+UPDATE_NXT_LAYER_ADDR	=	608
+OUT_SPK_ADDR	=	609
+
 
 
 
@@ -65,6 +64,19 @@ DECAYED_MEM_ADDR = TMP1_ADDR
 RESET_ADDR = TMP2_ADDR
 
 ##############
+
+
+
+# Assign Memory segments for region 3
+LN_BETA_ADDR = 0
+VTH_ADDR = 32
+
+
+# Assign Memory segments for region 4
+
+DECAY_LUT_INDEX = 0
+CHECK_SPK_LUT_INDEX = 1
+
 
 
 
@@ -127,6 +139,11 @@ UPDATE_NXT_LAYER_MIN_VAL = 0
 
 
 
+
+
+
+
+
 ADDR_DICT = {
     # Input Feature map
     CMS_NAME.upper()+"_IN_SPK_ADDR" : IN_SPK_ADDR,
@@ -183,6 +200,33 @@ OUT_SPK_SCALE, OUT_SPK_ZERO_POINT = zero_point_quant(OUT_SPK_MAX_VAL, OUT_SPK_MI
 
 
 
+##### Set LIF Param values #######
+
+# Generate Beta values
+beta_list = []
+for i in range(OUTPUT_LAYER_SIZE):
+    beta_list.append(0.55)
+
+
+LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)
+
+# Generate Vth values
+vth_list = []
+for i in range(OUTPUT_LAYER_SIZE):
+    vth_list.append(1.3)
+    
+VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
+
+
+
+
+
+
+
+
+
+
+
 QUANT_PARAM_DICT = {
     CMS_NAME.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
     CMS_NAME.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
@@ -226,9 +270,20 @@ def def_decay_lut():
 
     IFM2_IS_FIRST_OPERAND = False
 
+    #ifm = create_feature_map(
+        #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        #region=1,
+        #layout=NpuLayout.NHWC,
+        #data_type=NpuDataType.INT8,
+        #fm_elem_size=1,
+        #fm_addr=LN_BETA_ADDR,
+        #scale=LN_BETA_SCALE,
+        #zero_point=LN_BETA_ZERO_POINT,
+        #name="ln_beta"
+    #)
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=PARAMS_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -264,14 +319,17 @@ def def_decay_lut():
         name="decay"
     )
 
+
+
+
+
     #DMA for LUT
-    
     block_config = NpuShape3D(2, 2, 32)
 
 
 
     # Handle LUT generation and DMA
-    decay_lut_index = 0
+    decay_lut_index = DECAY_LUT_INDEX
 
     import math
     dma_lut_op, decay_lut_values = create_lut_and_dma(approximated_func=math.exp, lut_index=decay_lut_index, lut_region=LUT_REGION, data_type=ofm.data_type, 
@@ -864,7 +922,7 @@ def def_check_spk_sub_v_mem_updated_vth():
 
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=PARAMS_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -893,7 +951,7 @@ def def_check_spk_sub_v_mem_updated_vth():
     block_config = NpuShape3D(2, 2, 32)
 
 
-    check_spk_lut_index = 1
+    check_spk_lut_index = CHECK_SPK_LUT_INDEX
     activation = create_activation(
         activation_op=NpuActivationOp.TABLE_LOOKUP,
         min_val=None,
@@ -962,7 +1020,7 @@ def def_mul_vth_out_spk():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=PARAMS_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1215,6 +1273,7 @@ if __name__ == '__main__':
 
     # Merge
     lut_arr_contents_str = merge_lut_values_to_str([(decay_lut_values, decay_lut_index), (check_spk_lut_values, check_spk_lut_index)])
+    lif_params_arr_contents_str = merge_lif_params_to_str(LN_BETA_QUANT_LIST, VTH_QUANT_LIST)
     cms_bytearr, register_cms = gen_cms(npu_op_list, ACCELERATOR, DEBUG_MODE)
 
     # Make sure parameters are legal
@@ -1223,5 +1282,5 @@ if __name__ == '__main__':
 
     header_out_filepath = "../../snn_on_alif_e7/simple_code_test/include/" + CMS_NAME + ".h"
     imp_out_filepath = "../../snn_on_alif_e7/simple_code_test/nn_ops/" + CMS_NAME + ".c"
-    write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, CMS_NAME, ADDR_DICT, QUANT_PARAM_DICT, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+    write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, CMS_NAME, ADDR_DICT, QUANT_PARAM_DICT, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
     

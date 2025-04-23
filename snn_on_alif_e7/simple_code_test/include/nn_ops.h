@@ -34,7 +34,8 @@ int my_mem_u_npu(
     const int8_t* weight_tensor,
     size_t weight_tensor_size,
 
-
+    const int8_t* lif_param,
+    size_t lif_param_size,
     const int8_t* exp_lut,
     size_t exp_lut_size
 

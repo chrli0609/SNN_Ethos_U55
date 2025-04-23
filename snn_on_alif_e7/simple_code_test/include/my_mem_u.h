@@ -5,7 +5,7 @@
 
 
 
-#define MY_MEM_U_TENSOR_ARENA_SIZE 705
+#define MY_MEM_U_TENSOR_ARENA_SIZE 641
 #define MY_MEM_U_INPUT_LAYER_SIZE 16
 #define MY_MEM_U_OUTPUT_LAYER_SIZE 32
 
@@ -13,15 +13,15 @@
 #define MY_MEM_U_IN_SPK_ADDR 0
 #define MY_MEM_U_BIAS_ADDR 16
 #define MY_MEM_U_WEIGHT_ADDR 336
-#define MY_MEM_U_LN_BETA_ADDR 480
-#define MY_MEM_U_VTH_ADDR 512
-#define MY_MEM_U_V_MEM_ADDR 544
-#define MY_MEM_U_TIME_NOT_UPDATED_ADDR 576
-#define MY_MEM_U_IN_CURR_ADDR 640
-#define MY_MEM_U_DECAY_ADDR 608
-#define MY_MEM_U_DECAYED_MEM_ADDR 608
-#define MY_MEM_U_UPDATE_NXT_LAYER_ADDR 672
-#define MY_MEM_U_OUT_SPK_ADDR 673
+#define MY_MEM_U_LN_BETA_ADDR 0
+#define MY_MEM_U_VTH_ADDR 32
+#define MY_MEM_U_V_MEM_ADDR 480
+#define MY_MEM_U_TIME_NOT_UPDATED_ADDR 512
+#define MY_MEM_U_IN_CURR_ADDR 576
+#define MY_MEM_U_DECAY_ADDR 544
+#define MY_MEM_U_DECAYED_MEM_ADDR 544
+#define MY_MEM_U_UPDATE_NXT_LAYER_ADDR 608
+#define MY_MEM_U_OUT_SPK_ADDR 609
 #define MY_MEM_U_WEIGHT_LEN 144
 #define MY_MEM_U_BIAS_LEN 320
 
@@ -80,5 +80,16 @@ const int8_t* Getmy_mem_uLUTPointer();
 
 
 size_t Getmy_mem_uLUTLen();
+
+
+
+
+
+
+
+const int8_t* Getmy_mem_uLIFParamPointer();
+
+
+size_t Getmy_mem_uLIFParamLen();
 
 

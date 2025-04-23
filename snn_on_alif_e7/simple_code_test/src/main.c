@@ -119,78 +119,7 @@ int main() {
         };
 
 
-        float ln_beta [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-
-
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-            log(0.72),
-        };
-
-
-        float vth [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-            1.3,
-        };
+     
         float v_mem [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
             0.5,
             0.5,
@@ -303,8 +232,6 @@ int main() {
             mlp_model,
             in_spk,
 
-            ln_beta,
-            vth,
             v_mem,
             time_not_updated,
 

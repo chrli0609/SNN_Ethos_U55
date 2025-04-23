@@ -2,6 +2,10 @@ from enum import Enum, auto
 from typing import List, NamedTuple, Optional, Tuple, Dict, Any, Union
 
 
+NUM_VALS_PER_LINE = 8
+
+
+
 class NpuAccumulatorType(Enum):
     """
     Accumulator dtype of NPU operation
@@ -10,6 +14,56 @@ class NpuAccumulatorType(Enum):
     Default = auto()
     Int32 = auto()
     Int40 = auto()
+
+
+
+def merge_lif_params_to_str(ln_beta_quant_list: List[int], vth_quant_list: List[int]):
+
+    return_string = "\n"
+    return_string += "// ln(beta)_quant\n"
+    for i in range(len(ln_beta_quant_list)):
+        return_string += str(ln_beta_quant_list[i]) + ", " 
+        if i % NUM_VALS_PER_LINE == 0:
+            return_string += "\n"
+
+    
+    return_string += "\n// vth_quant\n"
+    for i in range(len(vth_quant_list)):
+        return_string += str(vth_quant_list[i]) + ", "
+        if i % NUM_VALS_PER_LINE == 0:
+            return_string += "\n"
+
+    return return_string
+
+
+import tensorflow as tf
+def quantize_vth_values(vth_list, vth_scale, vth_zero_point):
+    vth_list_quant = []
+    for i in range(len(vth_list)):
+        vth_quant = tf.round(vth_list[i] / vth_scale) + vth_zero_point
+        vth_list_quant.append(int(tf.get_static_value(vth_quant)))
+
+    return vth_list_quant
+
+
+
+import numpy as np
+import tensorflow as tf
+def generate_ln_beta_values(beta_list, ln_beta_scale, ln_beta_zero_point):
+
+    ln_beta_quant_list = []
+    for i in range(len(beta_list)):
+        ln_beta_real = np.log(beta_list[i])
+        ln_beta_quant = tf.round(ln_beta_real / ln_beta_scale) + ln_beta_zero_point
+
+        ln_beta_quant_list.append(int(tf.get_static_value(ln_beta_quant)))
+
+
+    return ln_beta_quant_list
+
+
+
+
 
 
 
@@ -26,7 +80,6 @@ def merge_lut_values_to_str(lut_list: List[Tuple[List[int], int]]) -> str:
 
     output: string of how the contents of the static C array should look like
     '''
-    NUM_VALS_PER_LINE = 8
 
     return_string = "\n"
     for i in range(len(lut_list)):
