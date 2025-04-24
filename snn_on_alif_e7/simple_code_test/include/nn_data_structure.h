@@ -33,6 +33,9 @@ typedef struct {
 
     PersistentAllocator allocator;
 
+
+    int8_t* input;
+    int8_t* output;
     struct NNLayer* next_layer;
 } NNLayer;
 

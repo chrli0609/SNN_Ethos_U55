@@ -25,11 +25,10 @@
 
 #include "include/elementwise_mul.h"
 //#include "nn_ops/membrane_update_python.h"
-#include "include/my_mem_u.h"
 
 
 
-const int DEBUG_MODE = 1;
+const int DEBUG_MODE = 0;
 
 
 
@@ -98,98 +97,38 @@ int main() {
 
 
         printf("Test my_mem_u\n");
-        float in_spk [MY_MEM_U_INPUT_LAYER_SIZE] = {
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2,
-            0.2
-        
+
+        size_t NUM_TIME_STEPS = 3;
+        float* in_spk_arr [NUM_TIME_STEPS];
+        for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
+
+        float in_spk [MLP_INPUT_LAYER_SIZE] = {
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
         };
+
+            in_spk_arr[i] = in_spk;
+        }
 
 
      
-        float v_mem [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-        };
 
-        float time_not_updated [MY_MEM_U_OUTPUT_LAYER_SIZE] = {
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-            5.3,
-        };
-        float out_spk [MY_MEM_U_OUTPUT_LAYER_SIZE];
+
+        float out_spk [MLP_OUTPUT_LAYER_SIZE];
 
         //PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
         //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
@@ -230,10 +169,8 @@ int main() {
 
         MLP_Inference(
             mlp_model,
-            in_spk,
-
-            v_mem,
-            time_not_updated,
+            in_spk_arr,
+            NUM_TIME_STEPS,
 
             out_spk
         );

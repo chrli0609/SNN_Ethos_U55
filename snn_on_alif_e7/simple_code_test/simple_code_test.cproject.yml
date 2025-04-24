@@ -33,9 +33,8 @@ project:
         - file: src/init_nn_model.c
 
 
-        #- file: nn_ops/matmul.c
-        #- file: nn_ops/elementwise_mul.c
-        - file: nn_ops/my_mem_u.c
+        - file: nn_ops/fc_lif_layer_0.c
+        - file: nn_ops/fc_lif_layer_1.c
 
 
 

@@ -152,6 +152,15 @@ NNLayer* NNLayer_Init(int8_t* tensor_arena, size_t tensor_arena_size, size_t num
 
     // Initiate PersistentAllocator
     PersistentAllocator_Init(&layer->allocator, layer->tensor_arena, layer->tensor_arena_size);
+
+
+    // Default Next Layer is NULL
+    layer->next_layer = NULL;
+
+
+    // Initialize Input and Output
+    layer->input = NULL;
+    layer->output = NULL;
     
     // Initialize all pointers to NULL
     for (size_t i = 0; i < num_tensors; i++) {
@@ -171,19 +180,16 @@ NNLayer* NNLayer_Init(int8_t* tensor_arena, size_t tensor_arena_size, size_t num
 int NNLayer_Assign(NNLayer* layer, size_t element, int8_t* tensor_ptr, size_t tensor_size, 
                    float scale, int zero_point, const char* tensor_name) {
 
-    printf("in nn_layer assign\n");
     // Check if layer is valid
     if (!layer) {
         return -1;  // Invalid layer
     }
     
-    printf("nnlayer is valid\n");
     // Check if element index is valid
     if (element >= layer->num_tensors) {
         return -2;  // Invalid element index
     }
     
-    printf("got past initial checks\n");
     // Free previous tensor if it exists
     if (layer->tensor_ptrs[element] != NULL) {
         free(layer->tensor_ptrs[element]);

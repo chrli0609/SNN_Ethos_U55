@@ -1,45 +1,66 @@
 from ethosu.vela.api import *
 
-#from config_ops import create_feature_map, create_activation
+
+
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from config_ops import *
 from extra_func import *
 
 
 import numpy as np
 
+# get the current working directory
+current_working_directory = os.getcwd()
 
-INPUT_LAYER_SIZE = 16
-OUTPUT_LAYER_SIZE = 32
 
-DEBUG_MODE = True
+
+
+INPUT_LAYER_SIZE = 32
+OUTPUT_LAYER_SIZE = 64
+
+DEBUG_MODE = False
 
 
 
 ACCELERATOR = NpuAccelerator.Ethos_U55_256
-CMS_NAME = "my_mem_u"
 
 
 
 # Assign Memory Regions (0 - 7)
+
+WEIGHT_AND_BIASES_REGION = 0
+SRAM_SCRATCH_REGION = 1
 PARAMS_REGION = 3
 LUT_REGION = 4
 
 
 # Assign Memory segments in SRAM Scratch (region 1)
-TENSOR_ARENA_SIZE	=	641
+#TENSOR_ARENA_SIZE	=	641
+		
+#IN_SPK_ADDR	=	0
+#BIAS_ADDR	=	IN_SPK_ADDR+INPUT_LAYER_SIZE
+#WEIGHT_ADDR	=	BIAS_ADDR+640   #640 --> bias len
+#V_MEM_ADDR	=	WEIGHT_ADDR+272 #272 --> weight len
+#TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR + OUTPUT_LAYER_SIZE
+#TMP1_ADDR	=	TIME_NOT_UPDATED_ADDR + OUTPUT_LAYER_SIZE
+#TMP2_ADDR	=	TMP1_ADDR + OUTPUT_LAYER_SIZE
+#UPDATE_NXT_LAYER_ADDR	=	TMP2_ADDR + OUTPUT_LAYER_SIZE
+#OUT_SPK_ADDR	=	UPDATE_NXT_LAYER_ADDR + OUTPUT_LAYER_SIZE
+
+
+TENSOR_ARENA_SIZE	=	1280
 		
 IN_SPK_ADDR	=	0
-BIAS_ADDR	=	16
-WEIGHT_ADDR	=	336
-V_MEM_ADDR	=	480
-TIME_NOT_UPDATED_ADDR	=	512
-TMP1_ADDR	=	544
-TMP2_ADDR	=	576
-UPDATE_NXT_LAYER_ADDR	=	608
-OUT_SPK_ADDR	=	609
-
-
-
+BIAS_ADDR	=	32
+WEIGHT_ADDR	=	672
+V_MEM_ADDR	=	944
+TIME_NOT_UPDATED_ADDR	=	1008
+TMP1_ADDR	=	1072
+TMP2_ADDR	=	1136
+UPDATE_NXT_LAYER_ADDR	=	1200
+OUT_SPK_ADDR	=	1216
 
 # Tensor arena allocation
 '''
@@ -69,7 +90,7 @@ RESET_ADDR = TMP2_ADDR
 
 # Assign Memory segments for region 3
 LN_BETA_ADDR = 0
-VTH_ADDR = 32
+VTH_ADDR = OUTPUT_LAYER_SIZE
 
 
 # Assign Memory segments for region 4
@@ -99,7 +120,7 @@ TIME_NOT_UPDATED_MIN_VAL = 0
 IN_CURR_MAX_VAL = 3
 IN_CURR_MIN_VAL = 0
 
-V_MEM_MAX_VAL = 4
+V_MEM_MAX_VAL = 1
 V_MEM_MIN_VAL = 0
 
 DECAY_ACC_MAX_VAL = 0
@@ -143,32 +164,6 @@ UPDATE_NXT_LAYER_MIN_VAL = 0
 
 
 
-
-ADDR_DICT = {
-    # Input Feature map
-    CMS_NAME.upper()+"_IN_SPK_ADDR" : IN_SPK_ADDR,
-
-    # Layer params
-    CMS_NAME.upper()+"_BIAS_ADDR" : BIAS_ADDR,
-    CMS_NAME.upper()+"_WEIGHT_ADDR" : WEIGHT_ADDR,
-    CMS_NAME.upper()+"_LN_BETA_ADDR" : LN_BETA_ADDR,
-    CMS_NAME.upper()+"_VTH_ADDR" : VTH_ADDR,
-
-    # Layer status
-    CMS_NAME.upper()+"_V_MEM_ADDR" : V_MEM_ADDR,
-    CMS_NAME.upper()+"_TIME_NOT_UPDATED_ADDR" : TIME_NOT_UPDATED_ADDR,
-
-    # TMP Feature maps
-    CMS_NAME.upper()+"_IN_CURR_ADDR" : IN_CURR_ADDR,
-    CMS_NAME.upper()+"_DECAY_ADDR" : DECAY_ADDR,
-    CMS_NAME.upper()+"_DECAYED_MEM_ADDR" : DECAYED_MEM_ADDR,
-
-
-    # Output Feature Map
-    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_ADDR" : UPDATE_NXT_LAYER_ADDR,
-    CMS_NAME.upper()+"_OUT_SPK_ADDR" : OUT_SPK_ADDR
-
-}
 
 
 IN_SPK_SCALE, IN_SPK_ZERO_POINT = zero_point_quant(IN_SPK_MAX_VAL, IN_SPK_MIN_VAL)
@@ -222,45 +217,86 @@ VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth
 
 
 
+# Create Dicts for writing to C files
+def generate_dict_for_writing_defines_to_C_files(cms_name, weight_byte_arr, bias_byte_arr):
+
+
+    sizes_dict = {
+
+
+        cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
+        cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,            
+        cms_name.upper()+"_OUTPUT_LAYER_SIZE "  : OUTPUT_LAYER_SIZE,
+
+        cms_name.upper()+"_WEIGHT_LEN" : len(weight_byte_arr),
+        cms_name.upper()+"_BIAS_LEN" : len(bias_byte_arr)        
+    }
+
+    addr_dict = {
+        # Input Feature map
+        cms_name.upper()+"_IN_SPK_ADDR" : IN_SPK_ADDR,
+
+        # Layer params
+        cms_name.upper()+"_BIAS_ADDR" : BIAS_ADDR,
+        cms_name.upper()+"_WEIGHT_ADDR" : WEIGHT_ADDR,
+        cms_name.upper()+"_LN_BETA_ADDR" : LN_BETA_ADDR,
+        cms_name.upper()+"_VTH_ADDR" : VTH_ADDR,
+
+        # Layer status
+        cms_name.upper()+"_V_MEM_ADDR" : V_MEM_ADDR,
+        cms_name.upper()+"_TIME_NOT_UPDATED_ADDR" : TIME_NOT_UPDATED_ADDR,
+
+        # TMP Feature maps
+        cms_name.upper()+"_IN_CURR_ADDR" : IN_CURR_ADDR,
+        cms_name.upper()+"_DECAY_ADDR" : DECAY_ADDR,
+        cms_name.upper()+"_DECAYED_MEM_ADDR" : DECAYED_MEM_ADDR,
+
+
+        # Output Feature Map
+        cms_name.upper()+"_UPDATE_NXT_LAYER_ADDR" : UPDATE_NXT_LAYER_ADDR,
+        cms_name.upper()+"_OUT_SPK_ADDR" : OUT_SPK_ADDR
+
+    }
 
 
 
 
-
-QUANT_PARAM_DICT = {
-    CMS_NAME.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
-    CMS_NAME.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
-
-
-    CMS_NAME.upper()+"_BIAS_SCALE" : BIAS_SCALE,
-    CMS_NAME.upper()+"_BIAS_ZERO_POINT" : BIAS_ZERO_POINT,
-    CMS_NAME.upper()+"_WEIGHT_SCALE" : WEIGHT_SCALE,
-    CMS_NAME.upper()+"_WEIGHT_ZERO_POINT" : WEIGHT_ZERO_POINT,
+    quant_param_dict = {
+        cms_name.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
+        cms_name.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
 
 
-    CMS_NAME.upper()+"_LN_BETA_SCALE" : LN_BETA_SCALE,
-    CMS_NAME.upper()+"_LN_BETA_ZERO_POINT" : LN_BETA_ZERO_POINT,
-    CMS_NAME.upper()+"_VTH_SCALE" : VTH_SCALE,
-    CMS_NAME.upper()+"_VTH_ZERO_POINT" : VTH_ZERO_POINT,
-    CMS_NAME.upper()+"_V_MEM_SCALE" : V_MEM_SCALE,
-    CMS_NAME.upper()+"_V_MEM_ZERO_POINT" : V_MEM_ZERO_POINT,
-    CMS_NAME.upper()+"_TIME_NOT_UPDATED_SCALE" : TIME_NOT_UPDATED_SCALE,
-    CMS_NAME.upper()+"_TIME_NOT_UPDATED_ZERO_POINT" : TIME_NOT_UPDATED_ZERO_POINT,
-
-    CMS_NAME.upper()+"_DECAY_SCALE" : DECAY_SCALE,
-    CMS_NAME.upper()+"_DECAY_ZERO_POINT" : DECAY_ZERO_POINT,
-    CMS_NAME.upper()+"_IN_CURR_SCALE" : IN_CURR_SCALE,
-    CMS_NAME.upper()+"_IN_CURR_ZERO_POINT" : IN_CURR_ZERO_POINT,
-    CMS_NAME.upper()+"_DECAYED_MEM_SCALE" : DECAYED_MEM_SCALE,
-    CMS_NAME.upper()+"_DECAYED_MEM_ZERO_POINT" : DECAYED_MEM_ZERO_POINT,
+        cms_name.upper()+"_BIAS_SCALE" : BIAS_SCALE,
+        cms_name.upper()+"_BIAS_ZERO_POINT" : BIAS_ZERO_POINT,
+        cms_name.upper()+"_WEIGHT_SCALE" : WEIGHT_SCALE,
+        cms_name.upper()+"_WEIGHT_ZERO_POINT" : WEIGHT_ZERO_POINT,
 
 
-    # Output
-    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_SCALE" : UPDATE_NXT_LAYER_SCALE,
-    CMS_NAME.upper()+"_UPDATE_NXT_LAYER_ZERO_POINT" : UPDATE_NXT_LAYER_ZERO_POINT,
-    CMS_NAME.upper()+"_OUT_SPK_SCALE" : OUT_SPK_SCALE,
-    CMS_NAME.upper()+"_OUT_SPK_ZERO_POINT" : OUT_SPK_ZERO_POINT,
-}
+        cms_name.upper()+"_LN_BETA_SCALE" : LN_BETA_SCALE,
+        cms_name.upper()+"_LN_BETA_ZERO_POINT" : LN_BETA_ZERO_POINT,
+        cms_name.upper()+"_VTH_SCALE" : VTH_SCALE,
+        cms_name.upper()+"_VTH_ZERO_POINT" : VTH_ZERO_POINT,
+        cms_name.upper()+"_V_MEM_SCALE" : V_MEM_SCALE,
+        cms_name.upper()+"_V_MEM_ZERO_POINT" : V_MEM_ZERO_POINT,
+        cms_name.upper()+"_TIME_NOT_UPDATED_SCALE" : TIME_NOT_UPDATED_SCALE,
+        cms_name.upper()+"_TIME_NOT_UPDATED_ZERO_POINT" : TIME_NOT_UPDATED_ZERO_POINT,
+
+        cms_name.upper()+"_DECAY_SCALE" : DECAY_SCALE,
+        cms_name.upper()+"_DECAY_ZERO_POINT" : DECAY_ZERO_POINT,
+        cms_name.upper()+"_IN_CURR_SCALE" : IN_CURR_SCALE,
+        cms_name.upper()+"_IN_CURR_ZERO_POINT" : IN_CURR_ZERO_POINT,
+        cms_name.upper()+"_DECAYED_MEM_SCALE" : DECAYED_MEM_SCALE,
+        cms_name.upper()+"_DECAYED_MEM_ZERO_POINT" : DECAYED_MEM_ZERO_POINT,
+
+
+        # Output
+        cms_name.upper()+"_UPDATE_NXT_LAYER_SCALE" : UPDATE_NXT_LAYER_SCALE,
+        cms_name.upper()+"_UPDATE_NXT_LAYER_ZERO_POINT" : UPDATE_NXT_LAYER_ZERO_POINT,
+        cms_name.upper()+"_OUT_SPK_SCALE" : OUT_SPK_SCALE,
+        cms_name.upper()+"_OUT_SPK_ZERO_POINT" : OUT_SPK_ZERO_POINT,
+    }
+
+    return sizes_dict, addr_dict, quant_param_dict
 
 
 
@@ -270,17 +306,6 @@ def def_decay_lut():
 
     IFM2_IS_FIRST_OPERAND = False
 
-    #ifm = create_feature_map(
-        #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        #region=1,
-        #layout=NpuLayout.NHWC,
-        #data_type=NpuDataType.INT8,
-        #fm_elem_size=1,
-        #fm_addr=LN_BETA_ADDR,
-        #scale=LN_BETA_SCALE,
-        #zero_point=LN_BETA_ZERO_POINT,
-        #name="ln_beta"
-    #)
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region=PARAMS_REGION,
@@ -296,7 +321,7 @@ def def_decay_lut():
 
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -309,7 +334,7 @@ def def_decay_lut():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -382,7 +407,7 @@ def def_fullyconnected():
 
     ifm = create_feature_map(
     height=1, width=1, depth=INPUT_LAYER_SIZE,
-    region=1,
+    region=SRAM_SCRATCH_REGION,
     layout=NpuLayout.NHWC,
     data_type=NpuDataType.INT8,
     fm_elem_size=1,
@@ -399,7 +424,7 @@ def def_fullyconnected():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -478,8 +503,6 @@ def def_fullyconnected():
 
     
 
-    ADDR_DICT[CMS_NAME.upper()+"_WEIGHT_LEN"] = len(weight_byte_arr)
-    ADDR_DICT[CMS_NAME.upper()+"_BIAS_LEN"]  = len(bias_byte_arr)
         
 
 
@@ -490,8 +513,8 @@ def def_fullyconnected():
     WEIGHT_N_BIAS_ADDR = BIAS_ADDR #Bias before weights
 
     #DMA    
-    dma_src = NpuAddressRange(region=0, address=0, length=weight_n_bias_len)
-    dma_dst = NpuAddressRange(region=1, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
+    dma_src = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=weight_n_bias_len)
+    dma_dst = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
     dma_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
 
 
@@ -503,8 +526,8 @@ def def_fullyconnected():
     padding = NpuPadding(top=0, left=0, bottom=0, right=0)
 
 
-    weights = NpuAddressRange(region=1, address=WEIGHT_ADDR, length=len(weight_byte_arr))
-    biases = NpuAddressRange(region=1, address=BIAS_ADDR, length=len(bias_byte_arr))
+    weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
+    biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
 
     
 
@@ -561,7 +584,7 @@ def def_mul_decay_Vmem():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -573,7 +596,7 @@ def def_mul_decay_Vmem():
 
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -587,7 +610,7 @@ def def_mul_decay_Vmem():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         #layout=NpuLayout.NHCWB16,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
@@ -646,7 +669,7 @@ def def_add_decayed_mem_in_curr():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -658,7 +681,7 @@ def def_add_decayed_mem_in_curr():
 
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -673,7 +696,7 @@ def def_add_decayed_mem_in_curr():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         #layout=NpuLayout.NHCWB16,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
@@ -718,188 +741,11 @@ def def_add_decayed_mem_in_curr():
     add_decayed_mem_in_curr.accumulator_type = NpuAccumulatorType.Default
 
 
-    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+    check_block_config_legal(block_config, add_decayed_mem_in_curr, ACCELERATOR)
 
 
 
     return add_decayed_mem_in_curr
-
-
-'''
-def def_relu_sub_inner_vth_vmem():
-    IFM2_IS_FIRST_OPERAND = False
-
-    ifm = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=VTH_ADDR,
-        scale = VTH_SCALE,
-        zero_point = VTH_ZERO_POINT,
-        name="v_th"
-    )
-
-    ifm2 = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=V_MEM_ADDR,
-        scale = V_MEM_SCALE,
-        zero_point = V_MEM_ZERO_POINT,
-        name="v_mem_post_update_pre_rst"
-    )
-
-
-    ofm = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        #layout=NpuLayout.NHCWB16,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=CHECK_SPK_SUB_INNER_ADDR,
-        scale=CHECK_SPK_SUB_INNER_SCALE,
-        zero_point=CHECK_SPK_SUB_INNER_ZERO_POINT,
-        name="check_spk_sub_inner"
-    )
-
-    block_config = NpuShape3D(2, 2, 32)
-
-
-    # ReLu
-    activation = create_activation(
-        activation_op=NpuActivationOp.NONE_OR_RELU,
-        min_val=0,
-        max_val=None,
-    )
-
-
-
-
-    check_spk_sub_inner_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
-
-    #elementwise operation
-    check_spk_sub_inner_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-    check_spk_sub_inner_op.rescale = None
-
-    #NpuBlockOperation
-    check_spk_sub_inner_op.ifm = ifm
-    check_spk_sub_inner_op.ifm2 = ifm2
-    check_spk_sub_inner_op.ifm2_scalar = None   #set if ifm2 is a scalar
-    check_spk_sub_inner_op.ofm = ofm
-    check_spk_sub_inner_op.kernel = None
-    check_spk_sub_inner_op.weights = []
-    check_spk_sub_inner_op.biases = []
-    check_spk_sub_inner_op.padding = None
-    check_spk_sub_inner_op.activation = activation
-    check_spk_sub_inner_op.block_config = block_config
-    check_spk_sub_inner_op.rounding_mode = NpuRoundingMode.TFL
-    check_spk_sub_inner_op.fused_quantize = False
-    check_spk_sub_inner_op.ifm_upscale = NpuResamplingMode.NONE
-    check_spk_sub_inner_op.accumulator_type = NpuAccumulatorType.Default
-
-
-    check_block_config_legal(block_config, check_spk_sub_inner_op, ACCELERATOR)
-
-
-
-    return check_spk_sub_inner_op
-'''
-
-
-
-
-
-
-
-'''
-def def_relu_sub_outer_vth_vmem():
-    IFM2_IS_FIRST_OPERAND = False
-
-    ifm = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=VTH_ADDR,
-        scale = VTH_SCALE,
-        zero_point = VTH_ZERO_POINT,
-        name="v_th"
-    )
-
-    ifm2 = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=SPK_SUB_TMP_ADDR,
-        scale = SPK_SUB_TMP_SCALE,
-        zero_point = SPK_SUB_TMP_ZERO_POINT,
-        name="spk_sub_tmp"
-    )
-
-
-    ofm = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
-        #layout=NpuLayout.NHCWB16,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=CHECK_SPK_SUB_INNER_ADDR,
-        scale=CHECK_SPK_SUB_INNER_SCALE,
-        zero_point=CHECK_SPK_SUB_INNER_ZERO_POINT,
-        name="check_spk_sub_inner"
-    )
-
-    block_config = NpuShape3D(2, 2, 32)
-
-
-    # ReLu
-    activation = create_activation(
-        activation_op=NpuActivationOp.NONE_OR_RELU,
-        min_val=0,
-        max_val=None,
-    )
-
-
-
-
-    check_spk_sub_inner_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
-
-    #elementwise operation
-    check_spk_sub_inner_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-    check_spk_sub_inner_op.rescale = None
-
-    #NpuBlockOperation
-    check_spk_sub_inner_op.ifm = ifm
-    check_spk_sub_inner_op.ifm2 = ifm2
-    check_spk_sub_inner_op.ifm2_scalar = None   #set if ifm2 is a scalar
-    check_spk_sub_inner_op.ofm = ofm
-    check_spk_sub_inner_op.kernel = None
-    check_spk_sub_inner_op.weights = []
-    check_spk_sub_inner_op.biases = []
-    check_spk_sub_inner_op.padding = None
-    check_spk_sub_inner_op.activation = activation
-    check_spk_sub_inner_op.block_config = block_config
-    check_spk_sub_inner_op.rounding_mode = NpuRoundingMode.TFL
-    check_spk_sub_inner_op.fused_quantize = False
-    check_spk_sub_inner_op.ifm_upscale = NpuResamplingMode.NONE
-    check_spk_sub_inner_op.accumulator_type = NpuAccumulatorType.Default
-
-
-    check_block_config_legal(block_config, check_spk_sub_inner_op, ACCELERATOR)
-
-
-
-    return check_spk_sub_inner_op
-'''
 
 
 
@@ -910,7 +756,7 @@ def def_check_spk_sub_v_mem_updated_vth():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -937,7 +783,7 @@ def def_check_spk_sub_v_mem_updated_vth():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         #layout=NpuLayout.NHCWB16,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
@@ -1005,7 +851,7 @@ def def_check_spk_sub_v_mem_updated_vth():
     check_spk_sub_v_mem_updated_vth_op.accumulator_type = NpuAccumulatorType.Int32
 
 
-    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+    check_block_config_legal(block_config, check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
 
 
 
@@ -1032,7 +878,7 @@ def def_mul_vth_out_spk():
 
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1046,7 +892,7 @@ def def_mul_vth_out_spk():
     # Same scaling as VTH (since reset is either 0 or 1)
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1056,8 +902,6 @@ def def_mul_vth_out_spk():
         name="reset"
     )
 
-    print("RESET_SCALE",RESET_SCALE)
-    print("RESET_ZERO_POINT", RESET_ZERO_POINT)
 
     block_config = NpuShape3D(2, 2, 32)
 
@@ -1093,7 +937,7 @@ def def_mul_vth_out_spk():
     mul_vth_out_spk_op.accumulator_type = NpuAccumulatorType.Default
 
 
-    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+    check_block_config_legal(block_config, mul_vth_out_spk_op, ACCELERATOR)
 
 
 
@@ -1108,7 +952,7 @@ def def_sub_mem_updated_reset():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1122,7 +966,7 @@ def def_sub_mem_updated_reset():
     # Same scaling as VTH (since reset is either 0 or 1)
     ifm2 = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1135,7 +979,7 @@ def def_sub_mem_updated_reset():
 
     ofm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -1179,7 +1023,7 @@ def def_sub_mem_updated_reset():
     sub_v_mem_reset_op.accumulator_type = NpuAccumulatorType.Default
 
 
-    check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+    check_block_config_legal(block_config, sub_v_mem_reset_op, ACCELERATOR)
 
 
 
@@ -1192,7 +1036,7 @@ def def_update_nxt_layer_reduce_sum_out_spk():
 
     ifm = create_feature_map(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8, fm_elem_size=1,
         fm_addr=OUT_SPK_ADDR,
@@ -1202,7 +1046,7 @@ def def_update_nxt_layer_reduce_sum_out_spk():
 
     ofm = create_feature_map(
         height=1, width=1, depth=1,
-        region=1,
+        region=SRAM_SCRATCH_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8, fm_elem_size=1,
         fm_addr=UPDATE_NXT_LAYER_ADDR,
@@ -1219,7 +1063,7 @@ def def_update_nxt_layer_reduce_sum_out_spk():
 
     padding = NpuPadding(top=0, left=0, bottom=0, right=0)
    
-    block_config = NpuShape3D(2, 2, 32)
+    block_config = NpuShape3D(2, 2, 8)
 
 
     activation = create_activation(
@@ -1249,11 +1093,85 @@ def def_update_nxt_layer_reduce_sum_out_spk():
     update_nxt_layer_reduce_sum_op.ifm_upscale = NpuResamplingMode.NONE
     update_nxt_layer_reduce_sum_op.accumulator_type = NpuAccumulatorType.Default
 
+    check_block_config_legal(block_config, update_nxt_layer_reduce_sum_op, ACCELERATOR)
 
     return update_nxt_layer_reduce_sum_op
 
+def def_reset_time():
 
-if __name__ == '__main__':
+    IFM2_IS_FIRST_OPERAND = False
+
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=SRAM_SCRATCH_REGION,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=TIME_NOT_UPDATED_ADDR,
+        scale = TIME_NOT_UPDATED_SCALE,
+        zero_point = TIME_NOT_UPDATED_ZERO_POINT,
+        name="time_not_updated"
+    )
+
+    ifm2 = NpuFeatureMap()
+    ifm2.quantization = NpuQuantization(1, 0)
+    ifm2_scalar = 0
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region=SRAM_SCRATCH_REGION,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=TIME_NOT_UPDATED_ADDR,
+        scale = TIME_NOT_UPDATED_SCALE,
+        zero_point = TIME_NOT_UPDATED_ZERO_POINT,
+        name="time_not_updated"
+    )
+
+    block_config = NpuShape3D(2, 2, 32)
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.NONE_OR_RELU,
+        min_val=0,
+        max_val=0,
+    )
+
+
+
+
+    reset_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
+    
+    #elementwise operation
+    reset_time_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+    reset_time_op.rescale = None
+
+    #NpuBlockOperation
+    reset_time_op.ifm = ifm
+    reset_time_op.ifm2 = ifm2
+    reset_time_op.ifm2_scalar = ifm2_scalar   #set if ifm2 is a scalar
+    reset_time_op.ofm = ofm
+    reset_time_op.kernel = None
+    reset_time_op.weights = []
+    reset_time_op.biases = []
+    reset_time_op.padding = None
+    reset_time_op.activation = activation
+    reset_time_op.block_config = block_config
+    reset_time_op.rounding_mode = NpuRoundingMode.TFL
+    reset_time_op.fused_quantize = True 
+    reset_time_op.ifm_upscale = NpuResamplingMode.NONE
+    reset_time_op.accumulator_type = NpuAccumulatorType.Default
+
+
+    check_block_config_legal(block_config, reset_time_op, ACCELERATOR)
+
+
+
+    return reset_time_op
+
+
+def layer1_merge_and_write(cms_name, header_out_filepath, imp_out_filepath):
 
     # Define the individual NPU Operations
     dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
@@ -1264,10 +1182,11 @@ if __name__ == '__main__':
     reset_mul_vth_out_spk_op = def_mul_vth_out_spk()
     sub_v_mem_reset_op = def_sub_mem_updated_reset()
     update_nxt_layer_reduce_sum_out_spk = def_update_nxt_layer_reduce_sum_out_spk()
+    reset_time_op = def_reset_time()
 
 
 
-    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk]
+    npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
 
@@ -1276,11 +1195,12 @@ if __name__ == '__main__':
     lif_params_arr_contents_str = merge_lif_params_to_str(LN_BETA_QUANT_LIST, VTH_QUANT_LIST)
     cms_bytearr, register_cms = gen_cms(npu_op_list, ACCELERATOR, DEBUG_MODE)
 
+    # Generate Dicts for writing to C
+    sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+
     # Make sure parameters are legal
-    check_weight_and_bias_len_correct(CMS_NAME, ADDR_DICT, weight_byte_arr, bias_byte_arr)
+    check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr)
 
 
-    header_out_filepath = "../../snn_on_alif_e7/simple_code_test/include/" + CMS_NAME + ".h"
-    imp_out_filepath = "../../snn_on_alif_e7/simple_code_test/nn_ops/" + CMS_NAME + ".c"
-    write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, CMS_NAME, ADDR_DICT, QUANT_PARAM_DICT, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+    write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
     
