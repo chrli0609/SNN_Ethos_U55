@@ -23,7 +23,7 @@
 
 
 
-#include "include/elementwise_mul.h"
+//#include "include/elementwise_mul.h"
 //#include "nn_ops/membrane_update_python.h"
 
 
@@ -102,24 +102,29 @@ int main() {
         float* in_spk_arr [NUM_TIME_STEPS];
         for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
 
-        float in_spk [MLP_INPUT_LAYER_SIZE] = {
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0
-        };
+            float in_spk [MLP_INPUT_LAYER_SIZE];
+            for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+                in_spk[j] = 0;
+            }
+
+        //float in_spk [MLP_INPUT_LAYER_SIZE] = {
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0,
+            //0
+        //};
 
             in_spk_arr[i] = in_spk;
         }
@@ -166,6 +171,9 @@ int main() {
 
 
 
+        // Set to Milimeter increase
+        //#include CMSIS_device_header
+        //SysTick_Config(SystemCoreClock/1000);
 
         MLP_Inference(
             mlp_model,

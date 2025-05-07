@@ -2,6 +2,7 @@ from ethosu.vela.api import *
 
 
 
+
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -10,9 +11,6 @@ from extra_func import *
 
 
 import numpy as np
-
-# get the current working directory
-current_working_directory = os.getcwd()
 
 
 
@@ -37,18 +35,19 @@ LUT_REGION = 4
 
 
 # Assign Memory segments in SRAM Scratch (region 1)
-TENSOR_ARENA_SIZE	=	656
 		
 IN_SPK_ADDR	=	0
-BIAS_ADDR	=	16
-WEIGHT_ADDR	=	336
-V_MEM_ADDR	=	480
-TIME_NOT_UPDATED_ADDR	=	512
-TMP1_ADDR	=	544
-TMP2_ADDR	=	576
-UPDATE_NXT_LAYER_ADDR	=	608
-OUT_SPK_ADDR	=	624
+BIAS_ADDR	=	OUTPUT_LAYER_SIZE
+WEIGHT_ADDR	=	BIAS_ADDR + 320 # Bias len
+V_MEM_ADDR	=	WEIGHT_ADDR + 144 #weight len
+TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR + OUTPUT_LAYER_SIZE
+TMP1_ADDR	=	TIME_NOT_UPDATED_ADDR + OUTPUT_LAYER_SIZE
+TMP2_ADDR	=	TMP1_ADDR + OUTPUT_LAYER_SIZE
+UPDATE_NXT_LAYER_ADDR	=	TMP2_ADDR + OUTPUT_LAYER_SIZE
+OUT_SPK_ADDR	=	UPDATE_NXT_LAYER_ADDR + 16
 
+
+TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 5*OUTPUT_LAYER_SIZE + 320+144 + 16
 
 
 # Tensor arena allocation
@@ -437,14 +436,7 @@ def def_fullyconnected():
 
 
     # Define Weights
-
-
     weights_volume_ohwi = 0.2 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
-    #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
-    #print("weights_volume_ohwi", weights_volume_ohwi.shape)
-    #print(weights_volume_ohwi)
-    #weights_volume_ohwi = np.tile(np.arange(1, 5), (32, 4)).reshape(ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth).astype(np.int8)  # Repeat [1, 2, 3, 4] across 32 rows
-    #weights_volume_ohwi = np.ones((OFM_DEPTH, KERNEL_HEIGHT, KERNEL_WIDTH, IFM_DEPTH)).astype(np.uint8)
     if ifm.data_type == NpuDataType.INT8:
         weight_ifm_bitdepth = 8 #int16
     elif ifm.data_type == NpuDataType.INT16:

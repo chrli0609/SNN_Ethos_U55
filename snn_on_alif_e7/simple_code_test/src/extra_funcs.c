@@ -45,8 +45,11 @@ void quantize_array_float_to_int8(
   int32_t zero_point      // Quantization zero-point
 )
 {
+
+  printf("In quantize_array_float_to_int8()\n");
   for (int i = 0; i < length; i++)
   {
+
       int32_t quantized = (int32_t)roundf(input[i] / scale) + zero_point;
 
       // Clamp to [0, 255]

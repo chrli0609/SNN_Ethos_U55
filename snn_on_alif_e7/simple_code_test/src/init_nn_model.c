@@ -3,22 +3,104 @@
 
 #include <stdio.h> //printf
 #include <stdlib.h> //malloc
-#include <time.h> //time
 
 
 
 //#include "fc_lif_layer_0.h"
 //#include "fc_lif_layer_1.h"
 
+#include "cmsis_gcc.h"
 #include "fc_lif_layer_1.h"
 #include "include/extra_funcs.h" //quantize_array_float_to_int8()
 #include "nn_data_structure.h"
-
+#include "pm.h"
 
 
 
 
 extern int DEBUG_MODE;
+
+
+// How often we update (in ms)
+#define UPDATE_PERIOD 1
+
+
+
+
+//#include ""
+
+//void init_lptmr(void) {
+    //// Enable LPTMR clock
+    //RCC->APB1ENR |= RCC_APB1ENR_LPTIM1EN; // Enable LPTMR clock
+    
+    //// Configure LPTMR for 1 Hz (1-second ticks)
+    //LPTMR1->CMR = 32768 - 1; // Set compare value for 1 second (based on 32.768 kHz)
+    
+    //// Set LPTMR for continuous mode
+    //LPTMR1->CR |= LPTMR_CR_ENABLE;
+    //LPTMR1->CR |= LPTMR_CR_TEN;  // Enable timer
+//}
+
+
+
+//volatile uint32_t lptmr1_start, lptmr2_start;
+
+//void lptmr1_start_time(void) {
+    //lptmr1_start = LPTMR1->CNR;  // Snapshot LPTMR1 counter
+//}
+
+//void lptmr2_start_time(void) {
+    //lptmr2_start = LPTMR1->CNR;  // Snapshot LPTMR1 counter
+//}
+
+//uint32_t lptmr1_elapsed_time(void) {
+    //return LPTMR1->CNR - lptmr1_start;  // Elapsed time in 32.768 kHz ticks
+//}
+
+//uint32_t lptmr2_elapsed_time(void) {
+    //return LPTMR1->CNR - lptmr2_start;  // Elapsed time in 32.768 kHz ticks
+//}
+
+
+
+
+
+
+
+
+
+//#include "core_cm55.h"
+
+//volatile uint32_t systick_flag = 0;
+
+//void SysTick_Handler(void) {
+    //systick_flag = 1;
+//}
+
+//void sleep_1ms(void) {
+    //__disable_irq();        // Just to be sure during setup
+    //systick_flag = 0;
+    //uint32_t reload = (SystemCoreClock / 1000) - 1;
+    ////uint32_t reload = 0xFFFFFF;
+
+    //if (reload > 0xFFFFFF) { printf("clock overflowed, capped to ~42ms\n"); reload = 0xFFFFFF; } // prevent overflow
+
+    //SysTick->LOAD = reload;
+    //SysTick->VAL = 0;
+    //SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk |
+                    //SysTick_CTRL_TICKINT_Msk |
+                    //SysTick_CTRL_ENABLE_Msk;
+
+    //__enable_irq();         // Enable interrupts
+
+    //while (!systick_flag) {
+        //__WFI();            // Sleep until interrupt
+    //}
+
+    //SysTick->CTRL = 0;      // Disable SysTick
+//}
+
+
 
 
 
@@ -328,6 +410,61 @@ int MLP_Run_Layer(
 }
 
 
+
+
+
+uint32_t volatile ms_ticks = 0;
+void SysTick_Handler (void) {
+    ms_ticks++;
+}
+
+void delay(uint32_t nticks){
+    uint32_t c_ticks;
+
+    c_ticks = ms_ticks;
+    while((ms_ticks - c_ticks) < nticks) __WFE() ;
+}
+
+
+
+uint32_t start_timer() {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    
+    uint32_t start = DWT->CYCCNT;
+
+    return start;
+    
+}
+
+
+uint32_t debug_start_timer(void) {
+    return ms_ticks;
+}
+
+uint32_t debug_end_timer(uint32_t start_tick) {
+    
+    //Current time - the time we started --> time elapsed
+    uint32_t elapsed_ticks = ms_ticks - start_tick;
+    return elapsed_ticks;
+
+}
+
+float end_timer(uint32_t start) {
+
+    uint32_t end = DWT->CYCCNT;
+    uint32_t elapsed_cycles = end - start;
+    float elapsed_ms = (float)elapsed_cycles / (SystemCoreClock / 1000.0f);
+
+    if (DEBUG_MODE) {
+        printf("Debug tool: elapsed_ms = %f\n", elapsed_ms);
+    }
+
+    return elapsed_ms;
+}
+
+
 #include "include/nn_ops.h"
 
 int MLP_Inference(
@@ -340,6 +477,30 @@ int MLP_Inference(
 ) {
 
 
+    // Set to Milimeter increase
+    //try setting each tick to 
+    SysTick_Config(SystemCoreClock/1000000);
+
+
+
+    //uint32_t start, end;
+    //CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    //DWT->CYCCNT = 0;
+    //DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    
+    //start = DWT->CYCCNT;
+    ////sleep_200ms();
+    //delay(200);
+    //end = DWT->CYCCNT;
+    //uint32_t elapsed_cycles = end - start;
+    //float elapsed_ms = (float)elapsed_cycles / (SystemCoreClock / 1000.0f);
+
+    //printf("Debug tool: elapsed_ms = %f\n", elapsed_ms);
+
+
+
+    // Measure system
+    printf("Num neurons = %d\n", MLP_OUTPUT_LAYER_SIZE);
 
 
         // First Layer
@@ -350,58 +511,69 @@ int MLP_Inference(
 
         
 
+        // For debugging
+        uint32_t debug_timer_start; float debug_timer_elapsed_ms;
+
+        // Timer temp variables
+        uint32_t start;
+        float elapsed_ms;
+
+
+        // Init timer
+        uint32_t start_layer0 = 0;
+        uint32_t start_layer1 = 0;
+        float time_not_updated_layer0_val, time_not_updated_layer1_val;
 
 
         // Start next cycle
         float* in_spk;
         size_t it = 0;
 
-        time_t start_layer0 = 200;
-        time_t end_layer0;
-        double dif_layer0;
-
-        time_t start_layer1 = 0;
-        time_t end_layer1;
-        double dif_layer1;
         while (it < in_spk_arr_len) {
 
             printf("it: %d\n", it);
 
+
+            // Set up input spikes for this iteration
+            printf("about to assign next time step inputs\n");
             in_spk = in_spk_arr[it];
+            printf("just set in_spk <- in_spk_arr[%d]\n", it);
 
-            
 
-            // Quantize Input
+
+            // Start measuring time
+            if (DEBUG_MODE) { debug_timer_start = start_timer(); }
+            start = start_timer();
+
+
+            printf("timer started, about to quantize in_spk\n");
+
+            // Quantize Input in_spk
             quantize_array_float_to_int8(in_spk, nnlayer0->tensor_ptrs[0], FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_IN_SPK_SCALE, FC_LIF_LAYER_0_IN_SPK_ZERO_POINT);
+
+            printf("quantized in spk successfully\n");
 
 
          
 
 
             // Update how long it was we updated layer0 last
-            if (start_layer0 != 200) {
-                time (&end_layer0);
-                dif_layer0 = difftime(end_layer0, start_layer0);
-                printf("time: %.f\n", dif_layer0);
-                // layer0
-                float time_not_updated [FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE];
-                for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
-                    //time_not_updated[i] = dif_layer0;
-                    time_not_updated[i] = 3.4;
-                }
-                quantize_array_float_to_int8(time_not_updated, nnlayer0->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
+            // Elapsed_time since last update
+            time_not_updated_layer0_val = end_timer(start_layer0);
+
+            // layer0
+            float time_not_updated_layer0 [FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE];
+            for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
+                time_not_updated_layer0[i] = time_not_updated_layer0_val;
             }
-            //debug
-                float time_not_updated [FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE];
-                for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
-                    //time_not_updated[i] = dif_layer0;
-                    time_not_updated[i] = 3.4;
-                }
-                quantize_array_float_to_int8(time_not_updated, nnlayer0->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
+            quantize_array_float_to_int8(time_not_updated_layer0, nnlayer0->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
 
+            //DEBUG: Check Tensor Arena Values Before NPU OP
+            if (DEBUG_MODE) { NNLayer_DequantizeAndPrint(nnlayer0); }
 
-            // Check Tensor Arena Values Before NPU OP
-            NNLayer_DequantizeAndPrint(nnlayer0);
+            
+            printf("about to run layer\n");
+            uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
             MLP_Run_Layer(
                 nnlayer0->tensor_arena,
@@ -417,8 +589,12 @@ int MLP_Inference(
                 Getfc_lif_layer_0LUTPointer(),
                 Getfc_lif_layer_0LUTLen()
             );
-            time (&start_layer0);
+            uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
+            printf("Ticks elapsed for layer once in it: %d = %d\n", it, measure_layer0_elapsed_ticks);
+            //printf("Just printed time it takes to compute 1 layer on NPU: %d\n", measure_layer0_elapsed_ticks);
 
+            // Start timer
+            start_layer0 = start_timer();
             
 
 
@@ -427,6 +603,8 @@ int MLP_Inference(
             NNLayer_DequantizeAndPrint(nnlayer0);
 
 
+
+            /*
 
             // Had at least 1 spike in layer0 --> run next layer
             if (((int8_t)*(nnlayer0->tensor_ptrs[5])) == 127) {
@@ -439,20 +617,18 @@ int MLP_Inference(
 
 
                 // Update how long it was we updated layer0 last
-                if (start_layer1 != 200) {
-                    time (&end_layer1);
-                    dif_layer1 = difftime(end_layer1, start_layer1);
-                    printf("time layer1: %.f\n", dif_layer1);
-                    float time_not_updated_layer1 [FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE];
-                    for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
-                        //time_not_updated_layer1[i] = dif_layer1;
-                        time_not_updated_layer1[i] = 5.5;
-                    }
-                    quantize_array_float_to_int8(time_not_updated_layer1, nnlayer1->tensor_ptrs[4], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT);
-                }   
+                time_not_updated_layer1_val = end_timer(start_layer1);
 
-                printf("nnlayer1:\n");
-                NNLayer_DequantizeAndPrint(nnlayer1);
+                float time_not_updated_layer1 [FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE];
+                for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
+                    //time_not_updated_layer1[i] = dif_layer1;
+                    time_not_updated_layer1[i] = time_not_updated_layer1_val;
+                }
+                quantize_array_float_to_int8(time_not_updated_layer1, nnlayer1->tensor_ptrs[4], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT);
+
+                //printf("nnlayer1:\n");
+                if (DEBUG_MODE) { NNLayer_DequantizeAndPrint(nnlayer1); }
+
                 printf("starting MLP RUN Layer1 now\n");
                 MLP_Run_Layer(
                     nnlayer1->tensor_arena,
@@ -467,12 +643,14 @@ int MLP_Inference(
                     Getfc_lif_layer_1LIFParamLen(),
                     Getfc_lif_layer_1LUTPointer(),
                     Getfc_lif_layer_1LUTLen()
-                );
-                time (&start_layer1);
-            NNLayer_DequantizeAndPrint(nnlayer1);
+                );                
+                start_layer1 = start_timer();
 
-            } else if (((int8_t)*(nnlayer0->tensor_ptrs[5])) == -128) { printf("No spike, skipping layer1 computation\n"); }
-            else { printf("ERRORRRRRRR!!!!!!!!!!!! UNEXPECTED VALUE FOUND IN UPDATE_NXT_LAYER\n"); }
+                NNLayer_DequantizeAndPrint(nnlayer1);
+
+            } else if (((int8_t)*(nnlayer0->tensor_ptrs[5])) == -128) {
+                printf("No spike, skipping layer1 computation\n");
+            } else { printf("ERRORRRRRRR!!!!!!!!!!!! UNEXPECTED VALUE FOUND IN UPDATE_NXT_LAYER\n"); }
 
 
  
@@ -493,18 +671,29 @@ int MLP_Inference(
                 ////printf("%f, ", tmp2_float[i]);
             //}
 
-
+            */
 
 
 
 
             it++;
 
+
+            // Delay before starting next layer
+            elapsed_ms = end_timer(start);
+            float remaining_time = UPDATE_PERIOD - elapsed_ms; 
+            if (remaining_time > 0) { delay(remaining_time); }
+            else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
+
+            //debug
+            if (DEBUG_MODE) { end_timer(debug_timer_start); }
+
+
         }
 
 
 
-
+        
 
 }
 
