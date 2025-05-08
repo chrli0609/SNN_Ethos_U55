@@ -10,6 +10,7 @@
 //#include "fc_lif_layer_1.h"
 
 #include "cmsis_gcc.h"
+#include "fc_lif_layer_0.h"
 #include "fc_lif_layer_1.h"
 #include "include/extra_funcs.h" //quantize_array_float_to_int8()
 #include "nn_data_structure.h"
@@ -500,7 +501,7 @@ int MLP_Inference(
 
 
     // Measure system
-    printf("Num neurons = %d\n", MLP_OUTPUT_LAYER_SIZE);
+    printf("Num neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE);
 
 
         // First Layer
@@ -535,9 +536,7 @@ int MLP_Inference(
 
 
             // Set up input spikes for this iteration
-            printf("about to assign next time step inputs\n");
             in_spk = in_spk_arr[it];
-            printf("just set in_spk <- in_spk_arr[%d]\n", it);
 
 
 
@@ -546,12 +545,10 @@ int MLP_Inference(
             start = start_timer();
 
 
-            printf("timer started, about to quantize in_spk\n");
 
             // Quantize Input in_spk
             quantize_array_float_to_int8(in_spk, nnlayer0->tensor_ptrs[0], FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_IN_SPK_SCALE, FC_LIF_LAYER_0_IN_SPK_ZERO_POINT);
 
-            printf("quantized in spk successfully\n");
 
 
          
@@ -571,8 +568,7 @@ int MLP_Inference(
             //DEBUG: Check Tensor Arena Values Before NPU OP
             if (DEBUG_MODE) { NNLayer_DequantizeAndPrint(nnlayer0); }
 
-            
-            printf("about to run layer\n");
+
             uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
             MLP_Run_Layer(

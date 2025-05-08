@@ -26,7 +26,6 @@ project:
     - group: Main
       files:
         - file: src/main.c
-        #- file: src/lif_model.c
         - file: src/nn_ops.c
         - file: src/extra_funcs.c
         - file: src/nn_data_structure.c
@@ -35,17 +34,6 @@ project:
 
         - file: nn_ops/fc_lif_layer_0.c
         - file: nn_ops/fc_lif_layer_1.c
-
-
-
-
-        #- file: src/nn_test.c
-        #- file: src/conv2d_model.hpp
-        #- file: src/yolo-fastest_192_face_v4_vela_H256.tflite.cpp
-        #- file: src/tmp_main.cpp
-        #- file: src/InputFiles.cpp
-        #- file: src/sample_image.cpp
-        #- file: include/InputFiles.hpp
           for-context:
             - +Alif-E7-M55-HP
           

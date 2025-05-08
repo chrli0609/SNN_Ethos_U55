@@ -14,7 +14,7 @@
 
 #include "ethosu_driver.h"
 
-
+#include <stdlib.h> //rand
 
 
 
@@ -23,8 +23,6 @@
 
 
 
-//#include "include/elementwise_mul.h"
-//#include "nn_ops/membrane_update_python.h"
 
 
 
@@ -88,6 +86,9 @@ int main() {
     /* Initialise the UART module to allow printf related functions (if using retarget) */
     BoardInit();
 
+
+    srand(0);
+
     #include "include/init_nn_model.h"
     NN_Model* mlp_model = MLP_Init();
     //while (1) {
@@ -98,13 +99,13 @@ int main() {
 
         printf("Test my_mem_u\n");
 
-        size_t NUM_TIME_STEPS = 3;
+        size_t NUM_TIME_STEPS = 10;
         float* in_spk_arr [NUM_TIME_STEPS];
         for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
 
             float in_spk [MLP_INPUT_LAYER_SIZE];
             for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                in_spk[j] = 0;
+                in_spk[j] = rand() % 1;
             }
 
         //float in_spk [MLP_INPUT_LAYER_SIZE] = {

@@ -46,7 +46,6 @@ void quantize_array_float_to_int8(
 )
 {
 
-  printf("In quantize_array_float_to_int8()\n");
   for (int i = 0; i < length; i++)
   {
 

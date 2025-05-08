@@ -95,3 +95,7 @@ Write-Host "Summary:"
 Write-Host "- Number of different neuron configurations: $($neuronCounts.Count)"
 Write-Host "- Neuron counts found: $($neuronCounts -join ', ')"
 Write-Host "- Maximum iteration number: $maxIteration"
+
+
+
+& python plot_csv.py $csvFileName

@@ -1,7 +1,0 @@
-
-
-
-NpuConv2DOperation:
-    - block_traversal:
-    
-    - ifm

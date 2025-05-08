@@ -21,7 +21,10 @@ def check_block_config_legal(block_config, my_op, accelerator):
 
 
 
-
+def get_block_config(my_op, accelerator):
+    available_block_configs = npu_find_block_configs(my_op, accelerator)
+    return available_block_configs[-1]
+    #return available_block_configs[0]
 
 
 def float_to_int_safe(x: float) -> int:
@@ -153,7 +156,6 @@ def write_cms_to_files(header_filepath, imp_filepath, cms_driver_payload_byte_ar
         formatted_biases = format_bytearr_for_printout(bias_byte_arr)
         formatted_weights = format_bytearr_for_printout(weight_byte_arr)
         
-    print("this is the filepath:", header_filepath)
     with open(header_filepath, 'w') as f:
         f.write("#pragma once\n")
 
@@ -176,7 +178,6 @@ def write_cms_to_files(header_filepath, imp_filepath, cms_driver_payload_byte_ar
 
 
         
-    print("This is the filepath:", imp_filepath)
     with open(imp_filepath, 'w') as f:
         f.write("#include \"include/"+base_name+".h\"")
         f.write("\n\n\n\n\n\n")
