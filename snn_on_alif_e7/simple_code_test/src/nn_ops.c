@@ -51,7 +51,10 @@ int run_cms(
         return -1;
     }
 
-    if (DEBUG_MODE) { printf("Before invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv); }
+    if (DEBUG_MODE) {
+        printf("reserved ethosu_drv: %p\n", drv);
+        printf("Before invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv);
+    }
 
     if(ethosu_invoke_v3(drv, command_stream, command_stream_size, 
         base_addrs, base_addrs_size, num_tensors, NULL) != 0) {

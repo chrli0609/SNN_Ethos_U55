@@ -42,7 +42,7 @@ plt.xlim(0, max(sorted_counts) * 1.05)
 
 # Save and show the plot
 plt.tight_layout()
-plt.savefig('neuron_analysis_'+filepath.stem+'.png')
+plt.savefig(filepath.stem+'.png')
 plt.show()
 
 print(f"The data shows a trend across {len(sorted_counts)} different neuron configurations.")

@@ -23,14 +23,14 @@ def merge_lif_params_to_str(ln_beta_quant_list: List[int], vth_quant_list: List[
     return_string += "// ln(beta)_quant\n"
     for i in range(len(ln_beta_quant_list)):
         return_string += str(ln_beta_quant_list[i]) + ", " 
-        if i % NUM_VALS_PER_LINE == 0:
+        if (i % NUM_VALS_PER_LINE == 0 and i != 0):
             return_string += "\n"
 
     
     return_string += "\n// vth_quant\n"
     for i in range(len(vth_quant_list)):
         return_string += str(vth_quant_list[i]) + ", "
-        if i % NUM_VALS_PER_LINE == 0:
+        if (i % NUM_VALS_PER_LINE == 0 and i != 0):
             return_string += "\n"
 
     return return_string
@@ -48,7 +48,7 @@ def quantize_vth_values(vth_list, vth_scale, vth_zero_point):
 
 
 import numpy as np
-import tensorflow as tf
+#import tensorflow as tf //defined above already
 def generate_ln_beta_values(beta_list, ln_beta_scale, ln_beta_zero_point):
 
     ln_beta_quant_list = []
@@ -68,7 +68,7 @@ def generate_ln_beta_values(beta_list, ln_beta_scale, ln_beta_zero_point):
 
 
 from ethosu.vela.api import *
-from extra_func import float_to_int_safe
+#from extra_func import float_to_int_safe
 
 # Helper functions/builders for easier creation of NPU operations
 
@@ -121,7 +121,7 @@ def create_lut_and_dma(approximated_func, lut_index, lut_region, data_type, scal
     from ethosu.vela.architecture_features import Accelerator
     from ethosu.vela.register_command_stream_util import BASE_PTR_INDEX_MEM2MEM
 
-    import tensorflow as tf
+    #import tensorflow as tf //already defined above
 
 
     default_arch = create_default_arch(Accelerator.from_npu_accelerator(accelerator))
@@ -201,11 +201,9 @@ def gen_weights_and_biases(
         bias_list,
 
         ifm_scale,
-        ifm_zero_point,
         weight_scale,
         weight_zero_point,
         ofm_scale,
-        ofm_zero_point,
 
         is_debug_mode=False,
 ):

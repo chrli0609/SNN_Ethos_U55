@@ -189,7 +189,7 @@ NNLayer* FC_LIF_Layer_Init(
     //3. Assign default values to V_mem
     float v_mem [output_layer_size];
     for (size_t i = 0; i < output_layer_size; i++) {
-        v_mem[i] = 0.5;
+        v_mem[i] = 0;
     }
     quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[3], output_layer_size, v_mem_scale, v_mem_zero_point);
 
@@ -556,7 +556,9 @@ int MLP_Inference(
 
             // Update how long it was we updated layer0 last
             // Elapsed_time since last update
-            time_not_updated_layer0_val = end_timer(start_layer0);
+            //mult by 1000 to get back from micro sec --> ms
+            time_not_updated_layer0_val = 1000*end_timer(start_layer0);
+            printf("time_not_updated_layer0_val: %f\n", time_not_updated_layer0_val);
 
             // layer0
             float time_not_updated_layer0 [FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE];
@@ -566,7 +568,12 @@ int MLP_Inference(
             quantize_array_float_to_int8(time_not_updated_layer0, nnlayer0->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
 
             //DEBUG: Check Tensor Arena Values Before NPU OP
-            if (DEBUG_MODE) { NNLayer_DequantizeAndPrint(nnlayer0); }
+            if (DEBUG_MODE) { 
+                size_t in_spk_sum = 0;
+                for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) { in_spk_sum += in_spk[i]; }
+                printf("In_spk_sum: %d\n", in_spk_sum);
+                NNLayer_DequantizeAndPrint(nnlayer0);
+            }
 
 
             uint32_t measure_layer0_start = debug_start_timer();

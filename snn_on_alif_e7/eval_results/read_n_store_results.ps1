@@ -1,8 +1,18 @@
 # Serial Port Reader with CSV Export
 # This script reads data from COM7, parses neuron count and tick data, and exports to CSV
 
+
+param (
+    [string]$fileName = "neuron_ticks_data_$(Get-Date -Format 'yyyyMMdd_HHmmss')",
+    [string]$portName = "COM7",
+    [int]$baudRate = 115200,
+    [int]$DataBits = 8
+)
+
+
 # Configure and open the serial port
-$port = New-Object System.IO.Ports.SerialPort COM7,115200,None,8,one
+#$port = New-Object System.IO.Ports.SerialPort COM7,115200,None,8,one
+$port = New-Object System.IO.Ports.SerialPort $portName,$baudRate,None,$DataBits,one
 $port.Open()
 
 # Data storage
@@ -10,7 +20,7 @@ $allData = @{}
 $currentNeurons = 0
 $rawOutput = ""
 
-Write-Host "Reading from COM7. Press 'q' and Enter to stop reading..."
+Write-Host "Reading from $portName. Press 'q' and Enter to stop reading..."
 
 # Read from the port until user presses 'q'
 while ($port.IsOpen) {
@@ -63,7 +73,7 @@ foreach ($neurons in $neuronCounts) {
 
 # Create CSV content
 $csv = New-Object System.Text.StringBuilder
-$csvFileName = "neuron_ticks_data_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+$csvFileName = "$fileName.csv"
 
 # Build header row with all neuron counts
 $headerRow = "Iteration"

@@ -7,58 +7,7 @@ param (
     [string]$SecondaryScriptFilename = "build_n_run.ps1"
 )
 
-# Function to check for "Build failed!" pattern
-function Check_ScriptFailure {
-    param (
-        [string]$Output
-    )
 
-    Write-Output "THIS IS THE OUTPUT!!!!!!!!"
-    Write-Output $Output
-    
-    if ($Output -match "Build failed!") {
-        Write-Error "Build failure detected! Stopping execution."
-        Write-Output "----------------------------------------------------------------------------------------------------"
-        return $true
-    }
-
-    if ($Output -match "[ERROR] openSerial could not open port") {
-        Write-Error "Failed to write to COM port."
-        Write-Output "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-        return $true
-    }
-
-    return $false
-}
-
-# Setup global variables for background job to read serial port
-$script:stopReading = $false
-$script:serialData = ""
-$script:currentNeurons = 0
-$script:allResults = @{}
-$script:buildFailed = $false
-
-
-
-
-
-
-
-
-# Create CSV file to store results
-$csvPath = "neuron_performance_results.csv"
-$maxIterations = 100  # Assuming we'll collect up to 100 iterations
-
-# Create CSV header (Neuron count as columns)
-$csvHeader = "Iteration,"
-for ($i = $StartRange; $i -le $EndRange; $i++) {
-    $csvHeader += "$i,"
-}
-$csvHeader = $csvHeader.TrimEnd(',')
-Set-Content -Path $csvPath -Value $csvHeader
-
-# Create a dictionary to store all results
-$allResults = @{}
 
 #Store current directory
 $originalPath = Get-Location
@@ -75,8 +24,8 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
     try {
 
     	#cd $PythonScriptDir
-    	$pythonOutput = & python $PythonScriptFilename $neurons
-        # 2>&1
+    	$pythonOutput = & python $PythonScriptFilename $neurons 2>&1
+        Write-Output "This is python output!"
         Write-Output "$pythonOutput"
         echo "Running: & python $PythonScriptFilename $neurons"
     	#$pythonOutput = & python3 $PythonScriptFilename
@@ -98,7 +47,10 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
         #exit 1
     #}
     
-
+    if ($pythonOutput -match "Traceback") {
+        Write-Error "Error found in python script"
+        exit 1
+    }
 
 
 
@@ -122,8 +74,8 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
         #
     #}
     
-    Write-Output "This is output!!!"
-    Write-Output "$scriptOutput"
+    #Write-Output "This is output!!!"
+    #Write-Output "$scriptOutput"
 
 
 
@@ -141,54 +93,6 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
     }
 
 
-<#
-    # Read from COM port and collect results
-    $results = Read-SerialPort -CurrentNeurons $neurons
-    
-    # Store results
-    if ($results.TicksData.Count -gt 0) {
-        $allResults[$neurons] = $results.TicksData
-    }
-    else {
-        Write-Warning "No tick data collected for neurons = $neurons"
-    }
-    
-    # Update CSV after each run
-    for ($iteration = 0; $iteration -le $maxIterations; $iteration++) {
-        $csvLine = "$iteration,"
-        
-        for ($n = $StartRange; $n -le $EndRange; $n++) {
-            if ($allResults.ContainsKey($n) -and $allResults[$n].ContainsKey($iteration)) {
-                $csvLine += "$($allResults[$n][$iteration]),"
-            }
-            else {
-                $csvLine += ","
-            }
-        }
-        
-        $csvLine = $csvLine.TrimEnd(',')
-        
-        # Update specific line in CSV
-        if ($iteration -eq 0) {
-            # Check if file already has content beyond header
-            $currentLines = Get-Content -Path $csvPath
-            if ($currentLines.Count -le 1) {
-                Add-Content -Path $csvPath -Value $csvLine
-            }
-            else {
-                $currentLines[1] = $csvLine
-                Set-Content -Path $csvPath -Value $currentLines
-            }
-        }
-        elseif ($iteration -lt $currentLines.Count - 1) {
-            $currentLines[$iteration + 1] = $csvLine
-            Set-Content -Path $csvPath -Value $currentLines
-        }
-        else {
-            Add-Content -Path $csvPath -Value $csvLine
-        }
-    }
-#>
 }
 
 #Write-Host "All processing complete. Results saved to $csvPath" -ForegroundColor Green

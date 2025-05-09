@@ -4,6 +4,100 @@ from cms_interpreter import register_cms_2_assembly
 
 
 
+from config_ops import create_feature_map, gen_weights_and_biases
+def get_int8_fc_weights_and_biases(
+        weights_volume_ohwi, 
+        bias_list,
+        input_size,
+        output_size,
+
+        weight_scale, weight_zero_point,
+        ifm_scale, ofm_scale,
+
+        accelerator,
+        debug_mode
+    ):
+
+    UNSET = 0
+
+    ifm = create_feature_map(
+        height=1, width=1, depth=input_size,
+        region = UNSET,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=UNSET,
+        scale=ifm_scale,
+        zero_point=UNSET,
+    )
+
+
+
+    ifm2 = None
+
+
+    ofm = create_feature_map(
+        height=1, width=1, depth=output_size,
+        region=UNSET,
+        #layout=NpuLayout.NHCWB16,
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        fm_elem_size=1,
+        fm_addr=UNSET,
+        scale = ofm_scale,
+        zero_point = UNSET
+    )
+
+
+
+    # Kernel
+    kernel = NpuKernel(
+        w=1, h=1, 
+        stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
+    )
+
+    my_op = NpuConv2DOperation()
+    my_op.ifm               =   ifm
+    my_op.ifm2              =   None
+    my_op.ofm               =   ofm
+    my_op.kernel            =   kernel
+    block_config = get_block_config(my_op, accelerator)
+
+
+
+    block_traversal = NpuBlockTraversal.DEPTH_FIRST
+
+
+    if ifm.data_type == NpuDataType.INT8:
+        weight_ifm_bitdepth = 8 #int8
+    elif ifm.data_type == NpuDataType.INT16:
+        weight_ifm_bitdepth = 16 #int16
+
+    
+    weight_byte_arr, bias_byte_arr = gen_weights_and_biases(
+                            accelerator=accelerator,
+                            weights_volume_ohwi=weights_volume_ohwi,
+                            dilation_xy=(1,1),
+                            ifm_bitdepth=weight_ifm_bitdepth,
+                            ofm_block_depth=block_config[2],
+                            op_type=NpuOperationType.Conv2D,
+                            block_traversal=block_traversal,
+
+                            #ONLY FOR 1 DIM FMs!!!!
+                            bias_list=bias_list,
+
+                            ifm_scale=ifm.quantization.scale_f32,
+                            weight_scale=weight_scale,
+                            weight_zero_point=weight_zero_point,    # should always be zero
+                            ofm_scale=ofm.quantization.scale_f32,
+
+
+                            is_debug_mode=debug_mode
+    )
+
+    return weight_byte_arr, bias_byte_arr
+
+
 def check_block_config_legal(block_config, my_op, accelerator):
     # Check that block config is legal
     available_block_configs = npu_find_block_configs(my_op, accelerator)
@@ -23,6 +117,7 @@ def check_block_config_legal(block_config, my_op, accelerator):
 
 def get_block_config(my_op, accelerator):
     available_block_configs = npu_find_block_configs(my_op, accelerator)
+    print("available_blk_configs:", available_block_configs)
     return available_block_configs[-1]
     #return available_block_configs[0]
 

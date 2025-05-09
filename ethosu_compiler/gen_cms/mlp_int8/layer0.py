@@ -136,103 +136,30 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
 
-    ifm = create_feature_map(
-    height=1, width=1, depth=INPUT_LAYER_SIZE,
-    region=SRAM_SCRATCH_REGION,
-    layout=NpuLayout.NHWC,
-    data_type=NpuDataType.INT8,
-    fm_elem_size=1,
-    fm_addr=0,
-    scale = 0.3245234,
-    zero_point = -128,
-    name="in_spk"
-    )
-
-
-
-    ifm2 = None
-
-
-    ofm = create_feature_map(
-        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-        region=SRAM_SCRATCH_REGION,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=0,
-        scale = 0.21341253,
-        zero_point = -128,
-        name="in_curr"
-    )
-
-
-
-    # Kernel
-    kernel = NpuKernel(
-        w=1, h=1, 
-        stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
-    )
-
-
-    my_op = NpuConv2DOperation()
-    my_op.ifm               =   ifm
-    my_op.ifm2              =   ifm2
-    my_op.ifm2_scalar       =   None
-    my_op.ofm               =   ofm
-    block_config = get_block_config(my_op, ACCELERATOR)
-
-
-
-    block_traversal = NpuBlockTraversal.DEPTH_FIRST
-
 
     # Define Weights
-    weights_volume_ohwi = 0 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
-    if ifm.data_type == NpuDataType.INT8:
-        weight_ifm_bitdepth = 8 #int8
-    elif ifm.data_type == NpuDataType.INT16:
-        weight_ifm_bitdepth = 16 #int16
+    ALL_WEIGHT_VALUES = 0.1
+    ALL_BIAS_VALUES = 0
 
-
-    #scale = int(1/0.003937007859349251)
-    #print("scale", scale)
+    weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((OUTPUT_LAYER_SIZE, 1, 1, INPUT_LAYER_SIZE))
 
     #Biases
     bias_list = []
-    for i in range(ofm.shape.depth):
+    for i in range(OUTPUT_LAYER_SIZE):
     #    #bias_list.append(np.int64(i%4))
-        bias_list.append(np.int64(0))
+        bias_list.append(np.int64(ALL_BIAS_VALUES))
+
+    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
 
 
 
-    weight_byte_arr, bias_byte_arr = gen_weights_and_biases(accelerator=ACCELERATOR,
-                            weights_volume_ohwi=weights_volume_ohwi,
-                            dilation_xy=(1,1),
-                            ifm_bitdepth=weight_ifm_bitdepth,
-                            ofm_block_depth=block_config[2],
-                            op_type=NpuOperationType.Conv2D,
-                            block_traversal=block_traversal,
-
-                            #ONLY FOR 1 DIM FMs!!!!
-                            bias_list=bias_list,
-
-                            ifm_scale=ifm.quantization.scale_f32,
-                            ifm_zero_point=ifm.quantization.zero_point,
-                            weight_scale=WEIGHT_SCALE,
-                            weight_zero_point=WEIGHT_ZERO_POINT,
-                            ofm_scale=ofm.quantization.scale_f32,
-                            ofm_zero_point=ofm.quantization.zero_point,
-
-
-                            is_debug_mode=DEBUG_MODE
-    )
     # Assign Memory segments in SRAM Scratch (region 1)
 		
     IN_SPK_ADDR	=	0
     BIAS_ADDR	=	OUTPUT_LAYER_SIZE
-    WEIGHT_ADDR	=	BIAS_ADDR + len(bias_byte_arr) # Bias len
-    V_MEM_ADDR	=	WEIGHT_ADDR + len(weight_byte_arr) #weight len
+    WEIGHT_ADDR	=	BIAS_ADDR + len(bias_byte_arr_init) # Bias len
+    V_MEM_ADDR	=	WEIGHT_ADDR + len(weight_byte_arr_init) #weight len
     TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR + OUTPUT_LAYER_SIZE
     TMP1_ADDR	=	TIME_NOT_UPDATED_ADDR + OUTPUT_LAYER_SIZE
     TMP2_ADDR	=	TMP1_ADDR + OUTPUT_LAYER_SIZE
@@ -240,7 +167,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
     OUT_SPK_ADDR	=	UPDATE_NXT_LAYER_ADDR + 16
 
 
-    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 5*OUTPUT_LAYER_SIZE + len(bias_byte_arr) +len(weight_byte_arr) + 16
+    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 5*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
 
 
     # Tensor arena allocation
@@ -271,7 +198,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
     # Assign Memory segments for region 3
     LN_BETA_ADDR = 0
-    VTH_ADDR = 32
+    VTH_ADDR = LN_BETA_ADDR + OUTPUT_LAYER_SIZE
 
 
     # Assign Memory segments for region 4
@@ -290,15 +217,14 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
     # Generate Beta values
     beta_list = []
     for i in range(OUTPUT_LAYER_SIZE):
-        beta_list.append(0.55)
-
+        beta_list.append(0.9)
 
     LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)
 
     # Generate Vth values
     vth_list = []
     for i in range(OUTPUT_LAYER_SIZE):
-        vth_list.append(1.3)
+        vth_list.append(1)
     
     VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
 
@@ -426,6 +352,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -454,18 +381,13 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
                         debug_mode=DEBUG_MODE
         )
 
-        #activation = create_activation(
-            #activation_op=NpuActivationOp.TABLE_LOOKUP,
-            #min_val=None,
-            #max_val=None,
-            #lookup_table_index=decay_lut_index
-        #)
-
         activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
+            activation_op=NpuActivationOp.TABLE_LOOKUP,
             min_val=None,
-            max_val=None
+            max_val=None,
+            lookup_table_index=decay_lut_index
         )
+
 
         exp_mul_lnb_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
     
@@ -521,6 +443,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -544,7 +467,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         my_op.ifm2              =   ifm2
         my_op.ifm2_scalar       =   None
         my_op.ofm               =   ofm
-        #block_config = NpuShape3D(2, 2, 32)
         block_config = get_block_config(my_op, ACCELERATOR)
     
 
@@ -552,21 +474,18 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         # Define Weights
-        weights_volume_ohwi = 0 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+        weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
         if ifm.data_type == NpuDataType.INT8:
             weight_ifm_bitdepth = 8 #int8
         elif ifm.data_type == NpuDataType.INT16:
             weight_ifm_bitdepth = 16 #int16
 
 
-        #scale = int(1/0.003937007859349251)
-        #print("scale", scale)
-
         #Biases
         bias_list = []
         for i in range(ofm.shape.depth):
         #    #bias_list.append(np.int64(i%4))
-            bias_list.append(np.int64(0))
+            bias_list.append(np.int64(ALL_BIAS_VALUES))
 
 
 
@@ -583,11 +502,9 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
                                 bias_list=bias_list,
 
                                 ifm_scale=ifm.quantization.scale_f32,
-                                ifm_zero_point=ifm.quantization.zero_point,
                                 weight_scale=WEIGHT_SCALE,
                                 weight_zero_point=WEIGHT_ZERO_POINT,
                                 ofm_scale=ofm.quantization.scale_f32,
-                                ofm_zero_point=ofm.quantization.zero_point,
 
 
                                 is_debug_mode=DEBUG_MODE
@@ -598,6 +515,16 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             print("weight_n_bias_len", weight_n_bias_len)
             print("\tbias_len:", len(bias_byte_arr))
             print("\tweight_len", len(weight_byte_arr))
+
+        
+
+        # Make sure that init is the same as current weights
+        if (weight_byte_arr != weight_byte_arr_init):
+            print("Error: weight_byte_arr != weight_byte_arr_init")
+            exit()
+        if (bias_byte_arr != bias_byte_arr_init):
+            print("Error: bias_byte_arr != bias_byte_arr_init")
+            exit()
 
     
 
@@ -691,6 +618,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -766,6 +694,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -778,6 +707,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -882,7 +812,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -896,18 +825,18 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         check_spk_lut_index = CHECK_SPK_LUT_INDEX
-        #activation = create_activation(
-            #activation_op=NpuActivationOp.TABLE_LOOKUP,
-            #min_val=None,
-            #max_val=None,
-            #lookup_table_index=check_spk_lut_index
-        #)
-
         activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
+            activation_op=NpuActivationOp.TABLE_LOOKUP,
             min_val=None,
-            max_val=None
+            max_val=None,
+            lookup_table_index=check_spk_lut_index
         )
+
+        #activation = create_activation(
+            #activation_op=NpuActivationOp.NONE_OR_RELU,
+            #min_val=None,
+            #max_val=None
+        #)
 
 
         # Define function that lut will approximate
@@ -998,6 +927,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -1076,6 +1006,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -1306,8 +1237,13 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
         #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
-        # No activation
-        npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+
+
+        '''No activation'''
+        #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+
+        '''No Reduced Sum'''
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
 
 
 

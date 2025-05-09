@@ -485,11 +485,9 @@ def def_fullyconnected():
                             bias_list=bias_list,
 
                             ifm_scale=ifm.quantization.scale_f32,
-                            ifm_zero_point=ifm.quantization.zero_point,
                             weight_scale=WEIGHT_SCALE,
                             weight_zero_point=WEIGHT_ZERO_POINT,
                             ofm_scale=ofm.quantization.scale_f32,
-                            ofm_zero_point=ofm.quantization.zero_point,
 
 
                             is_debug_mode=DEBUG_MODE

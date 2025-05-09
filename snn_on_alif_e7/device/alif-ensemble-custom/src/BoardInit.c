@@ -60,6 +60,9 @@ bool NpuInit()
         return false;
     }
 
+    //mydebug
+    printf("NPU Init driver: %p\n", &npuDriver);
+
     NVIC_SetVector(LOCAL_NPU_IRQ_IRQn, (uint32_t) &npu_irq_handler);
     NVIC_EnableIRQ(LOCAL_NPU_IRQ_IRQn);
 

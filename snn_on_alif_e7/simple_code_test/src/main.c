@@ -105,7 +105,7 @@ int main() {
 
             float in_spk [MLP_INPUT_LAYER_SIZE];
             for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                in_spk[j] = rand() % 1;
+                in_spk[j] = rand() % 2;
             }
 
         //float in_spk [MLP_INPUT_LAYER_SIZE] = {
