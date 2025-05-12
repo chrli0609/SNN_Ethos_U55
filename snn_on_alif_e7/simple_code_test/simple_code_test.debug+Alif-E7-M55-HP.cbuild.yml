@@ -1409,7 +1409,7 @@ build:
           category: header
           attr: template
           version: 1.3.0
-          select: MT9M114 Camera Sensor FreeRTOS Demo
+          select: ARX3A0 Camera Sensor FreeRTOS Demo
         - file: ${CMSIS_PACK_ROOT}/AlifSemiconductor/Ensemble/1.3.0/Boards/DevKit-e7/Templates/bayer2rgb/bayer2rgb.c
           category: source
           attr: template
@@ -2041,7 +2041,7 @@ build:
           category: sourceC
         - file: src/nn_data_structure.c
           category: sourceC
-        - file: src/init_nn_model.c
+        - file: src/my_mlp_model.c
           category: sourceC
         - file: nn_ops/fc_lif_layer_0.c
           category: sourceC

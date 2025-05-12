@@ -336,7 +336,10 @@ def gen_cms(npu_op_list, accelerator, debug_mode=False):
 
 
 
+'''
 
+This function is not used anymore, weight/bias length and addressing check is now done in def_fullyconnected()
+'''
 
 def check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr):
 

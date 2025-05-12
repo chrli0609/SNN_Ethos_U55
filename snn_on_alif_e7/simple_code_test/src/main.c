@@ -26,7 +26,7 @@
 
 
 
-const int DEBUG_MODE = 0;
+const int DEBUG_MODE = 1;
 
 
 
@@ -89,7 +89,7 @@ int main() {
 
     srand(0);
 
-    #include "include/init_nn_model.h"
+    #include "include/my_mlp_model.h"
     NN_Model* mlp_model = MLP_Init();
     //while (1) {
 

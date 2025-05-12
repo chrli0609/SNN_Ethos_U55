@@ -29,7 +29,7 @@ project:
         - file: src/nn_ops.c
         - file: src/extra_funcs.c
         - file: src/nn_data_structure.c
-        - file: src/init_nn_model.c
+        - file: src/my_mlp_model.c
 
 
         - file: nn_ops/fc_lif_layer_0.c

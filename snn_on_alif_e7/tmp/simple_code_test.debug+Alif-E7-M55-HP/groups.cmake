@@ -6,7 +6,7 @@ add_library(Group_Main OBJECT
   "${SOLUTION_ROOT}/simple_code_test/src/nn_ops.c"
   "${SOLUTION_ROOT}/simple_code_test/src/extra_funcs.c"
   "${SOLUTION_ROOT}/simple_code_test/src/nn_data_structure.c"
-  "${SOLUTION_ROOT}/simple_code_test/src/init_nn_model.c"
+  "${SOLUTION_ROOT}/simple_code_test/src/my_mlp_model.c"
   "${SOLUTION_ROOT}/simple_code_test/nn_ops/fc_lif_layer_0.c"
   "${SOLUTION_ROOT}/simple_code_test/nn_ops/fc_lif_layer_1.c"
 )

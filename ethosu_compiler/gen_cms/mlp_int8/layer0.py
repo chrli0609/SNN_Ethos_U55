@@ -16,8 +16,8 @@ import numpy as np
 
 def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
-    INPUT_LAYER_SIZE = OUTPUT_LAYER_SIZE
-    #OUTPUT_LAYER_SIZE = 0   #default value
+    INPUT_LAYER_SIZE = 16
+    
 
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
 
@@ -156,33 +156,19 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
     # Assign Memory segments in SRAM Scratch (region 1)
 		
-    IN_SPK_ADDR	=	0
-    BIAS_ADDR	=	OUTPUT_LAYER_SIZE
-    WEIGHT_ADDR	=	BIAS_ADDR + len(bias_byte_arr_init) # Bias len
-    V_MEM_ADDR	=	WEIGHT_ADDR + len(weight_byte_arr_init) #weight len
-    TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR + OUTPUT_LAYER_SIZE
-    TMP1_ADDR	=	TIME_NOT_UPDATED_ADDR + OUTPUT_LAYER_SIZE
-    TMP2_ADDR	=	TMP1_ADDR + OUTPUT_LAYER_SIZE
-    UPDATE_NXT_LAYER_ADDR	=	TMP2_ADDR + OUTPUT_LAYER_SIZE
-    OUT_SPK_ADDR	=	UPDATE_NXT_LAYER_ADDR + 16
+    IN_SPK_ADDR         	=	0
+    BIAS_ADDR           	=   IN_SPK_ADDR             +   INPUT_LAYER_SIZE
+    WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
+    TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
+    TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+    V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+    TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+    UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+    OUT_SPK_ADDR            =   TIME_NOT_UPDATED_ADDR   +   16
 
 
-    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 5*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
 
-
-    # Tensor arena allocation
-    '''
-    Start Address	Tensor name	Size
-    0	In_spk	16
-    16	Bias	320
-    336	Weights	144
-    480	curr (tmp)	32
-    512	v_mem	32
-    544	decay	32
-
-    576	decayed_mem (tmp)	32
-
-    '''
 
 
     ##############
@@ -337,7 +323,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         ifm2 = create_feature_map(
-            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            height=1, width=1, depth=1,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -1150,7 +1136,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         ifm = create_feature_map(
-            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            height=1, width=1, depth=1,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -1166,7 +1152,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2_scalar = 0
 
         ofm = create_feature_map(
-            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            height=1, width=1, depth=1,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -1234,7 +1220,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
 
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
         #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
@@ -1243,7 +1229,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
         '''No Reduced Sum'''
-        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
+        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
 
 
 
@@ -1255,8 +1241,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         # Generate Dicts for writing to C
         sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
 
-        # Make sure parameters are legal
-        check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr)
 
 
         write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
