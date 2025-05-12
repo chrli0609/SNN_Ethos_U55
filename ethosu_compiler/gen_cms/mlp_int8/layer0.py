@@ -16,7 +16,7 @@ import numpy as np
 
 def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
-    INPUT_LAYER_SIZE = 16
+    INPUT_LAYER_SIZE = OUTPUT_LAYER_SIZE
     #OUTPUT_LAYER_SIZE = 0   #default value
 
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
