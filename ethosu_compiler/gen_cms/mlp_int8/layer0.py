@@ -16,7 +16,7 @@ import numpy as np
 
 def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
-    INPUT_LAYER_SIZE = 16
+    INPUT_LAYER_SIZE = 1024
     
 
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
@@ -45,8 +45,8 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
     # Set FM Quantization Params
 
-    IN_SPK_MAX_VAL = 1
-    IN_SPK_MIN_VAL = 0
+    IN_SPK_MAX_VAL = 127
+    IN_SPK_MIN_VAL = -128
 
     #Must be symmetric
     WEIGHT_MAX_VAL = 127/100

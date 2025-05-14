@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP
+# Install script for directory: C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/my_snn_bare_metal.debug+Alif-E7-M55-HP
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/simple_code_test.debug+Alif-E7-M55-HP")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/my_snn_bare_metal.debug+Alif-E7-M55-HP")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

@@ -29,15 +29,15 @@ solution:
 
   packs:
     - pack: ARM::CMSIS@5.9.0
-    - pack: ARM::CMSIS-DSP@1.14.4
-    - pack: ARM::CMSIS-NN@4.0.0
+    #- pack: ARM::CMSIS-DSP@1.14.4
+    #- pack: ARM::CMSIS-NN@4.0.0
     - pack: ARM::ethos-u-core-driver@1.23.2
-    - pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta
-    - pack: tensorflow::flatbuffers@1.22.8
-    - pack: tensorflow::gemmlowp@1.22.8
-    - pack: tensorflow::kissfft@1.22.8
-    - pack: tensorflow::ruy@1.22.8
-    - pack: tensorflow::tensorflow-lite-micro@1.22.8
+    - pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta #log_macros.h
+    #- pack: tensorflow::flatbuffers@1.22.8
+    #- pack: tensorflow::gemmlowp@1.22.8
+    #- pack: tensorflow::kissfft@1.22.8
+    #- pack: tensorflow::ruy@1.22.8
+    #- pack: tensorflow::tensorflow-lite-micro@1.22.8
   
     - pack: AlifSemiconductor::Ensemble@1.3.0
 
@@ -90,30 +90,6 @@ solution:
         - USART_DRV_NUM: 4
 
   projects:
-    #- project: ./object-detection/object-detection.cproject.yml
-    #  for-context:
-    #    - +Alif-E7-M55-HP
-
-    #- project: ./object-detection-static/object-detection-static.cproject.yml
-    #  for-context:
-    #    - +Alif-E7-M55-HP
-#
-    #- project: ./object-detection-custom/object-detection-custom.cproject.yml
-    #  for-context:
-    #    - +Alif-E7-M55-HP
-    #
-    #- project: ./kws/kws.cproject.yml
-    #  for-context:
-    #    - +Alif-E7-M55-HE
-#
-    - project: ./simple_code_test/simple_code_test.cproject.yml
+    - project: ./my_snn_bare_metal/my_snn_bare_metal.cproject.yml
       for-context:
         - +Alif-E7-M55-HP
-
-    #- project: ./fixed_point_mlp/fixed_point_mlp.cproject.yml
-    #  for-context:
-    #    - +Alif-E7-M55-HP
-
-    #- project: ./float_int16/float_int16.cproject.yml
-    #  for-context:
-    #  - +Alif-E7-M55-HP

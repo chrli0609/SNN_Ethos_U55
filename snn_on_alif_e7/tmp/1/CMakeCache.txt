@@ -95,7 +95,7 @@ CMAKE_EXPORT_BUILD_DATABASE:BOOL=
 CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/pkgRedirects
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/simple_code_test.debug+Alif-E7-M55-HP
+CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/my_snn_bare_metal.debug+Alif-E7-M55-HP
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=C:/Users/chris/.vcpkg/artifacts/2139c4c6/compilers.arm.arm.none.eabi.gcc/12.3.1/bin/arm-none-eabi-ld.exe
@@ -139,7 +139,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=simple_code_test.debug+Alif-E7-M55-HP
+CMAKE_PROJECT_NAME:STATIC=my_snn_bare_metal.debug+Alif-E7-M55-HP
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=C:/Users/chris/.vcpkg/artifacts/2139c4c6/compilers.arm.arm.none.eabi.gcc/12.3.1/bin/arm-none-eabi-ranlib.exe
@@ -216,13 +216,13 @@ CMSIS_PACK_ROOT:PATH=C:/Users/chris/AppData/Local/arm/packs
 SOLUTION_ROOT:PATH=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7
 
 //Value Computed by CMake
-simple_code_test.debug+Alif-E7-M55-HP_BINARY_DIR:STATIC=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1
+my_snn_bare_metal.debug+Alif-E7-M55-HP_BINARY_DIR:STATIC=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1
 
 //Value Computed by CMake
-simple_code_test.debug+Alif-E7-M55-HP_IS_TOP_LEVEL:STATIC=ON
+my_snn_bare_metal.debug+Alif-E7-M55-HP_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-simple_code_test.debug+Alif-E7-M55-HP_SOURCE_DIR:STATIC=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP
+my_snn_bare_metal.debug+Alif-E7-M55-HP_SOURCE_DIR:STATIC=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/my_snn_bare_metal.debug+Alif-E7-M55-HP
 
 
 ########################
@@ -305,7 +305,7 @@ CMAKE_GENERATOR_PLATFORM:INTERNAL=
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
 //Source directory with the top level CMakeLists.txt file for this
 // project
-CMAKE_HOME_DIRECTORY:INTERNAL=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/simple_code_test.debug+Alif-E7-M55-HP
+CMAKE_HOME_DIRECTORY:INTERNAL=C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/my_snn_bare_metal.debug+Alif-E7-M55-HP
 //ADVANCED property for variable: CMAKE_LINKER
 CMAKE_LINKER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MAKE_PROGRAM

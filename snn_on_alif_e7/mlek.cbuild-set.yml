@@ -1,4 +1,4 @@
 cbuild-set:
   generated-by: vscode-cmsis-csolution version 1.52.0
   contexts:
-    - context: simple_code_test.debug+Alif-E7-M55-HP
+    - context: my_snn_bare_metal.debug+Alif-E7-M55-HP

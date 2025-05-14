@@ -37,17 +37,17 @@ layer:
 
   components:
     - component: ARM::CMSIS:CORE
-    - component: ARM::CMSIS:DSP&Source
-    - component: ARM::CMSIS:NN Lib
-    - component: tensorflow::Data Exchange:Serialization:flatbuffers&tensorflow
-    - component: tensorflow::Data Processing:Math:gemmlowp fixed-point&tensorflow
-    - component: tensorflow::Data Processing:Math:kissfft&tensorflow
-    - component: tensorflow::Data Processing:Math:ruy&tensorflow
-    - component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
+    #- component: ARM::CMSIS:DSP&Source
+    #- component: ARM::CMSIS:NN Lib
+    #- component: tensorflow::Data Exchange:Serialization:flatbuffers&tensorflow
+    #- component: tensorflow::Data Processing:Math:gemmlowp fixed-point&tensorflow
+    #- component: tensorflow::Data Processing:Math:kissfft&tensorflow
+    #- component: tensorflow::Data Processing:Math:ruy&tensorflow
+    #- component: tensorflow::Machine Learning:TensorFlow:Kernel Utils
       # Workaround 4001 (see description above)
       define:
         - CMSIS_DEVICE_ARM_CORTEX_M_XX_HEADER_FILE: CMSIS_device_header
-    - component: tensorflow::Machine Learning:TensorFlow:Testing
-    - component: ARM::ML Eval Kit:Common:API
-    - component: ARM::ML Eval Kit:Common:Log
-    - component: ARM::ML Eval Kit:Common:Math
+    #- component: tensorflow::Machine Learning:TensorFlow:Testing
+    #- component: ARM::ML Eval Kit:Common:API
+    #- component: ARM::ML Eval Kit:Common:Log
+    #- component: ARM::ML Eval Kit:Common:Math

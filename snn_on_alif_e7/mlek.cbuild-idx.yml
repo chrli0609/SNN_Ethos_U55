@@ -4,21 +4,19 @@ build-idx:
   csolution: mlek.csolution.yml
   tmpdir: tmp
   cprojects:
-    - cproject: simple_code_test/simple_code_test.cproject.yml
+    - cproject: my_snn_bare_metal/my_snn_bare_metal.cproject.yml
       clayers:
         - clayer: common/common.clayer.yml
         - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
   cbuilds:
-    - cbuild: simple_code_test/simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml
-      project: simple_code_test
+    - cbuild: my_snn_bare_metal/my_snn_bare_metal.debug+Alif-E7-M55-HP.cbuild.yml
+      project: my_snn_bare_metal
       configuration: .debug+Alif-E7-M55-HP
       clayers:
         - clayer: common/common.clayer.yml
         - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
       messages:
-        warnings:
-          - "source modules added by multiple components, duplicate ignored:\n  filename: C:/Users/chris/AppData/Local/arm/packs/ARM/ml-embedded-eval-kit-uc-api/22.8.0-Beta/source/math/PlatformMath.cc\n    - component: ARM::ML Eval Kit:Common:Math@1.0.0\n      from-pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta\n    - component: ARM::ML Eval Kit:Vision:Object detection@1.0.0\n      from-pack: ARM::ml-embedded-eval-kit-uc-api@22.8.0-Beta"
         info:
           - mlek.cbuild-set.yml - file is already up-to-date
           - mlek.cbuild-pack.yml - file is already up-to-date
-          - simple_code_test.debug+Alif-E7-M55-HP.cbuild.yml - file generated successfully
+          - my_snn_bare_metal.debug+Alif-E7-M55-HP.cbuild.yml - file generated successfully

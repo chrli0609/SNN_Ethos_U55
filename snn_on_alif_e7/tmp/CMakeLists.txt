@@ -8,18 +8,18 @@ include("roots.cmake")
 
 # Context specific lists
 set(CONTEXTS
-  "simple_code_test.debug+Alif-E7-M55-HP"
+  "my_snn_bare_metal.debug+Alif-E7-M55-HP"
 )
 list(LENGTH CONTEXTS CONTEXTS_LENGTH)
 math(EXPR CONTEXTS_LENGTH "${CONTEXTS_LENGTH}-1")
 
 set(DIRS
-  "${CMAKE_CURRENT_SOURCE_DIR}/simple_code_test.debug+Alif-E7-M55-HP"
+  "${CMAKE_CURRENT_SOURCE_DIR}/my_snn_bare_metal.debug+Alif-E7-M55-HP"
 )
 
 set(OUTPUTS_1
-  "${SOLUTION_ROOT}/out/simple_code_test/Alif-E7-M55-HP/debug/simple_code_test.bin"
-  "${SOLUTION_ROOT}/out/simple_code_test/Alif-E7-M55-HP/debug/simple_code_test.elf"
+  "${SOLUTION_ROOT}/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.bin"
+  "${SOLUTION_ROOT}/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.elf"
 )
 
 

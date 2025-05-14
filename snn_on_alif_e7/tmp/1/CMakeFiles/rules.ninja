@@ -6,7 +6,7 @@
 # It is included in the main 'build.ninja'.
 
 # =============================================================================
-# Project: simple_code_test.debug+Alif-E7-M55-HP
+# Project: my_snn_bare_metal.debug+Alif-E7-M55-HP
 # Configurations: 
 # =============================================================================
 # =============================================================================
@@ -14,7 +14,7 @@
 #############################################
 # Rule for linking CXX executable.
 
-rule CXX_EXECUTABLE_LINKER__simple_code_test.2edebug.2bAlif-E7-M55-HP_
+rule CXX_EXECUTABLE_LINKER__my_snn_bare_metal.2edebug.2bAlif-E7-M55-HP_
   command = C:\WINDOWS\system32\cmd.exe /C "$PRE_LINK && c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $FLAGS $LINK_FLAGS @$RSP_FILE -o $TARGET_FILE && $POST_BUILD"
   description = Linking CXX executable $TARGET_FILE
   rspfile = $RSP_FILE
@@ -80,56 +80,6 @@ rule C_COMPILER__Group_Npu_unscanned_
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
   description = Building C object $out
-
-
-#############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__ARM_CMSIS_DSP_Source_1_10_0_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__ARM_CMSIS_NN_Lib_4_0_0_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__ARM_ML_Eval_Kit_Common_API_1_0_0_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__ARM_ML_Eval_Kit_Common_Math_1_0_0_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__ARM_ML_Eval_Kit_Vision_Object_detection_1_0_0_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
 
 
 #############################################
@@ -303,36 +253,6 @@ rule C_COMPILER__Arm_Machine_Learning_NPU_Support_Ethos-U_Driver_Generic_U55_1_2
 
 
 #############################################
-# Rule for compiling C files.
-
-rule C_COMPILER__tensorflow_Data_Processing_Math_kissfft_tensorflow_1_22_8_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-gcc.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building C object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__tensorflow_Machine_Learning_TensorFlow_Kernel_Utils_1_22_8_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__tensorflow_Machine_Learning_TensorFlow_Kernel_Ethos-U_1_22_8_unscanned_
-  depfile = $DEP_FILE
-  deps = gcc
-  command = ${LAUNCHER}${CODE_CHECK}c:\Users\chris\.vcpkg\artifacts\2139c4c6\compilers.arm.arm.none.eabi.gcc\12.3.1\bin\arm-none-eabi-g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
 # Rule for running custom commands.
 
 rule CUSTOM_COMMAND
@@ -344,7 +264,7 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\Users\chris\.vcpkg\artifacts\2139c4c6\tools.kitware.cmake\3.31.5\bin\cmake.exe --regenerate-during-build -SC:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\tmp\simple_code_test.debug+Alif-E7-M55-HP -BC:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\tmp\1
+  command = C:\Users\chris\.vcpkg\artifacts\2139c4c6\tools.kitware.cmake\3.31.5\bin\cmake.exe --regenerate-during-build -SC:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\tmp\my_snn_bare_metal.debug+Alif-E7-M55-HP -BC:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\tmp\1
   description = Re-running CMake...
   generator = 1
 

@@ -53,7 +53,7 @@ layer:
 
   components:
     - component: Arm::Machine Learning:NPU Support:Ethos-U Driver&Generic U55
-    - component: tensorflow::Machine Learning:TensorFlow:Kernel&Ethos-U
+    #- component: tensorflow::Machine Learning:TensorFlow:Kernel&Ethos-U
 
     - component: AlifSemiconductor::Device:SOC Peripherals:USART
     - component: AlifSemiconductor::Device:SOC Peripherals:GPIO
