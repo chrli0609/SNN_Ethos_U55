@@ -24,7 +24,7 @@ if ($build_output -match "Build summary: 1 succeeded, 0 failed") {
 
 
 
-$outputElfFilename='C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\out\simple_code_test\Alif-E7-M55-HP\debug\simple_code_test.elf'; $outputBinFilename=${outputElfFilename}.Substring(0, $outputElfFilename.Length -3) + 'bin'; cp "$outputBinFilename" '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/build/images/alif-img.bin'; cp './.alif/M55_HP_cfg.json' '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/alif-img.json';
+$outputElfFilename='C:\Users\chris\skolsaker\ak5\mex\project\SNN_Ethos_U55\snn_on_alif_e7\out\my_snn_bare_metal\Alif-E7-M55-HP\debug\my_snn_bare_metal.elf'; $outputBinFilename=${outputElfFilename}.Substring(0, $outputElfFilename.Length -3) + 'bin'; cp "$outputBinFilename" '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/build/images/alif-img.bin'; cp './.alif/M55_HP_cfg.json' '/Users/chris/tools/Alif Security Toolkit/APFW0001-app-release-exec-windows-SE_FW_1.103.00_DEV/app-release-exec/alif-img.json';
 
 
 
