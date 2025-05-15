@@ -1,4 +1,61 @@
-#include "include/fc_lif_layer_0.h"
+#pragma once
+#include <stddef.h>
+#include <stdint.h>
+
+
+
+
+// Tensor sizes
+
+#define FC_LIF_LAYER_0_TENSOR_ARENA_SIZE  19248
+#define FC_LIF_LAYER_0_INPUT_LAYER_SIZE  1024
+#define FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE  128
+#define FC_LIF_LAYER_0_WEIGHT_LEN 16416
+#define FC_LIF_LAYER_0_BIAS_LEN 1280
+
+// Input/output addresses (Relative Addressing)
+
+#define FC_LIF_LAYER_0_IN_SPK_ADDR 0
+#define FC_LIF_LAYER_0_BIAS_ADDR 1024
+#define FC_LIF_LAYER_0_WEIGHT_ADDR 2304
+#define FC_LIF_LAYER_0_LN_BETA_ADDR 0
+#define FC_LIF_LAYER_0_VTH_ADDR 128
+#define FC_LIF_LAYER_0_V_MEM_ADDR 18976
+#define FC_LIF_LAYER_0_TIME_NOT_UPDATED_ADDR 19104
+#define FC_LIF_LAYER_0_IN_CURR_ADDR 18848
+#define FC_LIF_LAYER_0_DECAY_ADDR 18720
+#define FC_LIF_LAYER_0_DECAYED_MEM_ADDR 18720
+#define FC_LIF_LAYER_0_UPDATE_NXT_LAYER_ADDR 19105
+#define FC_LIF_LAYER_0_OUT_SPK_ADDR 19120
+
+//Quantization Params
+
+#define FC_LIF_LAYER_0_IN_SPK_SCALE 1.0
+#define FC_LIF_LAYER_0_IN_SPK_ZERO_POINT 0
+#define FC_LIF_LAYER_0_BIAS_SCALE 0.8499999999999999
+#define FC_LIF_LAYER_0_BIAS_ZERO_POINT 0
+#define FC_LIF_LAYER_0_WEIGHT_SCALE 0.009999999999999998
+#define FC_LIF_LAYER_0_WEIGHT_ZERO_POINT 0
+#define FC_LIF_LAYER_0_LN_BETA_SCALE 0.0196078431372549
+#define FC_LIF_LAYER_0_LN_BETA_ZERO_POINT 127
+#define FC_LIF_LAYER_0_VTH_SCALE 0.00980392156862745
+#define FC_LIF_LAYER_0_VTH_ZERO_POINT -179
+#define FC_LIF_LAYER_0_V_MEM_SCALE 0.01568627450980392
+#define FC_LIF_LAYER_0_V_MEM_ZERO_POINT -128
+#define FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE 0.06274509803921569
+#define FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT -128
+#define FC_LIF_LAYER_0_DECAY_SCALE 0.00392156862745098
+#define FC_LIF_LAYER_0_DECAY_ZERO_POINT -128
+#define FC_LIF_LAYER_0_IN_CURR_SCALE 0.011764705882352941
+#define FC_LIF_LAYER_0_IN_CURR_ZERO_POINT -128
+#define FC_LIF_LAYER_0_DECAYED_MEM_SCALE 0.00392156862745098
+#define FC_LIF_LAYER_0_DECAYED_MEM_ZERO_POINT -128
+#define FC_LIF_LAYER_0_UPDATE_NXT_LAYER_SCALE 0.00392156862745098
+#define FC_LIF_LAYER_0_UPDATE_NXT_LAYER_ZERO_POINT -128
+#define FC_LIF_LAYER_0_OUT_SPK_SCALE 0.00392156862745098
+#define FC_LIF_LAYER_0_OUT_SPK_ZERO_POINT -128
+
+
 
 
 
@@ -288,12 +345,12 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 
 
 
-const uint8_t * Getfc_lif_layer_0CMSPointer()
+static inline const uint8_t * Getfc_lif_layer_0CMSPointer()
 {
 	return cms_fc_lif_layer_0;
 }
 
-size_t Getfc_lif_layer_0CMSLen()
+static inline size_t Getfc_lif_layer_0CMSLen()
 {
 	return sizeof(cms_fc_lif_layer_0);
 }
@@ -4739,12 +4796,12 @@ static const int8_t weight_fc_lif_layer_0[] __attribute__((aligned(16))) =
 
 
 
-const int8_t * Getfc_lif_layer_0WeightsPointer()
+static inline const int8_t * Getfc_lif_layer_0WeightsPointer()
 {
 	return weight_fc_lif_layer_0;
 }
 
-size_t Getfc_lif_layer_0WeightsLen()
+static inline size_t Getfc_lif_layer_0WeightsLen()
 {
 	return sizeof(weight_fc_lif_layer_0);
 }
@@ -4800,11 +4857,11 @@ static const int8_t lif_param_fc_lif_layer_0[] __attribute__((aligned(16))) =
 
 
 
-const int8_t* Getfc_lif_layer_0LIFParamPointer()
+static inline const int8_t* Getfc_lif_layer_0LIFParamPointer()
 {
 	return lif_param_fc_lif_layer_0;
 }
-size_t Getfc_lif_layer_0LIFParamLen()
+static inline size_t Getfc_lif_layer_0LIFParamLen()
 {
 	return sizeof(lif_param_fc_lif_layer_0);
 }
@@ -4895,11 +4952,11 @@ static const int8_t lut_fc_lif_layer_0[] __attribute__((aligned(16))) =
 
 
 
-const int8_t* Getfc_lif_layer_0LUTPointer()
+static inline const int8_t* Getfc_lif_layer_0LUTPointer()
 {
 	return lut_fc_lif_layer_0;
 }
-size_t Getfc_lif_layer_0LUTLen()
+static inline size_t Getfc_lif_layer_0LUTLen()
 {
 	return sizeof(lut_fc_lif_layer_0);
 }

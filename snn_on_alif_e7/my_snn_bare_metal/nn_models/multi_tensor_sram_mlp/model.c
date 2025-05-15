@@ -1,4 +1,4 @@
-#include "include/my_mlp_model.h"
+#include "nn_models/multi_tensor_sram_mlp/model.h"
 
 
 #include <stdio.h> //printf
@@ -6,12 +6,8 @@
 
 
 
-//#include "fc_lif_layer_0.h"
-//#include "fc_lif_layer_1.h"
 
 #include "cmsis_gcc.h"
-#include "fc_lif_layer_0.h"
-#include "fc_lif_layer_1.h"
 #include "include/extra_funcs.h" //quantize_array_float_to_int8()
 #include "nn_data_structure.h"
 #include "pm.h"                 //SystemCoreClock
@@ -62,6 +58,8 @@ NNLayer* FC_LIF_Layer_Init(
     float out_spk_scale,
     int out_spk_zero_point
 ) {
+
+
 
     NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, 7);
     if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
@@ -149,24 +147,15 @@ NN_Model* MLP_Init() {
 
 
     // 1. Allocate for Total Arena Tensor on Heap
-    size_t total_arena_tensor_size = FC_LIF_LAYER_0_TENSOR_ARENA_SIZE + FC_LIF_LAYER_1_TENSOR_ARENA_SIZE;
-    int8_t* total_arena_tensor = (int8_t*)aligned_malloc(total_arena_tensor_size, MEM_ALIGNMENT);
-    printf("The memory segment allocated is: %p\n", total_arena_tensor);
-
-    //testing
-    //int8_t* test_tensor_ptr = (int8_t*)aligned_malloc(200*285, MEM_ALIGNMENT);
-    //printf("test_tensor_ptr memory segment allocated at: %p\n", test_tensor_ptr);
 
 
-    int8_t* nnlayer0_tensor_arena_start_ptr = total_arena_tensor;
-    int8_t* nnlayer1_tensor_arena_start_ptr = (int8_t*)((size_t)total_arena_tensor+(FC_LIF_LAYER_0_TENSOR_ARENA_SIZE - FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE));
 
     // Do this for each layer we have
     // First NNLayer
     printf("about to init nnlayer0\n");
     NNLayer* nnlayer0_fc_lif = FC_LIF_Layer_Init(
         FC_LIF_LAYER_0_TENSOR_ARENA_SIZE,
-        nnlayer0_tensor_arena_start_ptr,
+        nnlayer0_tensor_arena,
         
         FC_LIF_LAYER_0_IN_SPK_ADDR,
         FC_LIF_LAYER_0_BIAS_ADDR,
@@ -200,7 +189,7 @@ NN_Model* MLP_Init() {
     printf("About to init nnlayer1\n");
     NNLayer* nnlayer1_fc_lif = FC_LIF_Layer_Init(
         FC_LIF_LAYER_1_TENSOR_ARENA_SIZE,
-        nnlayer1_tensor_arena_start_ptr,
+        nnlayer1_tensor_arena,
         
         FC_LIF_LAYER_1_IN_SPK_ADDR,
         FC_LIF_LAYER_1_BIAS_ADDR,
@@ -241,7 +230,7 @@ NN_Model* MLP_Init() {
 
 
     // 3. Create NN_Model
-    NN_Model* mlp_model = NN_Model_Init(total_arena_tensor, nnlayer0_fc_lif);
+    NN_Model* mlp_model = NN_Model_Init(NULL, nnlayer0_fc_lif);
 
     return mlp_model;
 }
@@ -537,7 +526,7 @@ int MLP_Inference(
 
         
             // Check resulting Tensor Arena Values after NPU OP
-            //NNLayer_DequantizeAndPrint(nnlayer0);
+            if (DEBUG_MODE) { NNLayer_DequantizeAndPrint(nnlayer0); }
 
 
 
@@ -643,9 +632,6 @@ int MLP_Inference(
 
 int MLP_Free(NN_Model* mlp_model) {
 
-    // Deallocate total tensor arena
-    aligned_free(mlp_model->total_tensor_arena);
-    mlp_model->total_tensor_arena = NULL;
 
     // Deallocate NNLayers
     NNLayer_Free(mlp_model->first_nnlayer);

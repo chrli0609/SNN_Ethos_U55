@@ -5,9 +5,9 @@
 
 
 // First Layer
-#include "include/fc_lif_layer_0.h"
+#include "nn_models/single_tensor_dtcm_mlp/layers/fc_lif_layer_0.h"
 
-#include "include/fc_lif_layer_1.h"
+#include "nn_models/single_tensor_dtcm_mlp/layers/fc_lif_layer_1.h"
 
 
 #define MLP_INPUT_LAYER_SIZE    FC_LIF_LAYER_0_INPUT_LAYER_SIZE

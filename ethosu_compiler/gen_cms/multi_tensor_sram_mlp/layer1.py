@@ -2,7 +2,6 @@ from ethosu.vela.api import *
 
 
 
-
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -14,12 +13,12 @@ import numpy as np
 
 
 
-def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
+def main(cms_name, header_out_filepath):
 
-    INPUT_LAYER_SIZE = 1024
-    
 
-    print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
+
+    INPUT_LAYER_SIZE = 32
+    OUTPUT_LAYER_SIZE = 64
 
     DEBUG_MODE = False
 
@@ -37,7 +36,67 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
     LUT_REGION = 4
 
 
+    # Assign Memory segments in SRAM Scratch (region 1)
+    #TENSOR_ARENA_SIZE	=	641
+		
+    #IN_SPK_ADDR	=	0
+    #BIAS_ADDR	=	IN_SPK_ADDR+INPUT_LAYER_SIZE
+    #WEIGHT_ADDR	=	BIAS_ADDR+640   #640 --> bias len
+    #V_MEM_ADDR	=	WEIGHT_ADDR+272 #272 --> weight len
+    #TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR + OUTPUT_LAYER_SIZE
+    #TMP1_ADDR	=	TIME_NOT_UPDATED_ADDR + OUTPUT_LAYER_SIZE
+    #TMP2_ADDR	=	TMP1_ADDR + OUTPUT_LAYER_SIZE
+    #UPDATE_NXT_LAYER_ADDR	=	TMP2_ADDR + OUTPUT_LAYER_SIZE
+    #OUT_SPK_ADDR	=	UPDATE_NXT_LAYER_ADDR + OUTPUT_LAYER_SIZE
 
+
+    TENSOR_ARENA_SIZE	=	1280
+		
+    IN_SPK_ADDR	=	0
+    BIAS_ADDR	=	32
+    WEIGHT_ADDR	=	672
+    V_MEM_ADDR	=	944
+    TIME_NOT_UPDATED_ADDR	=	1008
+    TMP1_ADDR	=	1072
+    TMP2_ADDR	=	1136
+    UPDATE_NXT_LAYER_ADDR	=	1200
+    OUT_SPK_ADDR	=	1216
+
+    # Tensor arena allocation
+    '''
+    Start Address	Tensor name	Size
+    0	In_spk	16
+    16	Bias	320
+    336	Weights	144
+    480	curr (tmp)	32
+    512	v_mem	32
+    544	decay	32
+
+    576	decayed_mem (tmp)	32
+
+    '''
+
+
+    ##############
+    # Assign Tmp tensors here!
+    DECAY_ADDR = TMP1_ADDR
+    IN_CURR_ADDR = TMP2_ADDR
+    DECAYED_MEM_ADDR = TMP1_ADDR
+    RESET_ADDR = TMP2_ADDR
+
+    ##############
+
+
+
+    # Assign Memory segments for region 3
+    LN_BETA_ADDR = 0
+    VTH_ADDR = OUTPUT_LAYER_SIZE
+
+
+    # Assign Memory segments for region 4
+
+    DECAY_LUT_INDEX = 0
+    CHECK_SPK_LUT_INDEX = 1
 
 
 
@@ -45,8 +104,8 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
     # Set FM Quantization Params
 
-    IN_SPK_MAX_VAL = 127
-    IN_SPK_MIN_VAL = -128
+    IN_SPK_MAX_VAL = 1
+    IN_SPK_MIN_VAL = 0
 
     #Must be symmetric
     WEIGHT_MAX_VAL = 127/100
@@ -61,7 +120,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
     IN_CURR_MAX_VAL = 3
     IN_CURR_MIN_VAL = 0
 
-    V_MEM_MAX_VAL = 4
+    V_MEM_MAX_VAL = 1
     V_MEM_MIN_VAL = 0
 
     DECAY_ACC_MAX_VAL = 0
@@ -136,81 +195,20 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
 
-
-    # Define Weights
-    ALL_WEIGHT_VALUES = 0.1
-    ALL_BIAS_VALUES = 0
-
-    weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((OUTPUT_LAYER_SIZE, 1, 1, INPUT_LAYER_SIZE))
-
-    #Biases
-    bias_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-    #    #bias_list.append(np.int64(i%4))
-        bias_list.append(np.int64(ALL_BIAS_VALUES))
-
-    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
-
-
-
-
-    # Assign Memory segments in SRAM Scratch (region 1)
-		
-    IN_SPK_ADDR         	=	0
-    BIAS_ADDR           	=   IN_SPK_ADDR             +   INPUT_LAYER_SIZE
-    WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
-    TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-    TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-    V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-    TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-    UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
-    OUT_SPK_ADDR            =   TIME_NOT_UPDATED_ADDR   +   16
-
-
-    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
-
-
-
-    ##############
-    # Assign Tmp tensors here!
-    DECAY_ADDR = TMP1_ADDR
-    IN_CURR_ADDR = TMP2_ADDR
-    DECAYED_MEM_ADDR = TMP1_ADDR
-    RESET_ADDR = TMP2_ADDR
-
-    ##############
-
-
-
-    # Assign Memory segments for region 3
-    LN_BETA_ADDR = 0
-    VTH_ADDR = LN_BETA_ADDR + OUTPUT_LAYER_SIZE
-
-
-    # Assign Memory segments for region 4
-
-    DECAY_LUT_INDEX = 0
-    CHECK_SPK_LUT_INDEX = 1
-
-
-
-
-
-
-
     ##### Set LIF Param values #######
 
     # Generate Beta values
     beta_list = []
     for i in range(OUTPUT_LAYER_SIZE):
-        beta_list.append(0.9)
+        beta_list.append(0.55)
+
 
     LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)
 
     # Generate Vth values
     vth_list = []
     for i in range(OUTPUT_LAYER_SIZE):
-        vth_list.append(1)
+        vth_list.append(1.3)
     
     VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
 
@@ -227,7 +225,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
             cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
-            cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,             
+            cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,            
             cms_name.upper()+"_OUTPUT_LAYER_SIZE "  : OUTPUT_LAYER_SIZE,
 
             cms_name.upper()+"_WEIGHT_LEN" : len(weight_byte_arr),
@@ -304,7 +302,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
 
-
     def def_decay_lut():
 
         IFM2_IS_FIRST_OPERAND = False
@@ -323,7 +320,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         ifm2 = create_feature_map(
-            height=1, width=1, depth=1,
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -338,7 +335,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -353,6 +349,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         #DMA for LUT
+        block_config = NpuShape3D(2, 2, 32)
 
 
 
@@ -391,20 +388,19 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         exp_mul_lnb_time_op.biases = []
         exp_mul_lnb_time_op.padding = None
         exp_mul_lnb_time_op.activation = activation
-    
-        block_config = get_block_config(exp_mul_lnb_time_op, ACCELERATOR)
         exp_mul_lnb_time_op.block_config = block_config
         exp_mul_lnb_time_op.rounding_mode = NpuRoundingMode.TFL
         exp_mul_lnb_time_op.fused_quantize = False
         exp_mul_lnb_time_op.ifm_upscale = NpuResamplingMode.NONE
         exp_mul_lnb_time_op.accumulator_type = NpuAccumulatorType.Default
 
-        #check_block_config_legal(block_config, exp_mul_lnb_time_op, ACCELERATOR)
+
+        check_block_config_legal(block_config, exp_mul_lnb_time_op, ACCELERATOR)
 
         return dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index
 
 
-    def def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR):
+    def def_fullyconnected():
 
 
 
@@ -429,7 +425,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -447,31 +442,33 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
         )
 
-
-        my_op = NpuConv2DOperation()
-        my_op.ifm               =   ifm
-        my_op.ifm2              =   ifm2
-        my_op.ifm2_scalar       =   None
-        my_op.ofm               =   ofm
-        block_config = get_block_config(my_op, ACCELERATOR)
-    
-
+        block_config = NpuShape3D(2, 2, 32)
         block_traversal = NpuBlockTraversal.DEPTH_FIRST
 
 
         # Define Weights
-        weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+
+
+        weights_volume_ohwi = 0.2 * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+        #weights_volume_ohwi=np.zeros((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth), dtype=np.int8)
+        #print("weights_volume_ohwi", weights_volume_ohwi.shape)
+        #print(weights_volume_ohwi)
+        #weights_volume_ohwi = np.tile(np.arange(1, 5), (32, 4)).reshape(ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth).astype(np.int8)  # Repeat [1, 2, 3, 4] across 32 rows
+        #weights_volume_ohwi = np.ones((OFM_DEPTH, KERNEL_HEIGHT, KERNEL_WIDTH, IFM_DEPTH)).astype(np.uint8)
         if ifm.data_type == NpuDataType.INT8:
-            weight_ifm_bitdepth = 8 #int8
+            weight_ifm_bitdepth = 8 #int16
         elif ifm.data_type == NpuDataType.INT16:
             weight_ifm_bitdepth = 16 #int16
 
+
+        #scale = int(1/0.003937007859349251)
+        #print("scale", scale)
 
         #Biases
         bias_list = []
         for i in range(ofm.shape.depth):
         #    #bias_list.append(np.int64(i%4))
-            bias_list.append(np.int64(ALL_BIAS_VALUES))
+            bias_list.append(np.int64(0))
 
 
 
@@ -501,16 +498,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             print("weight_n_bias_len", weight_n_bias_len)
             print("\tbias_len:", len(bias_byte_arr))
             print("\tweight_len", len(weight_byte_arr))
-
-        
-
-        # Make sure that init is the same as current weights
-        if (weight_byte_arr != weight_byte_arr_init):
-            print("Error: weight_byte_arr != weight_byte_arr_init")
-            exit()
-        if (bias_byte_arr != bias_byte_arr_init):
-            print("Error: bias_byte_arr != bias_byte_arr_init")
-            exit()
 
     
 
@@ -558,12 +545,16 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
 
+        my_op = NpuConv2DOperation()
+        my_op.ifm               =   ifm
+        my_op.ifm2              =   ifm2
+        my_op.ifm2_scalar       =   None
+        my_op.ofm               =   ofm
         my_op.kernel            =   kernel
         my_op.weights           =   [weights]
         my_op.biases            =   [biases]
         my_op.padding           =   padding
         my_op.activation        =   activation
-
         my_op.block_config      =   block_config
         my_op.rounding_mode     =   NpuRoundingMode.TFL
         my_op.fused_quantize    =   fused_quantize
@@ -572,7 +563,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         my_op.block_traversal   =   block_traversal
 
 
-        #check_block_config_legal(block_config, my_op, ACCELERATOR)
+        check_block_config_legal(block_config, my_op, ACCELERATOR)
 
 
 
@@ -604,7 +595,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -629,7 +619,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             name="decayed_mem"
         )
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
         activation = create_activation(
             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -656,8 +646,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         mul_decay_op.biases = []
         mul_decay_op.padding = None
         mul_decay_op.activation = activation
-
-        block_config = get_block_config(mul_decay_op, ACCELERATOR)
         mul_decay_op.block_config = block_config
         mul_decay_op.rounding_mode = NpuRoundingMode.TFL
         mul_decay_op.fused_quantize = False
@@ -665,7 +653,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         mul_decay_op.accumulator_type = NpuAccumulatorType.Default
 
 
-        #check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
+        check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
 
 
 
@@ -680,7 +668,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -693,7 +680,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -719,7 +705,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             name="updated_mem"
         )
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
         activation = create_activation(
             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -746,8 +732,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         add_decayed_mem_in_curr.biases = []
         add_decayed_mem_in_curr.padding = None
         add_decayed_mem_in_curr.activation = activation
-
-        block_config = get_block_config(add_decayed_mem_in_curr, ACCELERATOR)
         add_decayed_mem_in_curr.block_config = block_config
         add_decayed_mem_in_curr.rounding_mode = NpuRoundingMode.TFL
         add_decayed_mem_in_curr.fused_quantize = False
@@ -755,7 +739,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         add_decayed_mem_in_curr.accumulator_type = NpuAccumulatorType.Default
 
 
-        #check_block_config_legal(block_config, add_decayed_mem_in_curr, ACCELERATOR)
+        check_block_config_legal(block_config, add_decayed_mem_in_curr, ACCELERATOR)
 
 
 
@@ -798,6 +782,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
+            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -807,7 +792,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             name="out_spk"
         )
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
 
         check_spk_lut_index = CHECK_SPK_LUT_INDEX
@@ -818,11 +803,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             lookup_table_index=check_spk_lut_index
         )
 
-        #activation = create_activation(
-            #activation_op=NpuActivationOp.NONE_OR_RELU,
-            #min_val=None,
-            #max_val=None
-        #)
 
 
         # Define function that lut will approximate
@@ -862,8 +842,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         check_spk_sub_v_mem_updated_vth_op.biases = []
         check_spk_sub_v_mem_updated_vth_op.padding = None
         check_spk_sub_v_mem_updated_vth_op.activation = activation
-    
-        block_config = get_block_config(check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
         check_spk_sub_v_mem_updated_vth_op.block_config = block_config
         check_spk_sub_v_mem_updated_vth_op.rounding_mode = NpuRoundingMode.TFL
         check_spk_sub_v_mem_updated_vth_op.fused_quantize = False
@@ -871,7 +849,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         check_spk_sub_v_mem_updated_vth_op.accumulator_type = NpuAccumulatorType.Int32
 
 
-        #check_block_config_legal(block_config, check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
+        check_block_config_legal(block_config, check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
 
 
 
@@ -913,7 +891,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -924,7 +901,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         )
 
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
         activation = create_activation(
             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -951,18 +928,14 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         mul_vth_out_spk_op.biases = []
         mul_vth_out_spk_op.padding = None
         mul_vth_out_spk_op.activation = activation
-
-
-        block_config = get_block_config(mul_vth_out_spk_op, ACCELERATOR)
         mul_vth_out_spk_op.block_config = block_config
-
         mul_vth_out_spk_op.rounding_mode = NpuRoundingMode.TFL
         mul_vth_out_spk_op.fused_quantize = False
         mul_vth_out_spk_op.ifm_upscale = NpuResamplingMode.NONE
         mul_vth_out_spk_op.accumulator_type = NpuAccumulatorType.Default
 
 
-        #check_block_config_legal(block_config, mul_vth_out_spk_op, ACCELERATOR)
+        check_block_config_legal(block_config, mul_vth_out_spk_op, ACCELERATOR)
 
 
 
@@ -992,7 +965,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -1015,7 +987,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             name="v_mem_post_reset"
         )
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
         activation = create_activation(
             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -1042,8 +1014,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         sub_v_mem_reset_op.biases = []
         sub_v_mem_reset_op.padding = None
         sub_v_mem_reset_op.activation = activation
-
-        block_config = get_block_config(sub_v_mem_reset_op, ACCELERATOR)
         sub_v_mem_reset_op.block_config = block_config
         sub_v_mem_reset_op.rounding_mode = NpuRoundingMode.TFL
         sub_v_mem_reset_op.fused_quantize = False
@@ -1051,7 +1021,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         sub_v_mem_reset_op.accumulator_type = NpuAccumulatorType.Default
 
 
-        #check_block_config_legal(block_config, sub_v_mem_reset_op, ACCELERATOR)
+        check_block_config_legal(block_config, sub_v_mem_reset_op, ACCELERATOR)
 
 
 
@@ -1091,7 +1061,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
         padding = NpuPadding(top=0, left=0, bottom=0, right=0)
    
-        #block_config = NpuShape3D(2, 2, 8)
+        block_config = NpuShape3D(2, 2, 8)
 
 
         activation = create_activation(
@@ -1115,20 +1085,15 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         update_nxt_layer_reduce_sum_op.biases = []
         update_nxt_layer_reduce_sum_op.padding = padding
         update_nxt_layer_reduce_sum_op.activation = activation
-
-        block_config = get_block_config(update_nxt_layer_reduce_sum_op, ACCELERATOR)
         update_nxt_layer_reduce_sum_op.block_config = block_config
         update_nxt_layer_reduce_sum_op.rounding_mode = NpuRoundingMode.TFL
         update_nxt_layer_reduce_sum_op.fused_quantize = False
         update_nxt_layer_reduce_sum_op.ifm_upscale = NpuResamplingMode.NONE
         update_nxt_layer_reduce_sum_op.accumulator_type = NpuAccumulatorType.Default
 
-        #check_block_config_legal(block_config, update_nxt_layer_reduce_sum_op, ACCELERATOR)
+        check_block_config_legal(block_config, update_nxt_layer_reduce_sum_op, ACCELERATOR)
 
         return update_nxt_layer_reduce_sum_op
-
-
-
 
     def def_reset_time():
 
@@ -1136,7 +1101,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         ifm = create_feature_map(
-            height=1, width=1, depth=1,
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -1152,7 +1117,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         ifm2_scalar = 0
 
         ofm = create_feature_map(
-            height=1, width=1, depth=1,
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
@@ -1163,7 +1128,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
             name="time_not_updated"
         )
 
-        #block_config = NpuShape3D(2, 2, 32)
+        block_config = NpuShape3D(2, 2, 32)
 
         activation = create_activation(
             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -1190,8 +1155,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         reset_time_op.biases = []
         reset_time_op.padding = None
         reset_time_op.activation = activation
-
-        block_config = get_block_config(reset_time_op, ACCELERATOR)
         reset_time_op.block_config = block_config
         reset_time_op.rounding_mode = NpuRoundingMode.TFL
         reset_time_op.fused_quantize = True 
@@ -1199,17 +1162,18 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         reset_time_op.accumulator_type = NpuAccumulatorType.Default
 
 
-        #check_block_config_legal(block_config, reset_time_op, ACCELERATOR)
+        check_block_config_legal(block_config, reset_time_op, ACCELERATOR)
 
 
 
         return reset_time_op
 
-    def layer0_merge_and_write(cms_name, header_out_filepath, imp_out_filepath):
+
+    def layer1_merge_and_write(cms_name, header_out_filepath):
 
         # Define the individual NPU Operations
         dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
-        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR)
+        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected()
         mul_decay_op = def_mul_decay_Vmem()
         add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
         check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()
@@ -1221,15 +1185,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
 
 
         npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-        #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-
-
-
-        '''No activation'''
-        #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-
-        '''No Reduced Sum'''
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
 
 
 
@@ -1241,9 +1196,10 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath, imp_out_filepath):
         # Generate Dicts for writing to C
         sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
 
+        # Make sure parameters are legal
+        check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias_byte_arr)
 
 
-        write_cms_to_files(header_out_filepath, imp_out_filepath, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+        write_cms_to_files(header_out_filepath, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
     
-
-    layer0_merge_and_write(cms_name, header_out_filepath, imp_out_filepath)
+    layer1_merge_and_write(cms_name, header_out_filepath)

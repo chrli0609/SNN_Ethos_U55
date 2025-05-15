@@ -133,12 +133,14 @@ SECTIONS
   {
     * (.bss.NoInit.activation_buf_sram)
     * (lcd_buf)              /* LCD frame Buffer. */
+    * (model_params_sram0)
   } > SRAM0
 
   .bss.at_sram1 (NOLOAD) : ALIGN(8)
   {
     * (raw_buf)              /* Camera Frame Buffer */
     * (rgb_buf)              /* Bayer to RGB Conversion. */
+    * (model_params_sram1)
   } > SRAM1
 
   .bss (NOLOAD) : ALIGN(8)
@@ -147,6 +149,8 @@ SECTIONS
     *(.bss)
     *(.bss.*)
     *(COMMON)
+
+    *(model_params_dtcm)
 
     . = ALIGN(8);
     __bss_end__ = .;

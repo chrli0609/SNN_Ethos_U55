@@ -135,31 +135,31 @@ def get_includes_str():
 
 
 def get_lif_param_methods_definition_str(base_name):
-    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LIFParamPointer()\n{\n\treturn lif_param_" + base_name + ";\n}\nsize_t Get" + base_name + "LIFParamLen()\n{\n\treturn sizeof(lif_param_" + base_name + ");\n}\n\n"
+    return "\n\n\n\n\nstatic inline const int8_t* Get" + base_name + "LIFParamPointer()\n{\n\treturn lif_param_" + base_name + ";\n}\nstatic inline size_t Get" + base_name + "LIFParamLen()\n{\n\treturn sizeof(lif_param_" + base_name + ");\n}\n\n"
 
 def get_lut_methods_definition_str(base_name):
-    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LUTPointer()\n{\n\treturn lut_" + base_name + ";\n}\nsize_t Get" + base_name + "LUTLen()\n{\n\treturn sizeof(lut_" + base_name + ");\n}\n\n"
+    return "\n\n\n\n\nstatic inline const int8_t* Get" + base_name + "LUTPointer()\n{\n\treturn lut_" + base_name + ";\n}\nstatic inline size_t Get" + base_name + "LUTLen()\n{\n\treturn sizeof(lut_" + base_name + ");\n}\n\n"
 
 def get_cms_methods_definition_str(base_name):
-    return "\n\n\n\n\nconst uint8_t * Get" + base_name + "CMSPointer()\n{\n\treturn cms_" + base_name + ";\n}\n\nsize_t Get"+ base_name +"CMSLen()\n{\n\treturn sizeof(cms_" + base_name + ");\n}\n\n"
+    return "\n\n\n\n\nstatic inline const uint8_t * Get" + base_name + "CMSPointer()\n{\n\treturn cms_" + base_name + ";\n}\n\nstatic inline size_t Get"+ base_name +"CMSLen()\n{\n\treturn sizeof(cms_" + base_name + ");\n}\n\n"
 
 def get_weight_methods_definition_str(base_name):
-    return "\n\n\n\nconst int8_t * Get" + base_name + "WeightsPointer()\n{\n\treturn weight_" + base_name + ";\n}\n\nsize_t Get"+ base_name +"WeightsLen()\n{\n\treturn sizeof(weight_" + base_name + ");\n}\n\n"
+    return "\n\n\n\nstatic inline const int8_t * Get" + base_name + "WeightsPointer()\n{\n\treturn weight_" + base_name + ";\n}\n\nstatic inline size_t Get"+ base_name +"WeightsLen()\n{\n\treturn sizeof(weight_" + base_name + ");\n}\n\n"
 
 
 
-
+# Dont need method declarations, can delete if needed
 def get_lif_param_methods_declare_str(base_name):
-    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LIFParamPointer();\n\n\nsize_t Get" + base_name + "LIFParamLen();\n\n\n"
+    return "\n\n\n\n\nstatic inline const int8_t* Get" + base_name + "LIFParamPointer();\n\n\nsize_t Get" + base_name + "LIFParamLen();\n\n\n"
 
 def get_lut_methods_declare_str(base_name):
-    return "\n\n\n\n\nconst int8_t* Get" + base_name + "LUTPointer();\n\n\nsize_t Get" + base_name + "LUTLen();\n\n\n"
+    return "\n\n\n\n\nstatic inline const int8_t* Get" + base_name + "LUTPointer();\n\n\nsize_t Get" + base_name + "LUTLen();\n\n\n"
 
 def get_cms_methods_declare_str(base_name):
-    return "\n\n\n\n\nconst uint8_t * Get" + base_name + "CMSPointer();\n\n\nsize_t Get"+ base_name +"CMSLen();\n\n\n"
+    return "\n\n\n\n\nstatic inline const uint8_t * Get" + base_name + "CMSPointer();\n\n\nsize_t Get"+ base_name +"CMSLen();\n\n\n"
 
 def get_weight_methods_declare_str(base_name):
-    return "\n\n\n\nconst int8_t * Get" + base_name + "WeightsPointer();\n\nsize_t Get"+ base_name +"WeightsLen();\n\n\n"
+    return "\n\n\n\nstatic inline const int8_t * Get" + base_name + "WeightsPointer();\n\nsize_t Get"+ base_name +"WeightsLen();\n\n\n"
 
 
 
@@ -243,7 +243,7 @@ def parse_formatted_hex(formatted_str):
 
 
 
-def write_cms_to_files(header_filepath, imp_filepath, cms_driver_payload_byte_array, register_cms, base_name, sizes_dict, addr_dict, quant_params_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
+def write_cms_to_files(header_filepath, cms_driver_payload_byte_array, register_cms, base_name, sizes_dict, addr_dict, quant_params_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
     
     formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
     
@@ -266,15 +266,16 @@ def write_cms_to_files(header_filepath, imp_filepath, cms_driver_payload_byte_ar
         f.write(get_macro_def_str(quant_params_dict))
 
 
-        f.write(get_cms_methods_declare_str(base_name))
-        f.write(get_weight_methods_declare_str(base_name))
-        f.write(get_lut_methods_declare_str(base_name))
-        f.write(get_lif_param_methods_declare_str(base_name))
+        #f.write(get_cms_methods_declare_str(base_name))
+        #f.write(get_weight_methods_declare_str(base_name))
+        #f.write(get_lut_methods_declare_str(base_name))
+        #f.write(get_lif_param_methods_declare_str(base_name))
 
 
         
-    with open(imp_filepath, 'w') as f:
-        f.write("#include \"include/"+base_name+".h\"")
+    #with open(imp_filepath, 'w') as f:
+        #f.write("#include \"include/"+base_name+".h\"")
+
         f.write("\n\n\n\n\n\n")
 
 

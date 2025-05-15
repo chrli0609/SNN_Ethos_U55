@@ -1,7 +1,8 @@
 
 #include <stdio.h>
 
-#include <math.h> //for log()
+//#include <math.h> //for log()
+#include <stdlib.h> //rand
 
 
 #include "BoardInit.h"
@@ -14,7 +15,6 @@
 
 #include "ethosu_driver.h"
 
-#include <stdlib.h> //rand
 
 
 
@@ -22,11 +22,13 @@
 
 
 
+// Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
+//#include "nn_models/single_tensor_dtcm_mlp/model.h"
+#include "nn_models/multi_tensor_sram_mlp/model.h"
 
 
 
-
-const int DEBUG_MODE = 0;
+const int DEBUG_MODE = 1;
 const int MEASURE_MODE = 0;
 
 
@@ -95,10 +97,15 @@ int main() {
     BoardInit();
 
 
-    static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
+    //static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
+    static volatile __attribute__((section("model_params_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
+    static volatile __attribute__((section("model_params_sram1"))) int8_t large_buffer_sram1[256];  // 256 KB in SRAM0
+    static volatile __attribute__((section("model_params_dtcm"))) int8_t large_buffer_dtcm[256];  // 256 KB in SRAM0
 
     printf("Testing heap allocation\n");
-    printf("Allocated addresses for test: 0x%08X\n", large_buffer_sram0);
+    printf("Allocated addresses for sram0 test: 0x%08X\n", large_buffer_sram0);
+    printf("Allocated addresses for dtcm test: 0x%08X\n", large_buffer_dtcm);
+    printf("Allocated addresses for sram1 test: 0x%08X\n", large_buffer_sram1);
 
     printf("TEST_REGISTER_ADDRESS:  0x%08X\n", TEST_REGISTER_ADDRESS);
     TEST_REGISTER = 2;
@@ -110,7 +117,7 @@ int main() {
 
     srand(0);
 
-    #include "include/my_mlp_model.h"
+
 
     NN_Model* mlp_model = MLP_Init();
     //while (1) {
@@ -122,7 +129,7 @@ int main() {
 
         //printf("Test my_mem_u\n");
 
-        size_t NUM_TIME_STEPS = 1000;
+        size_t NUM_TIME_STEPS = 1;
         int8_t* in_spk_arr [NUM_TIME_STEPS];
         for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
 

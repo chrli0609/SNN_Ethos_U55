@@ -323,7 +323,8 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));
     
     
-    nn_model->total_tensor_arena = total_arena_tensor;
+    //note: remove total_tensor_arena as attribute from NN_Model struct
+    //nn_model->total_tensor_arena = total_arena_tensor;
     nn_model->first_nnlayer = first_nnlayer;
 
 
