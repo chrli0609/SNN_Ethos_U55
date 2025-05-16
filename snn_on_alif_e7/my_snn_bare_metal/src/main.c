@@ -129,13 +129,14 @@ int main() {
 
         //printf("Test my_mem_u\n");
 
-        size_t NUM_TIME_STEPS = 1;
+        size_t NUM_TIME_STEPS = 2;
         int8_t* in_spk_arr [NUM_TIME_STEPS];
         for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
 
             int8_t in_spk [MLP_INPUT_LAYER_SIZE];
             for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                in_spk[j] = rand() % 2;
+                //in_spk[j] = rand() % 2;
+                in_spk[j] = j % 2;
             }
 
         //float in_spk [MLP_INPUT_LAYER_SIZE] = {

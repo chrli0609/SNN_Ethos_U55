@@ -35,6 +35,8 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     SRAM_SCRATCH_REGION = 1
     PARAMS_REGION = 3
     LUT_REGION = 4
+    INPUT_REGION = 5
+    OUTPUT_REGION = 6
 
 
 
@@ -78,8 +80,8 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-    OUT_SPK_MAX_VAL = 1
-    OUT_SPK_MIN_VAL = 0
+    OUT_SPK_MAX_VAL = 127
+    OUT_SPK_MIN_VAL = -128
 
 
     ###########
@@ -156,18 +158,16 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
     # Assign Memory segments in SRAM Scratch (region 1)
 		
-    IN_SPK_ADDR         	=	0
-    BIAS_ADDR           	=   IN_SPK_ADDR             +   INPUT_LAYER_SIZE
+    BIAS_ADDR           	=   0                       +   INPUT_LAYER_SIZE
     WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
     TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
     TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
     V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
     TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
     UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
-    OUT_SPK_ADDR            =   TIME_NOT_UPDATED_ADDR   +   16
 
 
-    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
 
 
 
@@ -192,6 +192,13 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     DECAY_LUT_INDEX = 0
     CHECK_SPK_LUT_INDEX = 1
 
+
+
+    # Assign Memory segment for region 5
+    IN_SPK_ADDR = 0
+
+    # Assign Memory segment for region 6
+    OUT_SPK_ADDR = 0
 
 
 
@@ -411,7 +418,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         ifm = create_feature_map(
         height=1, width=1, depth=INPUT_LAYER_SIZE,
-        region=SRAM_SCRATCH_REGION,
+        region=INPUT_REGION,
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         fm_elem_size=1,
@@ -797,7 +804,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            region=SRAM_SCRATCH_REGION,
+            region=OUTPUT_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -898,7 +905,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            region=SRAM_SCRATCH_REGION,
+            region=OUTPUT_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
@@ -1064,11 +1071,11 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            region=SRAM_SCRATCH_REGION,
+            region=OUTPUT_REGION,
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8, fm_elem_size=1,
             fm_addr=OUT_SPK_ADDR,
-            scale=OUT_SPK_ADDR, zero_point=OUT_SPK_ZERO_POINT,
+            scale=OUT_SPK_SCALE, zero_point=OUT_SPK_ZERO_POINT,
             name="out_spk"
         )
 
@@ -1230,6 +1237,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         '''No Reduced Sum'''
         #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
+
 
 
 

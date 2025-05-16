@@ -33,13 +33,16 @@ NNLayer* FC_LIF_Layer_Init(
     size_t tensor_arena_size,
     int8_t* tensor_arena,
 
-    size_t in_spk_relative_addr,
+    //size_t in_spk_relative_addr,
+    int8_t* in_spk,
+    int8_t* out_spk,
+
     size_t bias_relative_addr,
     size_t weight_relative_addr,
     size_t v_mem_relative_addr,
     size_t time_not_updated_relative_addr,
     size_t update_nxt_layer_relative_addr,
-    size_t out_spk_relative_addr,
+    //size_t out_spk_relative_addr,
 
     size_t input_layer_size,
     size_t output_layer_size,
@@ -65,8 +68,8 @@ NNLayer* FC_LIF_Layer_Init(
     if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
 
     // Manually set the relative addresses
-    int8_t* in_spk_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-        in_spk_relative_addr);
+    //int8_t* in_spk_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+        //in_spk_relative_addr);
     int8_t* bias_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
         bias_relative_addr);
     int8_t* weight_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
@@ -84,29 +87,31 @@ NNLayer* FC_LIF_Layer_Init(
 
     int8_t* update_nxt_layer_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
             update_nxt_layer_relative_addr);
-    int8_t* out_spk_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-            out_spk_relative_addr);
+    //int8_t* out_spk_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+            //out_spk_relative_addr);
 
 
     // Store pointers to quantized tensors for the layer in a struct
-    NNLayer_Assign(nnlayer, 0, in_spk_quant, input_layer_size, in_spk_scale, in_spk_zero_point, "in_spk_quant");
 
-    NNLayer_Assign(nnlayer, 1, bias_arena, bias_tensor_size, 1, 0, "bias_arena");
-    NNLayer_Assign(nnlayer, 2, weight_arena, weight_tensor_size, 1, 0, "weight_arena");
+    NNLayer_Assign(nnlayer, BIAS_TENSOR_IDX, bias_arena, bias_tensor_size, 1, 0, "bias_arena");
+    NNLayer_Assign(nnlayer, WEGIHTS_TENSOR_IDX, weight_arena, weight_tensor_size, 1, 0, "weight_arena");
 
     // Tmp1 & Tmp2, no quantization params needed
     //NNLayer_Assign(nnlayer, 7, tmp1_quant, output_layer_size, 1, 0, "tmp1_quant");
     //NNLayer_Assign(nnlayer, 8, tmp2_quant, output_layer_size, 1, 0, "tmp2_quant");
 
 
-    NNLayer_Assign(nnlayer, 3, v_mem_quant, output_layer_size, v_mem_scale, v_mem_zero_point, "v_mem_quant");
-    NNLayer_Assign(nnlayer, 4, time_not_updated_quant, 1, time_not_updated_scale, time_not_updated_zero_point, "time_not_updated_quant");
+    NNLayer_Assign(nnlayer, V_MEM_QUANT_IDX, v_mem_quant, output_layer_size, v_mem_scale, v_mem_zero_point, "v_mem_quant");
+    NNLayer_Assign(nnlayer, TIME_NOT_UPDATED_QUANT_IDX, time_not_updated_quant, 1, time_not_updated_scale, time_not_updated_zero_point, "time_not_updated_quant");
 
         
         
     // Output
-    NNLayer_Assign(nnlayer, 5, update_nxt_layer_quant, 1, 1, 0, "update_nxt_layer_quant");
-    NNLayer_Assign(nnlayer, 6, out_spk_quant, output_layer_size, out_spk_scale, out_spk_zero_point, "out_spk_quant");
+    NNLayer_Assign(nnlayer, UPDATE_NXT_LAYER_IDX, update_nxt_layer_quant, 1, 1, 0, "update_nxt_layer_quant");
+
+
+    NNLayer_Assign(nnlayer, IN_SPK_TENSOR_IDX, in_spk, input_layer_size, in_spk_scale, in_spk_zero_point, "in_spk");
+    NNLayer_Assign(nnlayer, OUT_SPK_TENSOR_IDX, out_spk, output_layer_size, out_spk_scale, out_spk_zero_point, "out_spk");
 
 
 
@@ -117,18 +122,18 @@ NNLayer* FC_LIF_Layer_Init(
     for (size_t i = 0; i < output_layer_size; i++) {
         v_mem[i] = 0;
     }
-    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[3], output_layer_size, v_mem_scale, v_mem_zero_point);
+    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], output_layer_size, v_mem_scale, v_mem_zero_point);
 
 
     // Assign default value to Time_not_updated
     float time_not_updated[1] = { 0 };
-    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[4], 1, time_not_updated_scale, time_not_updated_zero_point);
+    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1, time_not_updated_scale, time_not_updated_zero_point);
 
 
     // Assign layer input and output (so other layers know where to read and write from)
-    nnlayer->input = in_spk_quant;
+    nnlayer->input = in_spk;
     nnlayer->update_nxt = update_nxt_layer_quant;
-    nnlayer->output = out_spk_quant;
+    nnlayer->output = out_spk;
 
 
 
@@ -157,13 +162,17 @@ NN_Model* MLP_Init() {
         FC_LIF_LAYER_0_TENSOR_ARENA_SIZE,
         nnlayer0_tensor_arena,
         
-        FC_LIF_LAYER_0_IN_SPK_ADDR,
+        
+        nnlayer0_in_spk,
+        nnlayer0_out_spk,
+
+
         FC_LIF_LAYER_0_BIAS_ADDR,
         FC_LIF_LAYER_0_WEIGHT_ADDR,
         FC_LIF_LAYER_0_V_MEM_ADDR,
         FC_LIF_LAYER_0_TIME_NOT_UPDATED_ADDR,
         FC_LIF_LAYER_0_UPDATE_NXT_LAYER_ADDR,
-        FC_LIF_LAYER_0_OUT_SPK_ADDR,
+        
     
 
 
@@ -191,13 +200,14 @@ NN_Model* MLP_Init() {
         FC_LIF_LAYER_1_TENSOR_ARENA_SIZE,
         nnlayer1_tensor_arena,
         
-        FC_LIF_LAYER_1_IN_SPK_ADDR,
+        nnlayer0_out_spk,
+        nnlayer1_out_spk,
+
         FC_LIF_LAYER_1_BIAS_ADDR,
         FC_LIF_LAYER_1_WEIGHT_ADDR,
         FC_LIF_LAYER_1_V_MEM_ADDR,
         FC_LIF_LAYER_1_TIME_NOT_UPDATED_ADDR,
         FC_LIF_LAYER_1_UPDATE_NXT_LAYER_ADDR,
-        FC_LIF_LAYER_1_OUT_SPK_ADDR,
     
 
 
@@ -236,16 +246,19 @@ NN_Model* MLP_Init() {
 }
 
 
+
+
+// Not in use anymore!!!
 int MLP_Quantize_Inputs(NN_Model* mlp_model, float* in_spk, float* v_mem, float* time_not_updated) {
 
     NNLayer* nnlayer = mlp_model->first_nnlayer;
 
     // Quantize
-    quantize_array_float_to_int8(in_spk, nnlayer->tensor_ptrs[0], FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_IN_SPK_SCALE, FC_LIF_LAYER_0_IN_SPK_ZERO_POINT);
+    //quantize_array_float_to_int8(in_spk, nnlayer->tensor_ptrs[0], FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_IN_SPK_SCALE, FC_LIF_LAYER_0_IN_SPK_ZERO_POINT);
     //quantize_array_float_to_int8(ln_beta, nnlayer->tensor_ptrs[3], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_LN_BETA_SCALE, FC_LIF_LAYER_0_LN_BETA_ZERO_POINT);
     //quantize_array_float_to_int8(vth, nnlayer->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_VTH_SCALE, FC_LIF_LAYER_0_VTH_ZERO_POINT);
-    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[3], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_0_V_MEM_SCALE, FC_LIF_LAYER_0_V_MEM_ZERO_POINT);
-    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
+    //quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[3], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_0_V_MEM_SCALE, FC_LIF_LAYER_0_V_MEM_ZERO_POINT);
+    //quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[4], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
 
     return 0;
 }
@@ -265,8 +278,12 @@ int MLP_Run_Layer(
     const int8_t* lif_param,
     size_t lif_param_size,
     const int8_t* exp_lut,
-    size_t exp_lut_size
+    size_t exp_lut_size,
 
+    int8_t* input,
+    size_t input_size,
+    int8_t* output,
+    size_t output_size
 )
 {
 
@@ -286,7 +303,7 @@ int MLP_Run_Layer(
 
 
     // Assign base addrs
-    const size_t num_tensors = 5;
+    const size_t num_tensors = 7;
     uint64_t base_addrs[num_tensors];
     size_t base_addrs_size[num_tensors];
 
@@ -295,12 +312,16 @@ int MLP_Run_Layer(
     base_addrs[2] = (uint64_t)(intptr_t)tensor_arena;   // Fast scratch, same as tensor arena for now
     base_addrs[3] = (uint64_t)(intptr_t)lif_param;
     base_addrs[4] = (uint64_t)(intptr_t)exp_lut;
+    base_addrs[5] = (uint64_t)(intptr_t)input;
+    base_addrs[6] = (uint64_t)(intptr_t)output;
 
     base_addrs_size[0] = weight_tensor_size;
     base_addrs_size[1] = tensor_arena_size;
     base_addrs_size[2] = tensor_arena_size;
     base_addrs_size[3] = lif_param_size;
     base_addrs_size[4] = exp_lut_size;
+    base_addrs_size[5] = input_size;
+    base_addrs_size[6] = output_size;
 
 
     // Sanity check to ensure num_tensors matches length of tensors
@@ -427,7 +448,7 @@ int MLP_Inference(
     if (MEASURE_MODE) { printf("Num neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE); }
 
 
-        // First Layer
+        // Set First Layer as current layer
         NNLayer* nnlayer0 = mlp_model->first_nnlayer;
         // Second Layer
         NNLayer* nnlayer1 = nnlayer0->next_layer;
@@ -471,7 +492,8 @@ int MLP_Inference(
 
             // Write Input in_spk
             for (size_t i = 0; i < MLP_INPUT_LAYER_SIZE; i++){
-                nnlayer0->tensor_ptrs[0][i] = in_spk[i];
+                //nnlayer0->tensor_ptrs[IN_SPK_TENSOR_IDX][i] = in_spk[i];
+                nnlayer0->input[i] = in_spk[i];
             }
             
             
@@ -488,13 +510,13 @@ int MLP_Inference(
 
             // layer0 time
             float time_not_updated_layer0[1] = { time_not_updated_layer0_val };
-            quantize_array_float_to_int8(time_not_updated_layer0, nnlayer0->tensor_ptrs[4], 1,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
+            quantize_array_float_to_int8(time_not_updated_layer0, nnlayer0->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
 
             //DEBUG: Check Tensor Arena Values Before NPU OP
             if (DEBUG_MODE) { 
                 size_t in_spk_sum = 0;
                 for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) { in_spk_sum += in_spk[i]; }
-                //printf("In_spk_sum: %d\n", in_spk_sum);
+                printf("In_spk_sum: %d\n", in_spk_sum);
                 NNLayer_DequantizeAndPrint(nnlayer0);
             }
 
@@ -513,7 +535,12 @@ int MLP_Inference(
                 Getfc_lif_layer_0LIFParamPointer(),
                 Getfc_lif_layer_0LIFParamLen(),
                 Getfc_lif_layer_0LUTPointer(),
-                Getfc_lif_layer_0LUTLen()
+                Getfc_lif_layer_0LUTLen(),
+
+                nnlayer0->input,
+                FC_LIF_LAYER_0_INPUT_LAYER_SIZE,
+                nnlayer0->output,
+                FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE
             );
             uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
             if (MEASURE_MODE) { printf("Ticks elapsed for layer once in it: %d = %d\n", it, measure_layer0_elapsed_ticks); }
