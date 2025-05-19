@@ -4,6 +4,7 @@
 
 param (
     [string]$fileName = "neuron_ticks_data_$(Get-Date -Format 'yyyyMMdd_HHmmss')",
+    [string]$csvDir = "csv/",
     [string]$portName = "COM7",
     [int]$baudRate = 115200,
     [int]$DataBits = 8
@@ -73,7 +74,7 @@ foreach ($neurons in $neuronCounts) {
 
 # Create CSV content
 $csv = New-Object System.Text.StringBuilder
-$csvFileName = "$fileName.csv"
+$csvFileName = "$csvDir$fileName.csv"
 
 # Build header row with all neuron counts
 $headerRow = "Iteration"

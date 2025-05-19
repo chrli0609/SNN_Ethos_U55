@@ -1,5 +1,5 @@
 param (
-    [string]$PythonScriptDir = "../ethosu_compiler/gen_cms/mlp_int8/",
+    [string]$PythonScriptDir,# = "../ethosu_compiler/gen_cms/mlp_int8/",
     [string]$PythonScriptFilename = "main.py",
     [int]$StartRange = 16,
     [int]$EndRange = 512+16,
@@ -24,10 +24,10 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
     try {
 
     	#cd $PythonScriptDir
-    	$pythonOutput = & python $PythonScriptFilename $neurons 2>&1
+    	#$pythonOutput = & python $PythonScriptFilename $neurons 2>&1
+    	$pythonOutput = python $PythonScriptFilename $neurons
         Write-Output "This is python output!"
         Write-Output "$pythonOutput"
-        echo "Running: & python $PythonScriptFilename $neurons"
     	#$pythonOutput = & python3 $PythonScriptFilename
     }
     catch { 
@@ -41,11 +41,10 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
     }
     
 
-    # Check for build failure
-    #if (Check-BuildFailure -Output ($pythonOutput -join "`n")) {
-        ##[System.Environment]::Exit(1)
-        #exit 1
-    #}
+    if ($pythonOutput -match "Error") {
+        Write-Error "Error found in python script"
+        exit 1
+    }
     
     if ($pythonOutput -match "Traceback") {
         Write-Error "Error found in python script"

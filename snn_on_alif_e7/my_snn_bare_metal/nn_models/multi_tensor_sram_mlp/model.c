@@ -7,10 +7,8 @@
 
 
 
-#include "cmsis_gcc.h"
 #include "include/extra_funcs.h" //quantize_array_float_to_int8()
 #include "nn_data_structure.h"
-#include "pm.h"                 //SystemCoreClock
 
 
 
@@ -355,58 +353,9 @@ int MLP_Run_Layer(
 
 
 
-uint32_t volatile ms_ticks = 0;
-void SysTick_Handler (void) {
-    ms_ticks++;
-}
+int global_it;
 
-void delay(uint32_t nticks){
-    uint32_t c_ticks;
-
-    c_ticks = ms_ticks;
-    while((ms_ticks - c_ticks) < nticks) __WFE() ;
-}
-
-
-
-uint32_t start_timer() {
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CYCCNT = 0;
-    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-    
-    uint32_t start = DWT->CYCCNT;
-
-    return start;
-    
-}
-
-
-uint32_t debug_start_timer(void) {
-    return ms_ticks;
-}
-
-uint32_t debug_end_timer(uint32_t start_tick) {
-    
-    //Current time - the time we started --> time elapsed
-    uint32_t elapsed_ticks = ms_ticks - start_tick;
-    return elapsed_ticks;
-
-}
-
-float end_timer(uint32_t start) {
-
-    uint32_t end = DWT->CYCCNT;
-    uint32_t elapsed_cycles = end - start;
-    float elapsed_ms = (float)elapsed_cycles / (SystemCoreClock / 1000.0f);
-
-    if (DEBUG_MODE) {
-        printf("Debug tool: elapsed_ms = %f\n", elapsed_ms);
-    }
-
-    return elapsed_ms;
-}
-
-
+#include "include/extra_funcs.h"
 #include "include/nn_ops.h"
 
 int MLP_Inference(
@@ -421,9 +370,7 @@ int MLP_Inference(
 
     // Set to Milimeter increase
     //try setting each tick to 
-    SysTick_Config(SystemCoreClock/1000000);
 
-    long int tmp = 10000000; 
     //printf("snooze start\n");
     //delay(tmp);
     //printf("Snooze over\n");
@@ -478,9 +425,11 @@ int MLP_Inference(
 
             //printf("it: %d\n", it);
 
-
+            global_it = it;
             // Set up input spikes for this iteration
             in_spk = in_spk_arr[it];
+            // For testing set the same always
+            //in_spk = in_spk_arr[0];
 
 
 
@@ -521,7 +470,7 @@ int MLP_Inference(
             }
 
 
-            uint32_t measure_layer0_start = debug_start_timer();
+            //uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
             MLP_Run_Layer(
                 nnlayer0->tensor_arena,
@@ -542,8 +491,8 @@ int MLP_Inference(
                 nnlayer0->output,
                 FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE
             );
-            uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
-            if (MEASURE_MODE) { printf("Ticks elapsed for layer once in it: %d = %d\n", it, measure_layer0_elapsed_ticks); }
+            //uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
+            //if (MEASURE_MODE) { printf("Ticks elapsed for layer once in it: %d = %d\n", it, measure_layer0_elapsed_ticks); }
             //printf("Just printed time it takes to compute 1 layer on NPU: %d\n", measure_layer0_elapsed_ticks);
 
             // Start timer

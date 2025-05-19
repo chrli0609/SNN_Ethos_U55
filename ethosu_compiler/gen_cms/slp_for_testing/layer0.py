@@ -25,6 +25,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
+
     ACCELERATOR = NpuAccelerator.Ethos_U55_256
 
 
@@ -151,23 +152,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     #    #bias_list.append(np.int64(i%4))
         bias_list.append(np.int64(ALL_BIAS_VALUES))
 
-
-
-
-
-    ##### Set LIF Param values #######
-
-    # Generate Beta values
-    beta_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-        beta_list.append(0.9)
-
-    # Generate Vth values
-    vth_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-        vth_list.append(1)
-
-    
+    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
 
 
@@ -220,12 +205,21 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-    # Generate Weights and Bias list
-    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
+    ##### Set LIF Param values #######
 
-    # Generate LIF Params Quant List
-    LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)    
+    # Generate Beta values
+    beta_list = []
+    for i in range(OUTPUT_LAYER_SIZE):
+        beta_list.append(0.9)
+
+    LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)
+
+    # Generate Vth values
+    vth_list = []
+    for i in range(OUTPUT_LAYER_SIZE):
+        vth_list.append(1)
+    
     VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
 
 
@@ -440,6 +434,19 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         ifm2 = None
 
 
+        #ofm = create_feature_map(
+            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            #region=OUTPUT_REGION,
+            ##layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
+            #data_type=NpuDataType.INT8,
+            #fm_elem_size=1,
+            #fm_addr=OUT_SPK_ADDR,
+            #scale = OUT_SPK_SCALE,
+            #zero_point = OUT_SPK_ZERO_POINT,
+            #name="in_curr"
+        #)
+
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
@@ -452,7 +459,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
             zero_point = IN_CURR_ZERO_POINT,
             name="in_curr"
         )
-
 
 
         # Kernel
@@ -491,7 +497,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         weight_byte_arr, bias_byte_arr = gen_weights_and_biases(accelerator=ACCELERATOR,
-                            weights_volume_ohwi=weights_volume_ohwi,
+                                weights_volume_ohwi=weights_volume_ohwi,
                                 dilation_xy=(1,1),
                                 ifm_bitdepth=weight_ifm_bitdepth,
                                 ofm_block_depth=block_config[2],
@@ -520,11 +526,11 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         # Make sure that init is the same as current weights
         if (weight_byte_arr != weight_byte_arr_init):
-            print("Error: weight_byte_arr != weight_byte_arr_init")
-            exit()
+            print("Error: weight_byte_arr != weight_byte_arr_init", len(weight_byte_arr), "!=", len(weight_byte_arr_init))
+            sys.exit(1)
         if (bias_byte_arr != bias_byte_arr_init):
-            print("Error: bias_byte_arr != bias_byte_arr_init")
-            exit()
+            print("Error: bias_byte_arr != bias_byte_arr_init", len(bias_byte_arr), "!=", len(bias_byte_arr_init))
+            sys.exit(1)
 
     
 
@@ -1204,7 +1210,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         reset_time_op.biases = []
         reset_time_op.padding = None
         reset_time_op.activation = activation
-
+        print("reset time")
         block_config = get_block_config(reset_time_op, ACCELERATOR)
         reset_time_op.block_config = block_config
         reset_time_op.rounding_mode = NpuRoundingMode.TFL
@@ -1218,6 +1224,11 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         return reset_time_op
+
+
+
+
+
 
     def layer0_merge_and_write(cms_name, header_out_filepath):
 
@@ -1233,9 +1244,11 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         reset_time_op = def_reset_time()
 
 
+        
 
-        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-        #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+
+        '''All Ops'''
+        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
 
@@ -1245,13 +1258,81 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         '''No Reduced Sum'''
         #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
 
+        '''Only Reset time'''
+        #npu_op_list = [reset_time_op]
 
 
+        '''Only Mem Update reset'''
+        #npu_op_list = [sub_v_mem_reset_op]
+
+
+        '''Only FC Matmul'''
+        #npu_op_list = [dma_op, fully_connected_op]
+
+        '''Only mul_vth_out_spk'''
+        npu_op_list = [reset_mul_vth_out_spk_op]
+
+
+        '''Only decay_lut'''
+        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op]
 
         # Merge
         lut_arr_contents_str = merge_lut_values_to_str([(decay_lut_values, decay_lut_index), (check_spk_lut_values, check_spk_lut_index)])
         lif_params_arr_contents_str = merge_lif_params_to_str(LN_BETA_QUANT_LIST, VTH_QUANT_LIST)
         cms_bytearr, register_cms = gen_cms(npu_op_list, ACCELERATOR, DEBUG_MODE)
+
+
+        # For testing remove all ops but convolution op
+        #print("cms_bytearr:\n", cms_bytearr)
+        #import re
+        ## Match little-endian 0x0002 → bytes: b'\x02\x00'
+        #from cms_interpreter import cmd0_dict, cmd1_dict
+        #pattern = re.compile(b'\x02\x00\x00\x00')
+
+        ## Find all matches
+        #matches = list(pattern.finditer(cms_bytearr))
+
+        ## Print results
+        #for match in matches:
+            #print(f"Match at offset {match.start()}: {match.group()}")
+
+        ##take first match
+        ##cms_bytearr = matches[0]
+        #print("new cms_byte_arr\n", cms_bytearr)
+
+        from cms_interpreter import strip_cmds_from_register_command_stream
+        dict_of_cmds_to_strip = {
+            #'NPU_SET_IFM_REGION',
+            #'NPU_SET_IFM_BASE0',
+            #'NPU_SET_IFM_BASE1',
+            #'NPU_SET_IFM_BASE2',
+            #'NPU_SET_IFM_BASE3',
+
+            #'NPU_SET_OFM_REGION',
+            #'NPU_SET_OFM_BASE0',
+            #'NPU_SET_OFM_BASE1',
+            #'NPU_SET_OFM_BASE2',
+            #'NPU_SET_OFM_BASE3',
+
+            #'NPU_SET_WEIGHT_REGION',
+            #'NPU_SET_WEIGHT_BASE',
+            #'NPU_SET_WEIGHT_LENGTH',
+            #'NPU_SET_SCALE_REGION',
+            #'NPU_SET_SCALE_BASE',
+            #'NPU_SET_SCALE_LENGTH'
+
+        }
+        
+        #print("About to enter strip cmds()")
+        new_register_cms, new_cmd_table = strip_cmds_from_register_command_stream(register_cms, dict_of_cmds_to_strip)
+        
+        #print("stripped commands\n", new_cmd_table)
+        new_cms_byte_arr = npu_create_driver_payload(new_register_cms, ACCELERATOR)
+
+        # Use the new cms
+        #cms_bytearr = new_cms_byte_arr
+        #register_cms = new_register_cms
+
 
         # Generate Dicts for writing to C
         sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)

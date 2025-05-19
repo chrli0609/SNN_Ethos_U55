@@ -6,6 +6,22 @@
 
 
 
+
+
+
+
+void SysTick_Handler (void);
+uint32_t debug_start_timer(void);
+uint32_t debug_end_timer(uint32_t start_tick);
+
+
+
+void delay(uint32_t nticks);
+uint32_t start_timer();
+float end_timer(uint32_t start);
+
+
+
 void quantize_array_float_to_int8(
     const float *input,     // Input float array
     int8_t *output,        // Output uint8 array
@@ -24,3 +40,6 @@ void dequantize_array_int8_to_float(
 
 void PrintTensor(const char* tensor_name, const int8_t* tensor, size_t num_elements);
 void PrintFloatTensor(const char* tensor_name, const float* tensor, size_t num_elements);
+
+
+

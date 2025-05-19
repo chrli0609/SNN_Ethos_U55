@@ -5,6 +5,10 @@ import sys
 from pathlib import Path
 import numpy as np
 
+
+
+plot_dir = Path("plot_comparisons")
+
 # Check if any arguments were provided
 if len(sys.argv) < 2:
     print("Usage: python script.py <csv_file1> <csv_file2> ...")
@@ -91,10 +95,11 @@ all_counts = [stat['min_at'] for stat in all_stats] + [stat['max_at'] for stat i
 plt.xlim(0, max(all_counts) * 1.05)
 
 # Save and show the plot
-output_filename = "neuron_comparison.png"
+output_filename = plot_dir / Path("neuron_comparison.png")
 if len(filepaths) == 1:
     output_filename = f"{filepaths[0].stem}.png"
-    
+
+
 plt.tight_layout()
 plt.savefig(output_filename)
 plt.show()

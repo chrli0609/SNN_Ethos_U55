@@ -3,6 +3,16 @@ from ethosu.vela.api import *
 from cms_interpreter import register_cms_2_assembly
 
 
+from pathlib import Path
+'''
+Header filepath: current_working_directory / current_to_model_directory / model_name / layers / layer_name.h
+'''
+def get_header_filepath(layer_name, model_name, current_working_directory, current_to_model_directory):
+
+    header_out_filepath = current_working_directory / current_to_model_directory / Path(model_name) / Path("layers") / Path(layer_name+ ".h")
+    return header_out_filepath
+
+
 
 from config_ops import create_feature_map, gen_weights_and_biases
 def get_int8_fc_weights_and_biases(

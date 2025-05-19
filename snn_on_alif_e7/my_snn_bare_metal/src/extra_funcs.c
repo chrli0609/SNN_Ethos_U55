@@ -6,8 +6,54 @@
 #include <math.h>
 
 
+#include "pm.h"                 //SystemCoreClock
 
 
+
+
+uint32_t volatile ms_ticks = 0;
+void SysTick_Handler (void) {
+    ms_ticks++;
+}
+uint32_t debug_start_timer(void) {
+    return ms_ticks;
+}
+
+uint32_t debug_end_timer(uint32_t start_tick) {
+    
+    //Current time - the time we started --> time elapsed
+    uint32_t elapsed_ticks = ms_ticks - start_tick;
+    return elapsed_ticks;
+
+}
+void delay(uint32_t nticks){
+    uint32_t c_ticks;
+
+    c_ticks = ms_ticks;
+    while((ms_ticks - c_ticks) < nticks) __WFE() ;
+}
+
+
+
+uint32_t start_timer() {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    
+    uint32_t start = DWT->CYCCNT;
+
+    return start;
+    
+}
+float end_timer(uint32_t start) {
+
+    uint32_t end = DWT->CYCCNT;
+    uint32_t elapsed_cycles = end - start;
+    float elapsed_ms = (float)elapsed_cycles / (SystemCoreClock / 1000.0f);
+
+
+    return elapsed_ms;
+}
 
 
 

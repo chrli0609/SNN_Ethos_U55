@@ -20,6 +20,8 @@
 
 #include "include/extra_funcs.h"
 
+//#include "cmsis_gcc.h"
+#include "pm.h" //SystemCoreClock
 
 
 // Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
@@ -29,7 +31,7 @@
 
 
 const int DEBUG_MODE = 1;
-const int MEASURE_MODE = 0;
+const int MEASURE_MODE = 1;
 
 
 
@@ -117,6 +119,8 @@ int main() {
 
     srand(0);
 
+    //Measurement unit: 1 microsecond
+    SysTick_Config(SystemCoreClock/1000000);
 
 
     NN_Model* mlp_model = MLP_Init();
@@ -139,25 +143,6 @@ int main() {
                 in_spk[j] = j % 2;
             }
 
-        //float in_spk [MLP_INPUT_LAYER_SIZE] = {
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0,
-            //0
-        //};
-
             in_spk_arr[i] = in_spk;
         }
 
@@ -167,9 +152,6 @@ int main() {
 
         int8_t out_spk [MLP_OUTPUT_LAYER_SIZE];
 
-        //PrintFloatTensor("in_spk", in_spk, MY_MEM_U_INPUT_LAYER_SIZE);
-        //PrintFloatTensor("v_mem", v_mem, MY_MEM_U_OUTPUT_LAYER_SIZE);
-        //PrintFloatTensor("decay", decay, MY_MEM_U_OUTPUT_LAYER_SIZE);
 
 
         //bias = 0, scale = 1, shift = 0 --> -112

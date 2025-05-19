@@ -243,3 +243,94 @@ def extract_register_command_stream(driver_payload: bytes) -> List[int]:
     register_command_stream = words[cmd_stream_start:cmd_stream_end]
     
     return register_command_stream
+
+
+
+
+
+
+def strip_cmds_from_register_command_stream(register_cms, list_of_cmds_to_strip):
+    
+
+    new_cmd_table = '/*\n'
+    new_register_cms = []
+
+    # Create a PrettyTable instance
+    new_cmd_table += "Register Command Stream:\n"
+    table = PrettyTable(["Command Name", "Parameter", "Payload Data"])
+    table.align = "l"
+
+    i = 0
+    while i < len(register_cms):
+
+
+        command = register_cms[i]
+
+
+
+
+        bin_cmd = bin(command)[2:].zfill(32)[::-1]
+
+        #print("bin_cmd:", format(int(bin_cmd, 2), '08x'), "\t", bin_cmd)
+        
+        #print("bin_cmd[10:16]:", bin_cmd[10:16])
+        
+        cmd = (bin_cmd[:10])[::-1]
+        parameter = (bin_cmd[16:])[::-1]
+
+        if (bin_cmd[10:16])[::-1] == '000000': #cmd0 
+            cmd_name = cmd0_dict[int(cmd, 2)]
+            has_payload = False
+        elif (bin_cmd[10:16])[::-1] == '010000': #cmd1
+            cmd_name = cmd1_dict[int(cmd, 2)]
+            has_payload = True
+        else:
+            print("Do not recognize command type, neither cmd0 nor cmd1")
+            exit()
+
+            
+
+        #skip if in list
+        if (cmd_name in list_of_cmds_to_strip):
+            if has_payload:
+                i += 2
+            else:
+                i += 1
+            continue
+
+        # If not in list --> keep it
+        new_register_cms.append(command)
+
+
+        
+
+        
+        
+        row = [cmd_name, int(parameter, 2)]  # Convert binary parameter to integer
+
+        if has_payload:
+            row.append("0x" + format(register_cms[i + 1], '08x') + " ("+str(register_cms[i + 1])+")")  # Format payload as hex
+        else:
+            row.append("-")  # Placeholder if no payload
+
+        table.add_row(row)
+
+       
+
+        if has_payload:
+            i += 2
+        else:
+            i += 1
+
+
+
+
+
+     # Print the table
+    new_cmd_table += str(table)
+    new_cmd_table += "\n*/\n"
+
+
+
+    return new_register_cms, new_cmd_table
+

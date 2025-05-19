@@ -10,22 +10,15 @@ from config_ops import *
 from extra_func import *
 
 
-import numpy as np
 
 
 
-def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
-
-    INPUT_LAYER_SIZE = 16 
-    
-
-    print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
-
-    DEBUG_MODE = False
 
 
 
-    ACCELERATOR = NpuAccelerator.Ethos_U55_256
+def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, 
+         weights_volume_ohwi, bias_list, beta_list, vth_list,
+         cms_name, DEBUG_MODE, ACCELERATOR, header_out_filepath):
 
 
 
@@ -39,13 +32,9 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     OUTPUT_REGION = 6
 
 
-
-
-
-
-
-
-    # Set FM Quantization Params
+    '''
+    Set FM Quantization Params
+    '''
 
     IN_SPK_MAX_VAL = 127
     IN_SPK_MIN_VAL = -128
@@ -108,7 +97,9 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-
+    '''
+    Generate Quantization Parameters from the Value range set above for each tensor
+    '''
     IN_SPK_SCALE, IN_SPK_ZERO_POINT = zero_point_quant(IN_SPK_MAX_VAL, IN_SPK_MIN_VAL)
 
 
@@ -139,35 +130,16 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-    # Define Weights
-    ALL_WEIGHT_VALUES = 0.1
-    ALL_BIAS_VALUES = 0
-
-    weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((OUTPUT_LAYER_SIZE, 1, 1, INPUT_LAYER_SIZE))
-
-    #Biases
-    bias_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-    #    #bias_list.append(np.int64(i%4))
-        bias_list.append(np.int64(ALL_BIAS_VALUES))
+    '''
+    Quantize and Decrypt Weight, bias and Time constant (beta), and Vth
+    '''
+    # Generate Weights and Bias list
+    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
 
-
-
-
-    ##### Set LIF Param values #######
-
-    # Generate Beta values
-    beta_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-        beta_list.append(0.9)
-
-    # Generate Vth values
-    vth_list = []
-    for i in range(OUTPUT_LAYER_SIZE):
-        vth_list.append(1)
-
-    
+    # Generate LIF Params Quant List
+    LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)    
+    VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
 
 
 
@@ -220,13 +192,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-    # Generate Weights and Bias list
-    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
-
-
-    # Generate LIF Params Quant List
-    LN_BETA_QUANT_LIST = generate_ln_beta_values(beta_list=beta_list, ln_beta_scale=LN_BETA_SCALE, ln_beta_zero_point=LN_BETA_ZERO_POINT)    
-    VTH_QUANT_LIST = quantize_vth_values(vth_list=vth_list, vth_scale=VTH_SCALE, vth_zero_point=VTH_ZERO_POINT)
 
 
 
@@ -474,18 +439,12 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         # Define Weights
-        weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
         if ifm.data_type == NpuDataType.INT8:
             weight_ifm_bitdepth = 8 #int8
         elif ifm.data_type == NpuDataType.INT16:
             weight_ifm_bitdepth = 16 #int16
 
 
-        #Biases
-        bias_list = []
-        for i in range(ofm.shape.depth):
-        #    #bias_list.append(np.int64(i%4))
-            bias_list.append(np.int64(ALL_BIAS_VALUES))
 
 
 

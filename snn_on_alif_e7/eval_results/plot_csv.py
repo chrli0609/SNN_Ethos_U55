@@ -4,6 +4,10 @@ import re
 import sys
 from pathlib import Path
 
+
+plot_dir = Path("plot")
+
+
 filepath = Path(sys.argv[1])
 
 
@@ -33,6 +37,7 @@ plt.title('Average Value vs. Number of Neurons', fontsize=16)
 plt.xlabel('Number of Neurons', fontsize=14)
 plt.ylabel(r"Average Execution Time ($\mu$s)", fontsize=14)
 
+
 # Add tick marks for better readability
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
@@ -42,7 +47,7 @@ plt.xlim(0, max(sorted_counts) * 1.05)
 
 # Save and show the plot
 plt.tight_layout()
-plt.savefig(filepath.stem+'.png')
+plt.savefig(plot_dir / Path(filepath.stem+'.png'))
 plt.show()
 
 print(f"The data shows a trend across {len(sorted_counts)} different neuron configurations.")
