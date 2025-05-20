@@ -33,7 +33,7 @@ plt.figure(figsize=(12, 8))
 plt.plot(sorted_counts, sorted_avgs, marker='o', linestyle='-', linewidth=2, markersize=6)
 plt.grid(True, linestyle='--', alpha=0.7)
 
-plt.title('Average Value vs. Number of Neurons', fontsize=16)
+plt.title('Average Value vs. Number of Neurons\n'+filepath.stem, fontsize=16)
 plt.xlabel('Number of Neurons', fontsize=14)
 plt.ylabel(r"Average Execution Time ($\mu$s)", fontsize=14)
 

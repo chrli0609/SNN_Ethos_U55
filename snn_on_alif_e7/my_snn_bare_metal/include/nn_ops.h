@@ -12,7 +12,8 @@
 
 
 
-
+#include <ethosu_driver.h>
+void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg);
 
 
 

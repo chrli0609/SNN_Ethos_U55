@@ -156,8 +156,10 @@ void ethosu_invalidate_dcache(uint32_t *p, size_t bytes)
     }
 }
 
+#include "include/nn_ops.h" //for ethosu_start_pmu_measure()
 void ethosu_inference_begin(struct ethosu_driver* drv, void* userArg)
 {
     UNUSED(userArg);
     ethosu_clear_cache_states();
+    ethosu_start_pmu_measure(drv, userArg);
 }

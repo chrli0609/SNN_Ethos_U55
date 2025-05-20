@@ -1248,7 +1248,10 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         '''All Ops'''
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+
+        '''No LUT, No FC'''
+        #npu_op_list = [mul_decay_op, add_decayed_mem_in_curr, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
 
@@ -1269,8 +1272,14 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         '''Only FC Matmul'''
         #npu_op_list = [dma_op, fully_connected_op]
 
-        '''Only mul_vth_out_spk'''
-        npu_op_list = [reset_mul_vth_out_spk_op]
+        '''Only mul_vth_out_spk and update_nxt_reduced_sum'''
+        #npu_op_list = [reset_mul_vth_out_spk_op, update_nxt_layer_reduce_sum_out_spk]
+
+        '''Only mul_decay_op and add_decayed_mem_in_curr and mul_vth_out_spk and reset_time'''
+        #npu_op_list = [mul_decay_op, add_decayed_mem_in_curr, reset_mul_vth_out_spk_op, reset_time_op]
+
+        '''Only_mul_vth_out_spk_and_reset_time'''
+        #npu_op_list = [reset_mul_vth_out_spk_op, reset_time_op]
 
 
         '''Only decay_lut'''

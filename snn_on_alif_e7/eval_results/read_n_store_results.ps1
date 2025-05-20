@@ -14,6 +14,7 @@ param (
 # Configure and open the serial port
 #$port = New-Object System.IO.Ports.SerialPort COM7,115200,None,8,one
 $port = New-Object System.IO.Ports.SerialPort $portName,$baudRate,None,$DataBits,one
+$port.Encoding = [System.Text.Encoding]::UTF8
 $port.Open()
 
 # Data storage

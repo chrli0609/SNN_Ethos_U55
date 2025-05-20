@@ -30,7 +30,7 @@
 
 
 
-const int DEBUG_MODE = 1;
+const int DEBUG_MODE = 0;
 const int MEASURE_MODE = 1;
 
 
@@ -133,7 +133,10 @@ int main() {
 
         //printf("Test my_mem_u\n");
 
-        size_t NUM_TIME_STEPS = 2;
+        size_t NUM_TIME_STEPS;
+        if (MEASURE_MODE) { NUM_TIME_STEPS = 10; }
+        else { NUM_TIME_STEPS = 2; }
+        
         int8_t* in_spk_arr [NUM_TIME_STEPS];
         for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
 
