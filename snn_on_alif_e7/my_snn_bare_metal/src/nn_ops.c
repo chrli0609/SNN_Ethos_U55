@@ -43,24 +43,25 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
     // Your custom start‑of‑inference hook
     // e.g., toggle an LED or start a timer
     if (MEASURE_MODE) {
-        printf("Before NPU OP Start\n");
-        int8_t* input = (int8_t *)(intptr_t)drv->job.base_addr[5];
-        int8_t* output = (int8_t *)(intptr_t)drv->job.base_addr[6];
-        size_t input_size = drv->job.base_addr_size[5];
-        size_t output_size = drv->job.base_addr_size[6];
-        // Print input
-        printf("input:\n");
-        for (size_t i = 0; i < input_size; i++){
-            printf("%" PRIu8 ", ", input[i]);
-        }
-        printf("\n");
+        //printf("Before NPU OP Start\n");
+        //int8_t* input = (int8_t *)(intptr_t)drv->job.base_addr[5];
+        //int8_t* output = (int8_t *)(intptr_t)drv->job.base_addr[6];
+        //size_t input_size = drv->job.base_addr_size[5];
+        //size_t output_size = drv->job.base_addr_size[6];
+        //// Print input
+        //printf("input:\n");
+        //for (size_t i = 0; i < input_size; i++){
+            //printf("%" PRIu8 ", ", input[i]);
+        //}
+        //printf("\n");
 
-        // Print output
-        printf("output:\n");
-        for (size_t i = 0; i < output_size; i++){
-            printf("%" PRIu8 ", ", output[i]);
-        }
-        printf("\n");
+        //// Print output
+        //printf("output:\n");
+        //for (size_t i = 0; i < output_size; i++){
+            //printf("%" PRIu8 ", ", output[i]);
+        //}
+        //printf("\n");
+        // Start measuring time
         measure_layer0_start = debug_start_timer();
 
         // 1. Enable PMU
@@ -117,8 +118,9 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
         printf("\taxi_stalls: %" PRIu32 "\n", axi_stalls);
 
         // Print CPU timer results
-        //printf("Ticks elapsed for layer once in it: %d = %d\n", global_it, measure_layer0_elapsed_ticks);
-        printf("Ticks elapsed for layer once in it: %d = %" PRIu64 " \xC2\xB5s\n", global_it, cycles);
+        //printf("Ticks elapsed for layer once in it: %d = %d \xC2\xB5s\n", global_it, measure_layer0_elapsed_ticks);
+        printf("Ticks elapsed for layer once in it: %d = %d ms\n", global_it, measure_layer0_elapsed_ticks);
+        //printf("Ticks elapsed for layer once in it: %d = %" PRIu64 " \n", global_it, cycles);
 
     }
         int8_t* input = (int8_t *)(intptr_t)drv->job.base_addr[5];
@@ -126,22 +128,22 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
         size_t input_size = drv->job.base_addr_size[5];
         size_t output_size = drv->job.base_addr_size[6];
 
-        printf("input_size: %d\n", input_size);
-        printf("output_size: %d\n", output_size);
-        printf("Atfter NPU OP\n");
-        // Print input
-        printf("input:\n");
-        for (size_t i = 0; i < input_size; i++){
-            printf("%" PRIu8 ", ", input[i]);
-        }
-        printf("\n");
+        //printf("input_size: %d\n", input_size);
+        //printf("output_size: %d\n", output_size);
+        //printf("Atfter NPU OP\n");
+        //// Print input
+        //printf("input:\n");
+        //for (size_t i = 0; i < input_size; i++){
+            //printf("%" PRIu8 ", ", input[i]);
+        //}
+        //printf("\n");
 
-        // Print output
-        printf("output:\n");
-        for (size_t i = 0; i < output_size; i++){
-            printf("%" PRIu8 ", ", output[i]);
-        }
-        printf("\n");
+        //// Print output
+        //printf("output:\n");
+        //for (size_t i = 0; i < output_size; i++){
+            //printf("%" PRIu8 ", ", output[i]);
+        //}
+        //printf("\n");
 }
 
 
