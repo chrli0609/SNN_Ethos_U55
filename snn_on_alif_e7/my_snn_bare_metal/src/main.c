@@ -134,7 +134,7 @@ int main() {
         //printf("Test my_mem_u\n");
 
         size_t NUM_TIME_STEPS;
-        if (MEASURE_MODE) { NUM_TIME_STEPS = 10; }
+        if (MEASURE_MODE) { NUM_TIME_STEPS = 1; }
         else { NUM_TIME_STEPS = 2; }
         
         int8_t* in_spk_arr [NUM_TIME_STEPS];

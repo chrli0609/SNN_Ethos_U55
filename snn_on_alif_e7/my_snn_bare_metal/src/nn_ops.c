@@ -117,7 +117,7 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
         // 7. Disable counters
         ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_ACTIVE);
-        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_ACTIVE_32BIT);
+        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_DPU_ACTIVE);
         ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_AXI0_RD_TRANS_ACCEPTED);
         ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_CC_STALLED_ON_BLOCKDEP);
 
@@ -132,7 +132,7 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
         uint64_t cycles = end_cycles - start_cycles;
         uint32_t macs   = end_mac   - start_mac;
-        uint32_t cc_dpus_active   = end_dpu   - start_dpu;
+        uint32_t cc_dpu_active   = end_dpu   - start_dpu;
         uint32_t axi0_reads   = end_axi0_read   - start_axi0_read;
         uint32_t blockdep_stalls   = end_blockdep_stalls   - start_blockdep_stalls;
 
@@ -142,7 +142,8 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
         //printf("NPU_active + NPU_IDLE should be equal to NPU Cycles:%" PRIu32 "\n", mac_active+idle_cycles);
         printf("Npu cycles for it: %d = %" PRIu64 "\n", global_it, cycles);
         printf("Npu MAC Active for it: %d = %" PRIu32 "\n", global_it, macs);
-        printf("Npu MAC 8bit Active for it: %d = %" PRIu32 "\n", global_it, cc_dpus_active);
+        //printf("Npu MAC 8bit Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
+        printf("Npu CCs where DPU is Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
         printf("Npu AXI0 Reads for it: %d = %" PRIu32 "\n", global_it, axi0_reads);
         printf("Npu Blockdep Stalls for it: %d = %" PRIu32 "\n", global_it, blockdep_stalls);
         //printf("Utilization: %f\n", utilization);
@@ -153,7 +154,8 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
         printf("Investigate start and end values:\n");
         printf("\tNPU Cycles:\t\t\tstart: %" PRIu64 "\tend: %" PRIu64"\n", start_cycles, end_cycles);
         printf("\tNPU MAC Operations:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac, end_mac);
-        printf("\tNPU MAC 8-bit Operations:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_dpu, end_dpu);
+        //printf("\tNPU MAC 8-bit Operations:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac_8bit, end_mac_8bit);
+        printf("\tNPU CCs where DPU is active:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_dpu, end_dpu);
         printf("\tNPU AXI0 Reads:\t\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_axi0_read, end_axi0_read);
         printf("\tNPU BlockDep Stalls:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_blockdep_stalls, end_blockdep_stalls);
 

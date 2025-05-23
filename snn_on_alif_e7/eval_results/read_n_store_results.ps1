@@ -207,7 +207,7 @@ foreach ($pattern in $patterns) {
     $patternData = $allPatternData[$pattern.Name]
     $maxIteration = $patternMaxIterations[$pattern.Name]
     
-    if ($maxIteration -gt 0) {
+    if ($maxIteration -gt -1) {
         # Use just the suffix as filename in the dedicated directory
         $patternFileName = $pattern.filename + ".csv"
         $savedFile = Save-PatternToCSV -PatternData $patternData -PatternName $pattern.Name -Units $pattern.Units -filename $pattern.filename -MaxIteration $maxIteration -BaseFileName $patternFileName -CsvDirectory $outputDir

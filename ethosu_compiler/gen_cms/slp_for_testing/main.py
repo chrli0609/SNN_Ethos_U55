@@ -26,9 +26,10 @@ import layer1
 
 if len(sys.argv) > 1:
         try:
-            layer0_OUTPUT_LAYER_SIZE = int(sys.argv[1])
+            layer0_INPUT_LAYER_SIZE = int(sys.argv[1])
+            layer0_OUTPUT_LAYER_SIZE = int(sys.argv[2])
         except:
-            print("Expected Integer command line argument but received:", sys.argv[1])
+            print("Expected Integer command line argument but received:", sys.argv[1], "and", sys.argv[2])
             exit()
 else:
     print("AN ERROR HAS OCCURRRED, INCORRECT COMMAND LINE ARGUMENTS SET WHEN CALLING main.py")
@@ -45,7 +46,7 @@ header_out_filepath_layer1 = current_working_directory / current_to_model_direct
 
 
 
-layer0.main(OUTPUT_LAYER_SIZE=layer0_OUTPUT_LAYER_SIZE, cms_name=LAYER_0_CMS_NAME, header_out_filepath=header_out_filepath_layer0)
+layer0.main(INPUT_LAYER_SIZE=layer0_INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE=layer0_OUTPUT_LAYER_SIZE, cms_name=LAYER_0_CMS_NAME, header_out_filepath=header_out_filepath_layer0)
 #layer1.layer1_merge_and_write(cms_name=LAYER_1_CMS_NAME, header_out_filepath=header_out_filepath_layer1)
 layer1.main(cms_name=LAYER_1_CMS_NAME, header_out_filepath=header_out_filepath_layer1)
 

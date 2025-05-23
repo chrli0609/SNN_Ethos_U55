@@ -124,7 +124,7 @@ def create_plot(df, neuron_columns, neuron_counts, unit, original_filepath, outp
     
     plt.tight_layout()
     plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-    plt.show()
+    #plt.show()
     
     # Print statistics
     print_statistics(sorted_counts, sorted_avgs, unit, data_type)

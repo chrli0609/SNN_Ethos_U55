@@ -14,12 +14,10 @@ import numpy as np
 
 
 
-def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
+def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
-    INPUT_LAYER_SIZE = OUTPUT_LAYER_SIZE
-    OUTPUT_LAYER_SIZE = 128
     
-
+    print("INPUT_LAYER_SIZE", INPUT_LAYER_SIZE)
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
 
     DEBUG_MODE = False

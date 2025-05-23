@@ -1,8 +1,9 @@
 param (
     [string]$PythonScriptDir,# = "../ethosu_compiler/gen_cms/mlp_int8/",
+    [int]$inputNeurons,
     [string]$PythonScriptFilename = "main.py",
-    [int]$StartRange = 16,
-    [int]$EndRange = 512+16,
+    [int]$OutputNeuronsStartRange = 16,
+    [int]$OutputNeuronsEndRange = 512+16,
     #[string]$SecondaryScriptDir = "./",
     [string]$SecondaryScriptFilename = "build_n_run.ps1"
 )
@@ -13,10 +14,10 @@ param (
 $originalPath = Get-Location
 
 # Run the Python script for each value in the range
-#foreach ($neurons in $StartRange..$EndRange) {
-for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
+#foreach ($outputNeurons in $outputNeuronsStartRange..$outputNeuronsEndRange) {
+for ($outputNeurons = $outputNeuronsStartRange; $outputNeurons -le $outputNeuronsEndRange; $outputNeurons += 16) {
 
-    Write-Host "Processing with neurons = $neurons" -ForegroundColor Green
+    Write-Host "Processing with outputNeurons = $outputNeurons" -ForegroundColor Green
     
 
     # Run the Python script with the current value as argument
@@ -24,8 +25,8 @@ for ($neurons = $StartRange; $neurons -le $EndRange; $neurons += 16) {
     try {
 
     	#cd $PythonScriptDir
-    	#$pythonOutput = & python $PythonScriptFilename $neurons 2>&1
-    	$pythonOutput = python $PythonScriptFilename $neurons
+    	#$pythonOutput = & python $PythonScriptFilename $outputNeurons 2>&1
+    	$pythonOutput = python $PythonScriptFilename $inputNeurons $outputNeurons
         Write-Output "This is python output!"
         Write-Output "$pythonOutput"
     	#$pythonOutput = & python3 $PythonScriptFilename
