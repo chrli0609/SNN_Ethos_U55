@@ -61,7 +61,9 @@ void print_input_output_tensor(struct ethosu_driver *drv) {
 uint32_t measure_layer0_start;
 uint64_t start_cycles;
 uint32_t start_mac;
-uint32_t start_mac_8bit;
+uint32_t start_dpu;
+uint32_t start_axi0_read;
+uint32_t start_blockdep_stalls;
 
 //This gets called by ethosu_inference_begin() in ethosu_cpu_cache.c
 void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
@@ -75,9 +77,9 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 
         // 2. Configure counters
         ETHOSU_PMU_Set_EVTYPER(drv, 0, ETHOSU_PMU_MAC_ACTIVE);
-        ETHOSU_PMU_Set_EVTYPER(drv, 1, ETHOSU_PMU_MAC_ACTIVE_8BIT);
-        ETHOSU_PMU_Set_EVTYPER(drv, 2, ETHOSU_PMU_CYCLE);
-        ETHOSU_PMU_Set_EVTYPER(drv, 3, ETHOSU_PMU_AXI0_RD_TRAN_REQ_STALLED);
+        ETHOSU_PMU_Set_EVTYPER(drv, 1, ETHOSU_PMU_MAC_DPU_ACTIVE);
+        ETHOSU_PMU_Set_EVTYPER(drv, 2, ETHOSU_PMU_AXI0_RD_TRANS_ACCEPTED);
+        ETHOSU_PMU_Set_EVTYPER(drv, 3, ETHOSU_PMU_CC_STALLED_ON_BLOCKDEP);
 
 
         // 3. Reset counters
@@ -87,9 +89,11 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
         // 4. Enable counters
         uint32_t mask = ETHOSU_PMU_CCNT_Msk | ETHOSU_PMU_CNT1_Msk | ETHOSU_PMU_CNT2_Msk | ETHOSU_PMU_CNT3_Msk | ETHOSU_PMU_CNT4_Msk;
         ETHOSU_PMU_CNTR_Enable(drv, mask);
-        uint64_t start_cycles = ETHOSU_PMU_Get_CCNTR(drv);
-        uint32_t start_mac   = ETHOSU_PMU_Get_EVCNTR(drv, 0);
-        uint32_t start_mac_8bit   = ETHOSU_PMU_Get_EVCNTR(drv, 1);
+        start_cycles = ETHOSU_PMU_Get_CCNTR(drv);
+        start_mac   = ETHOSU_PMU_Get_EVCNTR(drv, 0);
+        start_dpu   = ETHOSU_PMU_Get_EVCNTR(drv, 1);
+        start_axi0_read   = ETHOSU_PMU_Get_EVCNTR(drv, 2);
+        start_blockdep_stalls   = ETHOSU_PMU_Get_EVCNTR(drv, 3);
 
     }
 
@@ -105,14 +109,17 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
         uint64_t end_cycles = ETHOSU_PMU_Get_CCNTR(drv);
         uint32_t end_mac    = ETHOSU_PMU_Get_EVCNTR(drv, 0);
+        uint32_t end_dpu    = ETHOSU_PMU_Get_EVCNTR(drv, 1);
+        uint32_t end_axi0_read    = ETHOSU_PMU_Get_EVCNTR(drv, 2);
+        uint32_t end_blockdep_stalls    = ETHOSU_PMU_Get_EVCNTR(drv, 3);
 
 
 
         // 7. Disable counters
         ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_ACTIVE);
-        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_ACTIVE_8BIT);
-        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_CYCLE);
-        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_AXI0_RD_TRAN_REQ_STALLED);
+        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_MAC_ACTIVE_32BIT);
+        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_AXI0_RD_TRANS_ACCEPTED);
+        ETHOSU_PMU_CNTR_Disable(drv, ETHOSU_PMU_CC_STALLED_ON_BLOCKDEP);
 
         // 8. Read results
         //uint32_t mac_active = ETHOSU_PMU_Get_EVCNTR(drv, 0);
@@ -125,6 +132,9 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
         uint64_t cycles = end_cycles - start_cycles;
         uint32_t macs   = end_mac   - start_mac;
+        uint32_t cc_dpus_active   = end_dpu   - start_dpu;
+        uint32_t axi0_reads   = end_axi0_read   - start_axi0_read;
+        uint32_t blockdep_stalls   = end_blockdep_stalls   - start_blockdep_stalls;
 
 
         // 9. Report or log
@@ -132,11 +142,20 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
         //printf("NPU_active + NPU_IDLE should be equal to NPU Cycles:%" PRIu32 "\n", mac_active+idle_cycles);
         printf("Npu cycles for it: %d = %" PRIu64 "\n", global_it, cycles);
         printf("Npu MAC Active for it: %d = %" PRIu32 "\n", global_it, macs);
+        printf("Npu MAC 8bit Active for it: %d = %" PRIu32 "\n", global_it, cc_dpus_active);
+        printf("Npu AXI0 Reads for it: %d = %" PRIu32 "\n", global_it, axi0_reads);
+        printf("Npu Blockdep Stalls for it: %d = %" PRIu32 "\n", global_it, blockdep_stalls);
         //printf("Utilization: %f\n", utilization);
         //printf("\tidle_cycles: %" PRIu32 "\n", idle_cycles);
         //printf("\tblock_stalls: %" PRIu32 "\n", block_stalls);
         //printf("\taxi_stalls: %" PRIu32 "\n", axi_stalls);
 
+        printf("Investigate start and end values:\n");
+        printf("\tNPU Cycles:\t\t\tstart: %" PRIu64 "\tend: %" PRIu64"\n", start_cycles, end_cycles);
+        printf("\tNPU MAC Operations:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac, end_mac);
+        printf("\tNPU MAC 8-bit Operations:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_dpu, end_dpu);
+        printf("\tNPU AXI0 Reads:\t\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_axi0_read, end_axi0_read);
+        printf("\tNPU BlockDep Stalls:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_blockdep_stalls, end_blockdep_stalls);
 
 
         // Print CPU timer results

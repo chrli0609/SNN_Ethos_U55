@@ -21,6 +21,13 @@ uint32_t start_timer();
 float end_timer(uint32_t start);
 
 
+void quantize_float_scalar_to_int8_array(
+  const float input_val,  // Input float scalar
+  int8_t *output,        // Output int8 array
+  int length,             // Number of elements
+  float scale,            // Quantization scale
+  int32_t zero_point      // Quantization zero-point
+);
 
 void quantize_array_float_to_int8(
     const float *input,     // Input float array

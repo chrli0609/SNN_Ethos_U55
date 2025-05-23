@@ -2,42 +2,67 @@
 # This script reads data from a serial port, parses multiple configurable patterns, and exports each to separate CSV files
 
 param (
-    [string]$fileName = "neuron_data_$(Get-Date -Format 'yyyyMMdd_HHmmss')",
+    [string]$npuConfig = "neuron_data_$(Get-Date -Format 'yyyyMMdd_HHmmss')",
     [string]$csvDir = "csv/",
     [string]$portName = "COM7",
     [int]$baudRate = 115200,
     [int]$DataBits = 8
 )
 
+# Set console and output encoding to UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 # CONFIGURATION: Define patterns to look for
-# Each pattern should have: Name, Regex, FilenameSuffix, Units
+# Each pattern should have: Name, Regex, filename, Units
 $patterns = @(
     @{
-        Name = "Ticks Elapsed"
-        Regex = "Ticks elapsed for layer once in it: (\d+) = (\d+)(?:\s*ms)?"
-        FilenameSuffix = "_ticks"
-        Units = "(ms)"
-        Description = "Processing ticks in milliseconds"
+        Name = "CPU Microsecs Elapsed"
+        Regex = "Ticks elapsed for layer once in it: (\d+) = (\d+)(?:\s*[mµ]s)?"
+        filename = "cpu_microsecs"
+        Units = "(us)"
+        Description = "Processing ticks in microseconds"
     },
     @{
         Name = "NPU Cycles" 
         Regex = "Npu cycles for it: (\d+) = (\d+)"
-        FilenameSuffix = "_npu_cycles"
+        filename = "npu_cycles"
         Units = "(cycles)"
         Description = "NPU processing cycles"
     }
     @{
         Name = "NPU MAC Active" 
         Regex = "Npu MAC Active for it: (\d+) = (\d+)"
-        FilenameSuffix = "_npu_mac"
-        Units = "(cycles)"
+        filename = "npu_mac"
+        Units = "(operations)"
         Description = "Cycles where the MAC on the NPU is active"
+    }
+    @{
+        Name = "Npu MAC 8 bit Active" 
+        Regex = "Npu MAC 8bit Active for it: (\d+) = (\d+)"
+        filename = "npu_mac_8bit"
+        Units = "(operations)"
+        Description = "Number of operations the 8 bit MAC on the NPU is doing"
+    }
+    @{
+        Name = "NPU AXI0 Read" 
+        Regex = "Npu AXI0 Reads for it: (\d+) = (\d+)"
+        filename = "npu_axi0_reads"
+        Units = "(events)"
+        Description = "Number of AXI0 Reads Accepted"
+    }
+    @{
+        Name = "NPU BlockDep Stalls" 
+        Regex = "Npu Blockdep Stalls for it: (\d+) = (\d+)"
+        filename = "npu_blockdep_stalls"
+        Units = "(cycles)"
+        Description = "Cycles where the MAC is stalled due to Block Dependencies"
     }
     # ADD NEW PATTERNS HERE - Example:
     # @{
     #     Name = "Memory Usage"
     #     Regex = "Memory used for it: (\d+) = (\d+)(?:\s*KB)?"
-    #     FilenameSuffix = "_memory"
+    #     filename = "_memory"
     #     Units = "(KB)"
     #     Description = "Memory usage in kilobytes"
     # }
@@ -128,7 +153,7 @@ function Save-PatternToCSV {
         [hashtable]$PatternData,
         [string]$PatternName,
         [string]$Units,
-        [string]$FilenameSuffix,
+        [string]$filename,
         [int]$MaxIteration,
         [string]$BaseFileName,
         [string]$CsvDirectory
@@ -170,7 +195,7 @@ function Save-PatternToCSV {
 }
 
 # Create output directory structure
-$outputDir = Join-Path $csvDir $fileName
+$outputDir = Join-Path $csvDir $npuConfig
 if (-not (Test-Path $outputDir)) {
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     Write-Host "Created output directory: $outputDir"
@@ -184,8 +209,8 @@ foreach ($pattern in $patterns) {
     
     if ($maxIteration -gt 0) {
         # Use just the suffix as filename in the dedicated directory
-        $patternFileName = $pattern.FilenameSuffix.TrimStart('_') + ".csv"
-        $savedFile = Save-PatternToCSV -PatternData $patternData -PatternName $pattern.Name -Units $pattern.Units -FilenameSuffix $pattern.FilenameSuffix -MaxIteration $maxIteration -BaseFileName $patternFileName -CsvDirectory $outputDir
+        $patternFileName = $pattern.filename + ".csv"
+        $savedFile = Save-PatternToCSV -PatternData $patternData -PatternName $pattern.Name -Units $pattern.Units -filename $pattern.filename -MaxIteration $maxIteration -BaseFileName $patternFileName -CsvDirectory $outputDir
         
         if ($savedFile) {
             $savedFiles += $savedFile

@@ -89,8 +89,8 @@ NNLayer* FC_LIF_Layer_Init(
             //out_spk_relative_addr);
 
 
-    // Store pointers to quantized tensors for the layer in a struct
 
+    // Store pointers to quantized tensors for the layer in a struct
     NNLayer_Assign(nnlayer, BIAS_TENSOR_IDX, bias_arena, bias_tensor_size, 1, 0, "bias_arena");
     NNLayer_Assign(nnlayer, WEGIHTS_TENSOR_IDX, weight_arena, weight_tensor_size, 1, 0, "weight_arena");
 
@@ -116,16 +116,11 @@ NNLayer* FC_LIF_Layer_Init(
 
 
     //3. Assign default values to V_mem
-    float v_mem [output_layer_size];
-    for (size_t i = 0; i < output_layer_size; i++) {
-        v_mem[i] = 0;
-    }
-    quantize_array_float_to_int8(v_mem, nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], output_layer_size, v_mem_scale, v_mem_zero_point);
+    quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], output_layer_size, v_mem_scale, v_mem_zero_point);
 
 
     // Assign default value to Time_not_updated
-    float time_not_updated[1] = { 0 };
-    quantize_array_float_to_int8(time_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1, time_not_updated_scale, time_not_updated_zero_point);
+    quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1, time_not_updated_scale, time_not_updated_zero_point);
 
 
     // Assign layer input and output (so other layers know where to read and write from)
@@ -392,7 +387,8 @@ int MLP_Inference(
 
 
     // Measure system
-    if (MEASURE_MODE) { printf("Num neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE); }
+    //if (MEASURE_MODE) { printf("Num neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE); } // Sweep over output_size
+    if (MEASURE_MODE) { printf("Num neurons = %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE); }    // Sweep over input_size
 
 
         // Set First Layer as current layer

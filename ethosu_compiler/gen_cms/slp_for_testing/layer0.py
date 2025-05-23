@@ -16,7 +16,8 @@ import numpy as np
 
 def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
-    INPUT_LAYER_SIZE = 16 
+    INPUT_LAYER_SIZE = OUTPUT_LAYER_SIZE
+    OUTPUT_LAYER_SIZE = 128
     
 
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
@@ -1281,7 +1282,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         '''Only FC Matmul'''
-        #npu_op_list = [dma_op, fully_connected_op]
+        npu_op_list = [dma_op, fully_connected_op]
 
         '''Only mul_vth_out_spk and update_nxt_reduced_sum'''
         #npu_op_list = [reset_mul_vth_out_spk_op, update_nxt_layer_reduce_sum_out_spk]
@@ -1290,7 +1291,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         #npu_op_list = [mul_decay_op, add_decayed_mem_in_curr, reset_mul_vth_out_spk_op, reset_time_op]
 
         '''Only_mul_vth_out_spk_and_reset_time'''
-        npu_op_list = [reset_mul_vth_out_spk_op]
+        #npu_op_list = [reset_mul_vth_out_spk_op]
 
 
         '''Only decay_lut'''
