@@ -1,3 +1,3 @@
-﻿Iteration,neurons_16_(us),neurons_32_(us)
-0,18,20
+﻿Iteration,neurons_16_(us),neurons_32_(us),neurons_48_(us),neurons_64_(us),neurons_80_(us),neurons_96_(us),neurons_112_(us)
+0,20,19,22,22,24,25,26
 

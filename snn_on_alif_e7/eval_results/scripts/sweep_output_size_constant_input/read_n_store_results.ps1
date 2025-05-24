@@ -3,7 +3,7 @@
 
 param (
     [string]$npuConfig = "neuron_data_$(Get-Date -Format 'yyyyMMdd_HHmmss')",
-    [string]$csvDir = "csv/",
+    [string]$csvDir = "../csv/",    #Assume running from snn_on_alif_e7/eval_results/scripts/
     [string]$portName = "COM7",
     [int]$baudRate = 115200,
     [int]$DataBits = 8
@@ -57,6 +57,13 @@ $patterns = @(
         filename = "npu_blockdep_stalls"
         Units = "(cycles)"
         Description = "Cycles where the MAC is stalled due to Block Dependencies"
+    }
+    @{
+        Name = "NPU CCs where DPU is Active" 
+        Regex = "Npu CCs where DPU is Active for it: (\d+) = (\d+)"
+        filename = "npu_cc_dpu_active"
+        Units = "(cycles)"
+        Description = "NPU Cycles where DPUs are active"
     }
     # ADD NEW PATTERNS HERE - Example:
     # @{
@@ -120,7 +127,7 @@ $lines = $rawOutput -split "`r`n"
 
 foreach ($line in $lines) {
     # Check for neuron count line
-    if ($line -match "Num neurons = (\d+)") {
+    if ($line -match "Num output neurons = (\d+)") {
         $currentNeurons = [int]$matches[1]
         
         # Initialize storage for this neuron count across all patterns
@@ -241,6 +248,6 @@ if ($savedFiles.Count -gt 0) {
     Write-Host ""
     Write-Host "Generating plots..."
     foreach ($file in $savedFiles) {
-        & python plot_csv.py $file
+        & python plot_mean_it.py $file
     }
 }

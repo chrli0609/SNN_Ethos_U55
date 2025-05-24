@@ -227,7 +227,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
     # Create Dicts for writing to C files
-    def generate_dict_for_writing_defines_to_C_files(cms_name, weight_byte_arr, bias_byte_arr):
+    def generate_dict_for_writing_defines_to_C_files(cms_name, weight_byte_arr, bias_byte_arr, block_config):
 
 
         sizes_dict = {
@@ -236,6 +236,9 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
             cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
             cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,             
             cms_name.upper()+"_OUTPUT_LAYER_SIZE "  : OUTPUT_LAYER_SIZE,
+            cms_name.upper()+"_BLOCK_CONFIG_HEIGHT "  : block_config.height,
+            cms_name.upper()+"_BLOCK_CONFIG_WIDTH "  : block_config.width,
+            cms_name.upper()+"_BLOCK_CONFIG_DEPTH "  : block_config.depth,
 
             cms_name.upper()+"_WEIGHT_LEN" : len(weight_byte_arr),
             cms_name.upper()+"_BIAS_LEN" : len(bias_byte_arr)        
@@ -597,7 +600,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-        return my_op, dma_op, weight_byte_arr, bias_byte_arr, 
+        return my_op, dma_op, weight_byte_arr, bias_byte_arr, block_config
 
 
 
@@ -1244,7 +1247,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         # Define the individual NPU Operations
         dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
-        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR)
+        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr, fc_matmul_blk_config = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR)
         mul_decay_op = def_mul_decay_Vmem()
         add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
         check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()
@@ -1281,6 +1284,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         '''Only FC Matmul'''
         npu_op_list = [dma_op, fully_connected_op]
+        block_config = fc_matmul_blk_config
 
         '''Only mul_vth_out_spk and update_nxt_reduced_sum'''
         #npu_op_list = [reset_mul_vth_out_spk_op, update_nxt_layer_reduce_sum_out_spk]
@@ -1341,6 +1345,8 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
             #'NPU_SET_SCALE_LENGTH'
 
         }
+
+        #block_config = 
         
         #print("About to enter strip cmds()")
         new_register_cms, new_cmd_table = strip_cmds_from_register_command_stream(register_cms, dict_of_cmds_to_strip)
@@ -1354,7 +1360,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         # Generate Dicts for writing to C
-        sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+        sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr, block_config=block_config)
 
 
 
