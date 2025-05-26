@@ -68,7 +68,7 @@ $patterns = @(
     }
     @{
         Name = "Block Configuration" 
-        Regex = "Block Configuration = \((\d+),\s*(\d+),\s*(\d+)\)"
+        Regex = "Block Configuration for it: (\d+) = (\d+)"
         filename = "npu_block_config"
         Units = "(cycles)"
         Description = "NPU Block Config for each input output size combination"
