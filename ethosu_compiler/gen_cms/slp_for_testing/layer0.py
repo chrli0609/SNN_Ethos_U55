@@ -559,8 +559,10 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         padding = NpuPadding(top=0, left=0, bottom=0, right=0)
 
 
-        weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
-        biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
+        #weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
+        #biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
+        weights = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=len(bias_byte_arr), length=len(weight_byte_arr))
+        biases = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=len(bias_byte_arr))
 
     
 
@@ -1283,8 +1285,8 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         '''Only FC Matmul'''
-        npu_op_list = [dma_op, fully_connected_op]
-        block_config = fc_matmul_blk_config
+        npu_op_list = [fully_connected_op]
+        block_config = fc_matmul_blk_config     # For writing to C file
 
         '''Only mul_vth_out_spk and update_nxt_reduced_sum'''
         #npu_op_list = [reset_mul_vth_out_spk_op, update_nxt_layer_reduce_sum_out_spk]

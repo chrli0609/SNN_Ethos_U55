@@ -392,7 +392,7 @@ int MLP_Inference(
         printf("Num input neurons = %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE);    // Sweep over layer input_size
         printf("Num output neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE);  // Sweep over layer output_size
         printf("Block Configuration = (%d, %d, %d)\n", FC_LIF_LAYER_0_BLOCK_CONFIG_HEIGHT, FC_LIF_LAYER_0_BLOCK_CONFIG_WIDTH, FC_LIF_LAYER_0_BLOCK_CONFIG_DEPTH);
-        printf("Block Configuration for it: 0 = %d)\n", FC_LIF_LAYER_0_BLOCK_CONFIG_DEPTH);
+        printf("Block Configuration for it: 0 = %d\n", FC_LIF_LAYER_0_BLOCK_CONFIG_DEPTH);
     } 
     //if (MEASURE_MODE) { printf("Num neurons = %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE); }    // Sweep over input_size
 
@@ -440,7 +440,7 @@ int MLP_Inference(
             start = start_timer();
 
 
-
+            printf("about to write to nnlayer0->input\n");
             // Write Input in_spk
             for (size_t i = 0; i < MLP_INPUT_LAYER_SIZE; i++){
                 //nnlayer0->tensor_ptrs[IN_SPK_TENSOR_IDX][i] = in_spk[i];
@@ -448,7 +448,7 @@ int MLP_Inference(
             }
             
             
-
+            printf("successfully wrote to nnlayer0->input[i]\n");
 
          
 
@@ -471,7 +471,7 @@ int MLP_Inference(
                 NNLayer_DequantizeAndPrint(nnlayer0);
             }
 
-
+            printf("about to run layer\n");
             //uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
             MLP_Run_Layer(
