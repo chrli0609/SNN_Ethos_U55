@@ -31,7 +31,8 @@
 
 
 
-const int DEBUG_MODE = 1;
+const int DEBUG_MODE = 0;
+const int VIEW_TENSORS = 0;
 const int MEASURE_MODE = 0;
 
 
@@ -101,20 +102,20 @@ int main() {
 
 
     //static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
-    static volatile __attribute__((section("model_params_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
-    static volatile __attribute__((section("model_params_sram1"))) int8_t large_buffer_sram1[256];  // 256 KB in SRAM0
-    static volatile __attribute__((section("model_params_dtcm"))) int8_t large_buffer_dtcm[256];  // 256 KB in SRAM0
+    //static volatile __attribute__((section("model_params_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
+    //static volatile __attribute__((section("model_params_sram1"))) int8_t large_buffer_sram1[256];  // 256 KB in SRAM0
+    //static volatile __attribute__((section("model_params_dtcm"))) int8_t large_buffer_dtcm[256];  // 256 KB in SRAM0
 
-    printf("Testing heap allocation\n");
-    printf("Allocated addresses for sram0 test: 0x%08X\n", large_buffer_sram0);
-    printf("Allocated addresses for dtcm test: 0x%08X\n", large_buffer_dtcm);
-    printf("Allocated addresses for sram1 test: 0x%08X\n", large_buffer_sram1);
+    //printf("Testing heap allocation\n");
+    //printf("Allocated addresses for sram0 test: 0x%08X\n", large_buffer_sram0);
+    //printf("Allocated addresses for dtcm test: 0x%08X\n", large_buffer_dtcm);
+    //printf("Allocated addresses for sram1 test: 0x%08X\n", large_buffer_sram1);
 
-    printf("TEST_REGISTER_ADDRESS:  0x%08X\n", TEST_REGISTER_ADDRESS);
-    TEST_REGISTER = 2;
-    printf("TEST_REGISTER SHOULD BE 2: %d\n", TEST_REGISTER);
-    TEST_REGISTER = 44;
-    printf("TEST_REGISTER SHOULD BE 44: %d\n", TEST_REGISTER);
+    //printf("TEST_REGISTER_ADDRESS:  0x%08X\n", TEST_REGISTER_ADDRESS);
+    //TEST_REGISTER = 2;
+    //printf("TEST_REGISTER SHOULD BE 2: %d\n", TEST_REGISTER);
+    //TEST_REGISTER = 44;
+    //printf("TEST_REGISTER SHOULD BE 44: %d\n", TEST_REGISTER);
 
 
 
@@ -125,30 +126,29 @@ int main() {
 
 
     NN_Model* mlp_model = MLP_Init();
-    //while (1) {
-    
-
         //printf("============ new iteration start =======================\n");
 
 
 
-        //printf("Test my_mem_u\n");
 
-        size_t NUM_TIME_STEPS;
-        if (MEASURE_MODE) { NUM_TIME_STEPS = 1; }
-        else { NUM_TIME_STEPS = 2; }
+        //size_t NUM_SAMPLES;
+        //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
+        //else { NUM_SAMPLES = 2; }
         
-        int8_t* in_spk_arr [NUM_TIME_STEPS];
-        for (size_t i = 0; i < NUM_TIME_STEPS; i++) {
+        //int8_t* in_spk_arr [NUM_SAMPLES];
+        //for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
-            int8_t in_spk [MLP_INPUT_LAYER_SIZE];
-            for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                //in_spk[j] = rand() % 2;
-                in_spk[j] = j % 2;
-            }
+            //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
+            //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+                ////in_spk[j] = rand() % 2;
+                //in_spk[j] = j % 2;
+            //}
 
-            in_spk_arr[i] = in_spk;
-        }
+            //in_spk_arr[i] = in_spk;
+        //}
+
+
+    static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[784];  // 256 KB in SRAM0
 
 
      
@@ -193,7 +193,7 @@ int main() {
         MLP_Inference(
             mlp_model,
             in_spk_arr,
-            NUM_TIME_STEPS,
+            NUM_SAMPLES,
 
             out_spk
         );
@@ -209,7 +209,6 @@ int main() {
 
         printf("exited to while loop in main\n");
         
-        //}
 
 
         

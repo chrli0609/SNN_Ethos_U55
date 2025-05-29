@@ -253,7 +253,68 @@ void NNLayer_Free(NNLayer* layer) {
 }
 
 
+//// Function to dequantize and print all tensors in an NNLayer
+//void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
+    //if (!layer) {
+        //printf("Error: NULL layer provided\n");
+        //return;
+    //}
+    
+    //printf("NNLayer with %zu tensors:\n", layer->num_tensors);
+    
+    //// Iterate through each tensor in the layer
+    //for (size_t tensor_idx = 0; tensor_idx < layer->num_tensors; tensor_idx++) {
+        //// Skip NULL tensors
+        //if (layer->tensor_ptrs[tensor_idx] == NULL) {
+            //printf("  Tensor %zu (%s): NULL\n", 
+                  //tensor_idx, 
+                  //layer->tensor_names[tensor_idx] ? layer->tensor_names[tensor_idx] : "unnamed");
+            //continue;
+        //}
+        
+        //// Get tensor data and parameters
+        //int8_t* tensor_data = layer->tensor_ptrs[tensor_idx];
+        //size_t tensor_size = layer->tensor_sizes[tensor_idx];
+        //float scale = layer->quant_params[tensor_idx].scale;
+        //int zero_point = layer->quant_params[tensor_idx].zero_point;
+        //const char* tensor_name = layer->tensor_names[tensor_idx] ? 
+                                  //layer->tensor_names[tensor_idx] : "unnamed";
+        
+        //// Allocate memory for dequantized values
+        //float* dequantized = (float*)malloc(tensor_size * sizeof(float));
+        //if (!dequantized) {
+            //printf("ERROR:  Tensor %zu (%s): Memory allocation failed for dequantization\n", 
+                  //tensor_idx, tensor_name);
+            //continue;
+        //}
+        
+        //// Dequantize the tensor
+        //dequantize_array_int8_to_float(tensor_data, dequantized, tensor_size, scale, zero_point);
+        
+        //// Print tensor information and values
+        //printf("  Tensor %zu (%s): size=%zu, scale=%.6f, zero_point=%d\n", 
+               //tensor_idx, tensor_name, tensor_size, scale, zero_point);
+        //printf("    Quantized values: ");
+        //for (size_t i = 0; i < tensor_size && i < 10; i++) {
+            //printf("%d ", tensor_data[i]);
+        //}
+        //if (tensor_size > 10) printf("...");
+        //printf("\n");
+        
+        //printf("    Dequantized values: ");
+        //for (size_t i = 0; i < tensor_size && i < 10; i++) {
+            //printf("%.4f ", dequantized[i]);
+        //}
+        //if (tensor_size > 10) printf("...");
+        //printf("\n");
+        
+        //// Free dequantized memory
+        //free(dequantized);
+    //}
+//}
+
 // Function to dequantize and print all tensors in an NNLayer
+// No dynamic memory allocation - computes dequantized values on-the-fly
 void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
     if (!layer) {
         printf("Error: NULL layer provided\n");
@@ -280,40 +341,30 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
         const char* tensor_name = layer->tensor_names[tensor_idx] ? 
                                   layer->tensor_names[tensor_idx] : "unnamed";
         
-        // Allocate memory for dequantized values
-        float* dequantized = (float*)malloc(tensor_size * sizeof(float));
-        if (!dequantized) {
-            printf("ERROR:  Tensor %zu (%s): Memory allocation failed for dequantization\n", 
-                  tensor_idx, tensor_name);
-            continue;
-        }
-        
-        // Dequantize the tensor
-        dequantize_array_int8_to_float(tensor_data, dequantized, tensor_size, scale, zero_point);
-        
-        // Print tensor information and values
+        // Print tensor information
         printf("  Tensor %zu (%s): size=%zu, scale=%.6f, zero_point=%d\n", 
                tensor_idx, tensor_name, tensor_size, scale, zero_point);
+        
+        // Print quantized values (first 10 or all if fewer)
         printf("    Quantized values: ");
-        for (size_t i = 0; i < tensor_size && i < 10; i++) {
+        size_t print_count = tensor_size < 10 ? tensor_size : 10;
+        for (size_t i = 0; i < print_count; i++) {
             printf("%d ", tensor_data[i]);
         }
         if (tensor_size > 10) printf("...");
         printf("\n");
         
+        // Print dequantized values (computed on-the-fly)
         printf("    Dequantized values: ");
-        for (size_t i = 0; i < tensor_size && i < 10; i++) {
-            printf("%.4f ", dequantized[i]);
+        for (size_t i = 0; i < print_count; i++) {
+            // Inline dequantization: (quantized_value - zero_point) * scale
+            float dequantized_value = (tensor_data[i] - zero_point) * scale;
+            printf("%.4f ", dequantized_value);
         }
         if (tensor_size > 10) printf("...");
         printf("\n");
-        
-        // Free dequantized memory
-        free(dequantized);
     }
 }
-
-
 
 
 
