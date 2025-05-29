@@ -1,8 +1,8 @@
 import numpy as np
 
 
-INPUT_LAYER_SIZE = 16
-OUTPUT_LAYER_SIZE = 32
+INPUT_LAYER_SIZE = 28*28
+OUTPUT_LAYER_SIZE = 1000
 
 
 # Unique

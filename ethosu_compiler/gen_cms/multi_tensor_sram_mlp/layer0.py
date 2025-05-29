@@ -16,7 +16,7 @@ import numpy as np
 
 def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
-    INPUT_LAYER_SIZE = 16 
+    INPUT_LAYER_SIZE = 28*28
     
 
     print("OUTPUT_LAYER_SIZE:", OUTPUT_LAYER_SIZE)
@@ -171,6 +171,10 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
+    # Generate Weights and Bias list
+    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
+
+
 
     # Assign Memory segments in SRAM Scratch (region 1)
 		
@@ -220,8 +224,6 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
 
-    # Generate Weights and Bias list
-    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
 
     # Generate LIF Params Quant List
@@ -418,7 +420,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         return dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index
 
 
-    def def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR):
+    def def_fullyconnected(weights_volume_ohwi, bias_list):
 
 
 
@@ -474,7 +476,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         # Define Weights
-        weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+        #weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
         if ifm.data_type == NpuDataType.INT8:
             weight_ifm_bitdepth = 8 #int8
         elif ifm.data_type == NpuDataType.INT16:
@@ -482,10 +484,10 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         #Biases
-        bias_list = []
-        for i in range(ofm.shape.depth):
-        #    #bias_list.append(np.int64(i%4))
-            bias_list.append(np.int64(ALL_BIAS_VALUES))
+        #bias_list = []
+        #for i in range(ofm.shape.depth):
+        ##    #bias_list.append(np.int64(i%4))
+            #bias_list.append(np.int64(ALL_BIAS_VALUES))
 
 
 
@@ -1223,7 +1225,7 @@ def main(OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
         # Define the individual NPU Operations
         dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
-        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR)
+        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(weights_volume_ohwi, bias_list)
         mul_decay_op = def_mul_decay_Vmem()
         add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
         check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()

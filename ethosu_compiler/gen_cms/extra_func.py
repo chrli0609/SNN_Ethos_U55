@@ -118,7 +118,9 @@ def check_block_config_legal(block_config, my_op, accelerator):
             block_config_legal = True
 
     if not block_config_legal:
-        print("ERROR: Illegal BLOCK_CONFIG found for", my_op, "\n\t", block_config, "\n\n\t But expected one of the following:\n\t", available_block_configs)
+        print("ERROR: Illegal BLOCK_CONFIG found for", my_op, "\n\t", block_config, "\n\n\t But expected one of the following:\n\t", available_block_configs,
+              "\n IFM:", my_op.ifm.name,
+              "\n OFM:", my_op.ofm.name)
         exit()
     #else:
         #print("//Current Block Config is legal:", block_config)

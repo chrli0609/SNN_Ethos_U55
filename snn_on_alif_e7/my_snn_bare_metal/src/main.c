@@ -26,12 +26,13 @@
 
 // Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
 //#include "nn_models/single_tensor_dtcm_mlp/model.h"
-#include "nn_models/multi_tensor_sram_mlp/model.h"
+//#include "nn_models/multi_tensor_sram_mlp/model.h"
+#include "nn_models/spk_mnist_mlp/model.h"
 
 
 
-const int DEBUG_MODE = 0;
-const int MEASURE_MODE = 1;
+const int DEBUG_MODE = 1;
+const int MEASURE_MODE = 0;
 
 
 

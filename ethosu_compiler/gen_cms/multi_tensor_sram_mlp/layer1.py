@@ -17,8 +17,8 @@ def main(cms_name, header_out_filepath):
 
 
 
-    INPUT_LAYER_SIZE = 32
-    OUTPUT_LAYER_SIZE = 64
+    INPUT_LAYER_SIZE = 1000
+    OUTPUT_LAYER_SIZE = 10
 
     DEBUG_MODE = False
 

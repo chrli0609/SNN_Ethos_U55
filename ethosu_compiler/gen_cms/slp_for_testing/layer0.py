@@ -158,7 +158,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
     # Assign Memory segments in SRAM Scratch (region 1)
 		
-    BIAS_ADDR           	=   0                       +   INPUT_LAYER_SIZE
+    BIAS_ADDR           	=   0 
     WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
     TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
     TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
@@ -167,7 +167,8 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
 
-    TENSOR_ARENA_SIZE	=	INPUT_LAYER_SIZE + 3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+    #my debug, 16 should be swapped to 1?
+    TENSOR_ARENA_SIZE	=   3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
 
 
 
@@ -482,7 +483,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         # Define Weights
-        weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
+        #weights_volume_ohwi = ALL_WEIGHT_VALUES * np.ones((ofm.shape.depth, kernel.height, kernel.width, ifm.shape.depth))
         if ifm.data_type == NpuDataType.INT8:
             weight_ifm_bitdepth = 8 #int8
         elif ifm.data_type == NpuDataType.INT16:
@@ -490,10 +491,10 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         #Biases
-        bias_list = []
-        for i in range(ofm.shape.depth):
-        #    #bias_list.append(np.int64(i%4))
-            bias_list.append(np.int64(ALL_BIAS_VALUES))
+        #bias_list = []
+        #for i in range(ofm.shape.depth):
+        ##    #bias_list.append(np.int64(i%4))
+            #bias_list.append(np.int64(ALL_BIAS_VALUES))
 
 
 
@@ -518,6 +519,8 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
                                 is_debug_mode=DEBUG_MODE
         )
 
+        print("len(bias_byte_arr): ", len(bias_byte_arr))
+        print("len(weight_byte_arr):", len(weight_byte_arr))
         weight_n_bias_len = len(bias_byte_arr) + len(weight_byte_arr)
         if DEBUG_MODE:
             print("weight_n_bias_len", weight_n_bias_len)
@@ -1263,7 +1266,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         '''All Ops'''
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
         '''No LUT, No FC'''
         #npu_op_list = [mul_decay_op, add_decayed_mem_in_curr, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
@@ -1285,7 +1288,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
 
 
         '''Only FC Matmul'''
-        npu_op_list = [fully_connected_op]
+        #npu_op_list = [fully_connected_op]
         block_config = fc_matmul_blk_config     # For writing to C file
 
         '''Only mul_vth_out_spk and update_nxt_reduced_sum'''
