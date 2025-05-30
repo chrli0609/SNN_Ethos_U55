@@ -3,10 +3,14 @@
 #include "include/nn_data_structure.h"
 
 
+
+
 // Include Layers
 #include "nn_models/spk_mnist_mlp/layers/fc_lif_layer_0.h"
 #include "nn_models/spk_mnist_mlp/layers/fc_lif_layer_1.h"
 
+/// Include Test Patterns
+#include "nn_models/spk_mnist_mlp/test_patterns/pattern_0.h"
 
 // Set model input and output sizes
 #define MLP_INPUT_LAYER_SIZE    FC_LIF_LAYER_0_INPUT_LAYER_SIZE
@@ -36,6 +40,18 @@ int MLP_Inference(
 
     int8_t** in_spk_arr,
     size_t in_spk_arr_len,
+
+    int8_t* out_spk
+);
+
+int MLP_Inference_test_patterns(
+    NN_Model* mlp_model,
+
+    int8_t test_patterns[][MLP_INPUT_LAYER_SIZE],
+    int8_t test_targets[],
+    size_t num_samples,
+
+    size_t num_time_steps,
 
     int8_t* out_spk
 );

@@ -36,6 +36,12 @@ ACCELERATOR = NpuAccelerator.Ethos_U55_256
 
 
 
+'''
+Set Test Pattern to use
+'''
+TEST_PATTERN = '0'
+
+
 import fc_lif
 import layer0
 import layer1
@@ -103,6 +109,18 @@ fc_lif.gen_fc_lif(
     header_out_filepath=header_out_filepath_layer1
 )
 
+
+
+
+# Generate file for test patterns
+from write_test_patterns_to_h_file import test_patterns_2_h_file
+
+test_pattern_header_filepath = CURR_WORKING_DIR / CURR_WORKING_DIR_TO_MODEL_DIR / Path(MODEL_NAME) / Path("test_patterns") / Path("pattern_"+TEST_PATTERN+".h")
+test_patterns_2_h_file( ".data_sram0",
+                        Path("test_patterns/test_input_"+TEST_PATTERN+".npy"),
+                        Path("test_patterns/test_target_"+TEST_PATTERN+".npy"),
+                        test_pattern_header_filepath
+                       )
 
 
 

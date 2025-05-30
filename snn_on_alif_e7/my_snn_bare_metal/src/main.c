@@ -21,6 +21,7 @@
 #include "include/extra_funcs.h"
 
 //#include "cmsis_gcc.h"
+#include "nn_models/spk_mnist_mlp/test_patterns/pattern_0.h"
 #include "pm.h" //SystemCoreClock
 
 
@@ -34,6 +35,7 @@
 const int DEBUG_MODE = 0;
 const int VIEW_TENSORS = 0;
 const int MEASURE_MODE = 0;
+const int BENCHMARK_MODEL = 0;
 
 
 
@@ -131,24 +133,23 @@ int main() {
 
 
 
-        //size_t NUM_SAMPLES;
-        //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
-        //else { NUM_SAMPLES = 2; }
+        size_t NUM_SAMPLES;
+        if (MEASURE_MODE) { NUM_SAMPLES = 1; }
+        else { NUM_SAMPLES = 2; }
         
-        //int8_t* in_spk_arr [NUM_SAMPLES];
-        //for (size_t i = 0; i < NUM_SAMPLES; i++) {
+        int8_t* in_spk_arr [NUM_SAMPLES];
+        for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
-            //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
-            //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                ////in_spk[j] = rand() % 2;
-                //in_spk[j] = j % 2;
-            //}
+            int8_t in_spk [MLP_INPUT_LAYER_SIZE];
+            for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+                //in_spk[j] = rand() % 2;
+                in_spk[j] = j % 2;
+            }
 
-            //in_spk_arr[i] = in_spk;
-        //}
+            in_spk_arr[i] = in_spk;
+        }
 
 
-    static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[784];  // 256 KB in SRAM0
 
 
      
@@ -190,10 +191,20 @@ int main() {
 
 
 
-        MLP_Inference(
+        //MLP_Inference(
+            //mlp_model,
+            //in_spk_arr,
+            //NUM_SAMPLES,
+
+            //out_spk
+        //);
+        MLP_Inference_test_patterns(
             mlp_model,
-            in_spk_arr,
-            NUM_SAMPLES,
+            pattern0_test_inputs,
+            pattern0_test_targets,
+            PATTERN0_NUM_SAMPLES,
+
+            25,
 
             out_spk
         );
