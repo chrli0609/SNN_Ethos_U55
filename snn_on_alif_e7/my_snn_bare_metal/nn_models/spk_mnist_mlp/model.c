@@ -9,6 +9,7 @@
 
 #include "include/extra_funcs.h" //quantize_array_float_to_int8(), timer functions
 #include "layers/fc_lif_layer_0.h"
+#include "layers/fc_lif_layer_1.h"
 #include "model.h"
 #include "nn_data_structure.h"
 #include "include/nn_ops.h"     // For run_cms() in MLP_Run_Layer()
@@ -398,7 +399,10 @@ int MLP_Inference_test_patterns(
 
     // For Benchmarking accuracy
     size_t correct = 0;
-    size_t prediction_arr [128] = { 0 };
+    size_t prediction_arr [10] = { 0 };
+
+    // Debug
+    size_t number_of_no_spk = 0;
 
 
     // For debugging
@@ -420,7 +424,8 @@ int MLP_Inference_test_patterns(
     // For every input sample (in real system would be while(true) loop)
     while (it < num_samples) {
 
-        //printf("it: %d\n", it);
+        printf("==========================\new sample!!!==========================\n");
+        printf("it: %d\n", it);
 
         global_it = it;
         
@@ -440,12 +445,17 @@ int MLP_Inference_test_patterns(
         // Reset Membrane potential between input samples
         init_membrane_potential(mlp_model);
 
+        // Reset All outputs to 0 in case we dont spike at all
+        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
+            nnlayer1->output[i] = 0;
+        }
+
         // For storing sum of output spikes across the time steps
         size_t out_neuron_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
 
         // Init timer variables
-        uint32_t start_layer0 = 0;
-        uint32_t start_layer1 = 0;
+        int32_t start_layer0 = -1;
+        int32_t start_layer1 = -1;
 
         /* ________________________________________________________ */
 
@@ -458,6 +468,8 @@ int MLP_Inference_test_patterns(
             
         // Feed the same input to the network for num_time_steps
         for (size_t time_step = 0; time_step < num_time_steps; time_step++){
+            printf("-----------------------new time step!!!--------------------------\n");
+            printf("time step: %d\n", time_step);
 
         
             // Update how long it was we updated layer0 last
@@ -465,9 +477,11 @@ int MLP_Inference_test_patterns(
             //mult by 1000 to get back from micro sec --> ms
             //ms_time_not_updated_layer0_val = 1000*end_timer(start_layer0);
             // Set this as iteration first to make sure it works
-            //ms_time_not_updated_layer0_val = time_step - start_layer0 + 1;
-            ms_time_not_updated_layer0_val = 1;     //for testing just set this to 1 always
-            if (DEBUG_MODE) { printf("ms_time_not_updated_layer0_val: %f\n", ms_time_not_updated_layer0_val); }
+            ms_time_not_updated_layer0_val = time_step - start_layer0;
+            //ms_time_not_updated_layer0_val = 1;     //for testing just set this to 1 always
+            //if (DEBUG_MODE) { 
+                printf("ms_time_not_updated_layer0_val: %f\n", ms_time_not_updated_layer0_val); 
+            //}
             // layer0 time
             float ms_time_not_updated_layer0[1] = { ms_time_not_updated_layer0_val };
             quantize_array_float_to_int8(ms_time_not_updated_layer0, nnlayer0->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1,FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT);
@@ -482,6 +496,12 @@ int MLP_Inference_test_patterns(
                 printf("In_spk_sum: %d\n", in_spk_sum);
                 NNLayer_DequantizeAndPrint(nnlayer0);
             }
+
+
+            printf("Layer0->Input:\n");
+            for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) {
+                printf("%d, ", nnlayer0->input[i]);
+            } printf("\n");
 
             //uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
@@ -512,6 +532,21 @@ int MLP_Inference_test_patterns(
             //start_layer0 = start_timer();
             start_layer0 = time_step;
             
+            printf("Layer0->v_mem:\n");
+            int8_t* nnlayer0_v_mem = nnlayer0->tensor_ptrs[V_MEM_QUANT_IDX];
+            for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
+                float dequantized_value = (nnlayer0_v_mem[i] - FC_LIF_LAYER_0_V_MEM_ZERO_POINT) * FC_LIF_LAYER_0_V_MEM_SCALE;
+                if (dequantized_value > 1) { printf("\nv_mem > 1 found here!\n"); }
+                printf("%f, ", dequantized_value);
+            }
+            printf("\n");
+
+            printf("Layer0->output:\n");
+            for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
+                printf("%d, ", nnlayer0->output[i]);
+            }
+            printf("\n");
+            printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n");
 
 
         
@@ -534,14 +569,23 @@ int MLP_Inference_test_patterns(
 
                 // Update how long it was we updated layer0 last
                 //ms_time_not_updated_layer1_val = end_timer(start_layer1);
-                //ms_time_not_updated_layer1_val = time_step - start_layer1 + 1;
-                ms_time_not_updated_layer1_val = 1; //for testing, just set to 1 always                
+                ms_time_not_updated_layer1_val = time_step - start_layer1;
+                //ms_time_not_updated_layer1_val = 1; //for testing, just set to 1 always
+                printf("ms_time_not_updated_layer1_val: %f\n", ms_time_not_updated_layer1_val);
+                
+                
+                
 
                 float ms_time_not_updated_layer1[1] = { ms_time_not_updated_layer1_val };
                 quantize_array_float_to_int8(ms_time_not_updated_layer1, nnlayer1->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1,FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT);
 
                 //printf("nnlayer1:\n");
                 if (VIEW_TENSORS) { printf("Pre NNLayer1\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
+
+                printf("Layer1->Input:\n");
+                for (size_t i = 0; i < FC_LIF_LAYER_1_INPUT_LAYER_SIZE; i++) {
+                    printf("%d, ", nnlayer1->input[i]);
+                } printf("\n");
 
                 if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
                 // MLP Run Second Layer
@@ -570,9 +614,23 @@ int MLP_Inference_test_patterns(
         
                 if (VIEW_TENSORS) { printf("Post NNLayer1:\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
 
+                printf("Layer1->v_mem:\n");
+                int8_t* nnlayer1_v_mem = nnlayer1->tensor_ptrs[V_MEM_QUANT_IDX];
+                for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
+                    float dequantized_value = (nnlayer1_v_mem[i] - FC_LIF_LAYER_1_V_MEM_ZERO_POINT) * FC_LIF_LAYER_1_V_MEM_SCALE;
+                    printf("%f, ", dequantized_value);
+                }
+                printf("\n");
+
+                printf("Layer1->output:\n");
+                for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
+                    printf("%d, ", nnlayer1->output[i]);
+                }
+                printf("\n");
+
 
             } else if (((int8_t)*(nnlayer0->tensor_ptrs[UPDATE_NXT_LAYER_IDX])) == -128) {
-                printf("No spike, skipping layer1 computation\n");
+                //printf("No spike, skipping layer1 computation\n");
             } else { printf("ERRORRRRRRR!!!!!!!!!!!! UNEXPECTED VALUE FOUND IN UPDATE_NXT_LAYER\n"); }
 
 
@@ -619,7 +677,7 @@ int MLP_Inference_test_patterns(
         size_t neuron_sum = 0;
         for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
             neuron_sum = out_neuron_sum[i]; 
-            if (neuron_sum >= max_value) {
+            if (neuron_sum > max_value) {
                 max_value = neuron_sum;
                 max_spk_idx = i;
             }
@@ -629,6 +687,14 @@ int MLP_Inference_test_patterns(
         // Check if correct or not and add to counter
         if (max_spk_idx == test_targets[it]) { correct += 1; }
         prediction_arr[it] = max_spk_idx;
+
+        // Debug: Check how often we have 0 output spikes
+        bool have_at_least_one_spk = false;
+        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
+            if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
+        }
+        if (!have_at_least_one_spk) { number_of_no_spk += 1; }
+        printf("incrementing number_of_no_spk!\n");
 
 
 
@@ -659,6 +725,7 @@ int MLP_Inference_test_patterns(
     // Show stats at the end
     double accuracy = (double)correct / (double)num_samples;
     printf("The total accuracy over %d input patterns is: %f\n", num_samples, accuracy);
+    printf("Num samples with zero output spikes across all time steps: %d\n", number_of_no_spk);
         
 
 }

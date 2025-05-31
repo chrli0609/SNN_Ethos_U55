@@ -121,33 +121,30 @@ int main() {
 
 
 
-    srand(0);
 
     //Measurement unit: 1 microsecond
     SysTick_Config(SystemCoreClock/1000000);
 
 
     NN_Model* mlp_model = MLP_Init();
-        //printf("============ new iteration start =======================\n");
 
 
-
-
-        size_t NUM_SAMPLES;
-        if (MEASURE_MODE) { NUM_SAMPLES = 1; }
-        else { NUM_SAMPLES = 2; }
+    //srand(0);
+    //size_t NUM_SAMPLES;
+    //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
+    //else { NUM_SAMPLES = 2; }
         
-        int8_t* in_spk_arr [NUM_SAMPLES];
-        for (size_t i = 0; i < NUM_SAMPLES; i++) {
+    //int8_t* in_spk_arr [NUM_SAMPLES];
+    //for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
-            int8_t in_spk [MLP_INPUT_LAYER_SIZE];
-            for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-                //in_spk[j] = rand() % 2;
-                in_spk[j] = j % 2;
-            }
+        //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
+        //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+            ////in_spk[j] = rand() % 2;
+            //in_spk[j] = j % 2;
+        //}
 
-            in_spk_arr[i] = in_spk;
-        }
+        //in_spk_arr[i] = in_spk;
+    //}
 
 
 
@@ -155,81 +152,81 @@ int main() {
      
 
 
-        int8_t out_spk [MLP_OUTPUT_LAYER_SIZE];
+    int8_t out_spk [MLP_OUTPUT_LAYER_SIZE];
 
 
 
-        //bias = 0, scale = 1, shift = 0 --> -112
-        //bias = 3, scale = 1, shift = 0 --> -109
-        //bias = 10, scale = 1, shift = 0 --> -102
-        //bias = 10, scale = 2, shift = 1 --> -102
-        //bias = 10, scale = 2**7, shift = 7 --> -102
-        //bias = 10, scale = 2, shift = 0 --> -76
+    //bias = 0, scale = 1, shift = 0 --> -112
+    //bias = 3, scale = 1, shift = 0 --> -109
+    //bias = 10, scale = 1, shift = 0 --> -102
+    //bias = 10, scale = 2, shift = 1 --> -102
+    //bias = 10, scale = 2**7, shift = 7 --> -102
+    //bias = 10, scale = 2, shift = 0 --> -76
 
-        // Set output scale = 1, zero_point = 0
+    // Set output scale = 1, zero_point = 0
 
-        //bias = 10, scale = 2, shift = 0 --> 52
-        //bias = 0, scale = 1, shift = 0 --> 16
-        //bias = 0, scale = 2, shift = 0 --> 32
-        //bias = 3, scale = 2, shift = 0 --> 38
-        //bias = 3, scale = 2, shift = 1 --> 19 (16 + 3)
+    //bias = 10, scale = 2, shift = 0 --> 52
+    //bias = 0, scale = 1, shift = 0 --> 16
+    //bias = 0, scale = 2, shift = 0 --> 32
+    //bias = 3, scale = 2, shift = 0 --> 38
+    //bias = 3, scale = 2, shift = 1 --> 19 (16 + 3)
 
-        // ( sum[(ifm - Z_x) * (w - Z_w)] + bias ) * (scale >> shift) + Z_out
+    // ( sum[(ifm - Z_x) * (w - Z_w)] + bias ) * (scale >> shift) + Z_out
 
-        // Set IFM scale = 2, zero_point = 0
+    // Set IFM scale = 2, zero_point = 0
 
-        // Set OFM scale = 0.005, zero_point = -128
-        //bias = 3, scale = 1, shift = 0 --> -109   (16 + 3*1 -128)
-        //bias = 3, scale = 8, shift = 3 --> -109
-        //bias = 3, scale = 8, shift = 2 --> -90    (16 + 3)*2 + (-128))
+    // Set OFM scale = 0.005, zero_point = -128
+    //bias = 3, scale = 1, shift = 0 --> -109   (16 + 3*1 -128)
+    //bias = 3, scale = 8, shift = 3 --> -109
+    //bias = 3, scale = 8, shift = 2 --> -90    (16 + 3)*2 + (-128))
 
-        // Set OFM scale = 0.01, zero_point = 0
+    // Set OFM scale = 0.01, zero_point = 0
 
-        //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
-
-
-
-
-
-        //MLP_Inference(
-            //mlp_model,
-            //in_spk_arr,
-            //NUM_SAMPLES,
-
-            //out_spk
-        //);
-        MLP_Inference_test_patterns(
-            mlp_model,
-            pattern0_test_inputs,
-            pattern0_test_targets,
-            PATTERN0_NUM_SAMPLES,
-
-            25,
-
-            out_spk
-        );
-    //}
-
-
-        MLP_Free(mlp_model);
-
-        
+    //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
 
 
 
 
-        printf("exited to while loop in main\n");
-        
 
+    //MLP_Inference(
+        //mlp_model,
+        //in_spk_arr,
+        //NUM_SAMPLES,
+
+        //out_spk
+    //);
+    MLP_Inference_test_patterns(
+        mlp_model,
+        test_input_0,
+        test_target_0,
+        //test_input_0_NUM_SAMPLES,
+        10,
+
+        25,
+
+        out_spk
+    );
+
+
+    MLP_Free(mlp_model);
 
         
 
-        //################################################################
+
+
+
+    printf("exited to while loop in main\n");
+        
+
+
+        
+
+    //################################################################
 
    
         
-        //gpio_led->SetValue(LED_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE)
-        //gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE);
+    //gpio_led->SetValue(LED_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE)
+    //gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE);
         
 
 }

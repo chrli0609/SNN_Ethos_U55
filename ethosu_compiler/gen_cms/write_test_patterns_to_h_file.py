@@ -19,7 +19,13 @@ def numpy_to_c_array_2d(arr, var_name, mem_section_name, num_samples_macro_name,
         output_file.write("    {")
         for j in range(cols):
             # Convert to int8_t (clamp to [-128, 127] range)
-            val = int(np.clip(arr[i, j], -128, 127))
+            #val = int(np.clip(arr[i, j], -128, 127))
+
+            # Check if integer value
+            val_dequant = arr[i,j]
+            val = val_dequant
+            if (val_dequant != int(val_dequant)):
+                print("WE HAVE FLOATING POINT INPUT VALUE!!!!!!")
             output_file.write(f"{val}")
             if j < cols - 1:
                 output_file.write(", ")
@@ -119,10 +125,10 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
 
             
             # Convert and write test_target array
-            numpy_to_c_array_1d(test_target, str(input_file_path.stem)+"test_targets", mem_section_name, num_samples_macro_name, f)
+            numpy_to_c_array_1d(test_target, str(target_file_path.stem), mem_section_name, num_samples_macro_name, f)
 
             # Convert and write test_input array
-            numpy_to_c_array_2d(test_input, str(input_file_path.stem)+"test_inputs", mem_section_name, num_samples_macro_name, f)
+            numpy_to_c_array_2d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
             
             
             f.write("#endif // TEST_DATA_H\n")
