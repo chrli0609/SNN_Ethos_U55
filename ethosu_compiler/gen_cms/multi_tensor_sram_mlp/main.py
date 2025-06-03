@@ -1,12 +1,22 @@
 from pathlib import Path
 import os
 import sys
-
+CURR_WORKING_DIR = Path(os.getcwd())
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
+from ethosu.vela.api import NpuAccelerator
 
-current_working_directory = Path(os.getcwd())
-current_to_model_directory = Path("../../../snn_on_alif_e7/my_snn_bare_metal/nn_models/")
+
+
+
+# Only set to true if running check_npu_op_time.ps1
+SWEEP_NUM_NEURONS = False
+
+# Set to true to show debug printouts
+DEBUG_MODE = False
+
+
+CURR_WORKING_DIR_TO_MODEL_DIR = Path("../../../snn_on_alif_e7/my_snn_bare_metal/nn_models/")
 
 
 
@@ -19,19 +29,28 @@ LAYER_0_CMS_NAME = "fc_lif_layer_0"
 LAYER_1_CMS_NAME = "fc_lif_layer_1"
 
 
+'''
+Set Accelerator
+'''
+ACCELERATOR = NpuAccelerator.Ethos_U55_256
 
+
+
+
+
+import fc_lif
 import layer0
 import layer1
 
-
-if len(sys.argv) > 1:
-        try:
-            layer0_OUTPUT_LAYER_SIZE = int(sys.argv[1])
-        except:
-            print("Expected Integer command line argument but received:", sys.argv[1])
-            exit()
-else:
-    print("AN ERROR HAS OCCURRRED, INCORRECT COMMAND LINE ARGUMENTS SET WHEN CALLING main.py")
+if SWEEP_NUM_NEURONS:
+    if len(sys.argv) > 1:
+            try:
+                layer0.OUTPUT_LAYER_SIZE = int(sys.argv[1])
+            except:
+                print("Expected Integer command line argument but received:", sys.argv[1])
+                exit()
+    else:
+        print("AN ERROR HAS OCCURRRED, INCORRECT COMMAND LINE ARGUMENTS SET WHEN CALLING main.py")
 
 
 
@@ -40,21 +59,52 @@ else:
 
 
 # Assign header filenames
-header_out_filepath_layer0 = current_working_directory / current_to_model_directory / Path(MODEL_NAME) / Path("layers") / Path(LAYER_0_CMS_NAME+ ".h")
-header_out_filepath_layer1 = current_working_directory / current_to_model_directory / Path(MODEL_NAME) / Path("layers") / Path(LAYER_1_CMS_NAME + ".h")
+from extra_func import get_header_filepath
+header_out_filepath_layer0 = get_header_filepath(LAYER_0_CMS_NAME, MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
+header_out_filepath_layer1 = get_header_filepath(LAYER_1_CMS_NAME, MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
+
+
+# Ensure Layer Input/Output Dimensions match
+if not SWEEP_NUM_NEURONS:
+    if (layer0.OUTPUT_LAYER_SIZE != layer1.INPUT_LAYER_SIZE):
+        print("Error: Layer Dimensions don't match")
+    
+    
 
 
 
-layer0.main(OUTPUT_LAYER_SIZE=layer0_OUTPUT_LAYER_SIZE, cms_name=LAYER_0_CMS_NAME, header_out_filepath=header_out_filepath_layer0)
-#layer1.layer1_merge_and_write(cms_name=LAYER_1_CMS_NAME, header_out_filepath=header_out_filepath_layer1)
-layer1.main(cms_name=LAYER_1_CMS_NAME, header_out_filepath=header_out_filepath_layer1)
+fc_lif.gen_fc_lif(
+    INPUT_LAYER_SIZE=layer0.INPUT_LAYER_SIZE,
+    OUTPUT_LAYER_SIZE=layer0.OUTPUT_LAYER_SIZE,
+
+
+    weights_volume_ohwi=layer0.weights_volume_ohwi,
+    bias_list=layer0.bias_list,
+    beta_list=layer0.beta_list,
+    vth_list=layer0.vth_list,    
+
+    cms_name=LAYER_0_CMS_NAME,
+    DEBUG_MODE=DEBUG_MODE,
+    ACCELERATOR=ACCELERATOR,
+    header_out_filepath=header_out_filepath_layer0
+)
+
+fc_lif.gen_fc_lif(
+    INPUT_LAYER_SIZE=layer1.INPUT_LAYER_SIZE,
+    OUTPUT_LAYER_SIZE=layer1.OUTPUT_LAYER_SIZE,
+
+
+    weights_volume_ohwi=layer1.weights_volume_ohwi,
+    bias_list=layer1.bias_list,
+    beta_list=layer1.beta_list,
+    vth_list=layer1.vth_list,    
+
+    cms_name=LAYER_1_CMS_NAME,
+    DEBUG_MODE=DEBUG_MODE,
+    ACCELERATOR=ACCELERATOR,
+    header_out_filepath=header_out_filepath_layer1
+)
 
 
 
 
-
-# Notes
-'''
-*   In_spk scale and zero point probably should match out_spk if
-    they are to be connected
-'''

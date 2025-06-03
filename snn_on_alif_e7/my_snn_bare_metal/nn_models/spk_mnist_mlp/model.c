@@ -22,6 +22,7 @@ extern int DEBUG_MODE;
 extern int VIEW_TENSORS;
 extern int MEASURE_MODE;
 extern int BENCHMARK_MODEL;
+extern int CHECK_INPUT_OUTPUT;
 
 // How often we update (in micro sec)
 #define UPDATE_PERIOD 5000
@@ -399,7 +400,7 @@ int MLP_Inference_test_patterns(
 
     // For Benchmarking accuracy
     size_t correct = 0;
-    size_t prediction_arr [10] = { 0 };
+    size_t prediction_arr [4] = { 0 };
 
     // Debug
     size_t number_of_no_spk = 0;
@@ -497,11 +498,14 @@ int MLP_Inference_test_patterns(
                 NNLayer_DequantizeAndPrint(nnlayer0);
             }
 
+            
+            if (CHECK_INPUT_OUTPUT) {
+                printf("Layer0->Input:\n");
+                for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) {
+                    printf("%d, ", nnlayer0->input[i]);
+                } printf("\n");
 
-            printf("Layer0->Input:\n");
-            for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) {
-                printf("%d, ", nnlayer0->input[i]);
-            } printf("\n");
+            }
 
             //uint32_t measure_layer0_start = debug_start_timer();
             // MLP Run First Layer
@@ -532,21 +536,23 @@ int MLP_Inference_test_patterns(
             //start_layer0 = start_timer();
             start_layer0 = time_step;
             
-            printf("Layer0->v_mem:\n");
-            int8_t* nnlayer0_v_mem = nnlayer0->tensor_ptrs[V_MEM_QUANT_IDX];
-            for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
-                float dequantized_value = (nnlayer0_v_mem[i] - FC_LIF_LAYER_0_V_MEM_ZERO_POINT) * FC_LIF_LAYER_0_V_MEM_SCALE;
-                if (dequantized_value > 1) { printf("\nv_mem > 1 found here!\n"); }
-                printf("%f, ", dequantized_value);
-            }
-            printf("\n");
+            if (CHECK_INPUT_OUTPUT) {
+                printf("Layer0->v_mem:\n");
+                int8_t* nnlayer0_v_mem = nnlayer0->tensor_ptrs[V_MEM_QUANT_IDX];
+                for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
+                    float dequantized_value = (nnlayer0_v_mem[i] - FC_LIF_LAYER_0_V_MEM_ZERO_POINT) * FC_LIF_LAYER_0_V_MEM_SCALE;
+                    if (dequantized_value > 1) { printf("\nv_mem > 1 found here!\n"); }
+                    printf("%f, ", dequantized_value);
+                }
+                printf("\n");
 
-            printf("Layer0->output:\n");
-            for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
-                printf("%d, ", nnlayer0->output[i]);
+                printf("Layer0->output:\n");
+                for (size_t i = 0; i < FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE; i++) {
+                    printf("%d, ", nnlayer0->output[i]);
+                }
+                printf("\n");
+                printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n");
             }
-            printf("\n");
-            printf("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n");
 
 
         
@@ -572,6 +578,14 @@ int MLP_Inference_test_patterns(
                 ms_time_not_updated_layer1_val = time_step - start_layer1;
                 //ms_time_not_updated_layer1_val = 1; //for testing, just set to 1 always
                 printf("ms_time_not_updated_layer1_val: %f\n", ms_time_not_updated_layer1_val);
+
+
+                // Rewrite output spike from layer 0 from 127 or -128 to 1 or 0 when sending to input of next layer
+                for (size_t i = 0; i < FC_LIF_LAYER_1_INPUT_LAYER_SIZE; i++) {
+                    if (nnlayer0->output[i] == 127)         { nnlayer1->input[i] = 1; }
+                    else if (nnlayer0->output[i] == -128)   {nnlayer1->input[i] = 0; }
+                    else { printf("Error: received output spike from nnlayer0 that is neither 127 nor -128\n"); exit(1);}
+                }
                 
                 
                 
@@ -582,10 +596,13 @@ int MLP_Inference_test_patterns(
                 //printf("nnlayer1:\n");
                 if (VIEW_TENSORS) { printf("Pre NNLayer1\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
 
-                printf("Layer1->Input:\n");
-                for (size_t i = 0; i < FC_LIF_LAYER_1_INPUT_LAYER_SIZE; i++) {
-                    printf("%d, ", nnlayer1->input[i]);
-                } printf("\n");
+                if (CHECK_INPUT_OUTPUT) {
+                    printf("Layer1->Input:\n");
+                    for (size_t i = 0; i < FC_LIF_LAYER_1_INPUT_LAYER_SIZE; i++) {
+                        printf("%d, ", nnlayer1->input[i]);
+                    } printf("\n");
+                }
+                
 
                 if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
                 // MLP Run Second Layer
@@ -614,19 +631,21 @@ int MLP_Inference_test_patterns(
         
                 if (VIEW_TENSORS) { printf("Post NNLayer1:\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
 
-                printf("Layer1->v_mem:\n");
-                int8_t* nnlayer1_v_mem = nnlayer1->tensor_ptrs[V_MEM_QUANT_IDX];
-                for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
-                    float dequantized_value = (nnlayer1_v_mem[i] - FC_LIF_LAYER_1_V_MEM_ZERO_POINT) * FC_LIF_LAYER_1_V_MEM_SCALE;
-                    printf("%f, ", dequantized_value);
-                }
-                printf("\n");
+                if (CHECK_INPUT_OUTPUT) {
+                    printf("Layer1->v_mem:\n");
+                    int8_t* nnlayer1_v_mem = nnlayer1->tensor_ptrs[V_MEM_QUANT_IDX];
+                    for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
+                        float dequantized_value = (nnlayer1_v_mem[i] - FC_LIF_LAYER_1_V_MEM_ZERO_POINT) * FC_LIF_LAYER_1_V_MEM_SCALE;
+                        printf("%f, ", dequantized_value);
+                    }
+                    printf("\n");
 
-                printf("Layer1->output:\n");
-                for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
-                    printf("%d, ", nnlayer1->output[i]);
+                    printf("Layer1->output:\n");
+                    for (size_t i = 0; i < FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE; i++) {
+                        printf("%d, ", nnlayer1->output[i]);
+                    }
+                    printf("\n");
                 }
-                printf("\n");
 
 
             } else if (((int8_t)*(nnlayer0->tensor_ptrs[UPDATE_NXT_LAYER_IDX])) == -128) {
@@ -658,8 +677,10 @@ int MLP_Inference_test_patterns(
             Set up for reading output, show the sum of the different neuron outputs
             */
 
+            
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                out_neuron_sum[i] += nnlayer1->output[i];
+                if (nnlayer1->output[i] == 127) { out_neuron_sum[i] += 1;}
+                else if (nnlayer1->output[i] != -128) {printf("Error!!!!!!!!! Receive output value other than 127 or -128!!!!!!"); }
             }
             
         
@@ -693,8 +714,8 @@ int MLP_Inference_test_patterns(
         for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
             if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
         }
-        if (!have_at_least_one_spk) { number_of_no_spk += 1; }
-        printf("incrementing number_of_no_spk!\n");
+        if (!have_at_least_one_spk) { number_of_no_spk += 1; printf("incrementing number_of_no_spk!\n");}
+        
 
 
 

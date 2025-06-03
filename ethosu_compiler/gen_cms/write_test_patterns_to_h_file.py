@@ -7,6 +7,43 @@ import numpy as np
 import sys
 import os
 
+
+
+def numpy_to_c_array_3d(arr, var_name, mem_section_name, num_samples_macro_name, output_file):
+    """Convert 3D numpy array to C array format and write to file"""
+    depth, rows, cols = arr.shape
+    
+    # Write array declaration
+    output_file.write(f"static volatile __attribute__((section(\"{mem_section_name}\"))) int8_t {var_name}[{num_samples_macro_name}][{rows}][{cols}] = {{\n")
+    
+    # Write array data
+    for d in range(depth):
+        output_file.write("    {\n")
+        for i in range(rows):
+            output_file.write("        {")
+            for j in range(cols):
+                # Convert to int8_t (clamp to [-128, 127] range)
+                val_dequant = arr[d, i, j]
+                val = int(np.clip(val_dequant, -128, 127))
+                # Check if integer value
+                if (val_dequant != int(val_dequant)):
+                    print("WE HAVE FLOATING POINT INPUT VALUE!!!!!!")
+                output_file.write(f"{val}")
+                if j < cols - 1:
+                    output_file.write(", ")
+            output_file.write("}")
+            if i < rows - 1:
+                output_file.write(",")
+            output_file.write("\n")
+        output_file.write("    }")
+        if d < depth - 1:
+            output_file.write(",")
+        output_file.write("\n")
+    
+    output_file.write("};\n\n")
+
+
+
 def numpy_to_c_array_2d(arr, var_name, mem_section_name, num_samples_macro_name, output_file):
     """Convert 2D numpy array to C array format and write to file"""
     rows, cols = arr.shape
@@ -18,12 +55,12 @@ def numpy_to_c_array_2d(arr, var_name, mem_section_name, num_samples_macro_name,
     for i in range(rows):
         output_file.write("    {")
         for j in range(cols):
+
             # Convert to int8_t (clamp to [-128, 127] range)
-            #val = int(np.clip(arr[i, j], -128, 127))
+            val_dequant = arr[i,j]
+            val = int(np.clip(val_dequant, -128, 127))
 
             # Check if integer value
-            val_dequant = arr[i,j]
-            val = val_dequant
             if (val_dequant != int(val_dequant)):
                 print("WE HAVE FLOATING POINT INPUT VALUE!!!!!!")
             output_file.write(f"{val}")
@@ -64,6 +101,7 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
     #output_file_path = "test_data.h"
     
     num_samples_macro_name = str(input_file_path.stem) + "_NUM_SAMPLES"
+    num_samples = 10
     
     # Allow command line arguments to override default paths
     if len(sys.argv) >= 2:
@@ -78,18 +116,24 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
     try:
         # Load numpy arrays
         print(f"Loading {input_file_path}...")
-        test_input = np.load(input_file_path)
-        print(f"Loaded test_input with shape: {test_input.shape}")
+        test_input_untransposed = np.load(input_file_path)
+        print("Transpose test_inputs to get samples on rows instead of columns")
+        test_input_unstripped = np.transpose(test_input_untransposed, (1, 0, 2))  # Rearrange axes
+        print(f"Loaded test_input with shape: {test_input_unstripped.shape}")
+        print("Extract only the first {num_samples} samples")
+        test_input = test_input_unstripped[:num_samples]
         
         print(f"Loading {target_file_path}...")
-        test_target = np.load(target_file_path)
-        print(f"Loaded test_target with shape: {test_target.shape}")
+        test_target_unstripped = np.load(target_file_path)
+        print(f"Loaded test_target with shape: {test_target_unstripped.shape}")
+        print(f"Extract only the first {num_samples} samples")
+        test_target = test_target_unstripped[:num_samples]
         
 
 
 
         # Validate dimensions
-        test_input_num_rows, test_input_num_cols = test_input.shape
+        test_input_num_rows, _ , _= test_input.shape
         test_target_len = test_target.shape
 
         
@@ -99,6 +143,7 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
         # Check data range and warn if values will be clipped
         input_min, input_max = test_input.min(), test_input.max()
         target_min, target_max = test_target.min(), test_target.max()
+
         
         if input_min < -128 or input_max > 127:
             print(f"Warning: test_input values range [{input_min}, {input_max}] will be clipped to [-128, 127]")
@@ -128,7 +173,9 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
             numpy_to_c_array_1d(test_target, str(target_file_path.stem), mem_section_name, num_samples_macro_name, f)
 
             # Convert and write test_input array
-            numpy_to_c_array_2d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
+            #numpy_to_c_array_2d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
+            # Transpose first so we get different samples on the rows
+            numpy_to_c_array_3d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
             
             
             f.write("#endif // TEST_DATA_H\n")

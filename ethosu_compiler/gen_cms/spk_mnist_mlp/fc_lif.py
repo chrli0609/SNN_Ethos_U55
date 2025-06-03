@@ -36,8 +36,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     Set FM Quantization Params
     '''
 
-    IN_SPK_MAX_VAL = 127
-    IN_SPK_MIN_VAL = -128
+    IN_SPK_MAX_VAL = 1
+    IN_SPK_MIN_VAL = 0
 
     #Must be symmetric
     #WEIGHT_MAX_VAL = 127/100
@@ -52,18 +52,18 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     TIME_NOT_UPDATED_MIN_VAL = 0
 
     IN_CURR_MAX_VAL = 3
-    IN_CURR_MIN_VAL = 0
+    IN_CURR_MIN_VAL = -1
 
     V_MEM_MAX_VAL = 4
-    V_MEM_MIN_VAL = 0
+    V_MEM_MIN_VAL = -2
 
     DECAY_ACC_MAX_VAL = 0
     DECAY_ACC_MIN_VAL = -5
     DECAY_MAX_VAL = 1
     DECAY_MIN_VAL = 0
 
-    DECAYED_MEM_MAX_VAL = 1
-    DECAYED_MEM_MIN_VAL = 0
+    DECAYED_MEM_MAX_VAL = 4
+    DECAYED_MEM_MIN_VAL = -2
 
     VTH_MAX_VAL = 1.5
     VTH_MIN_VAL = 0.5
@@ -71,8 +71,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-    OUT_SPK_MAX_VAL = 127
-    OUT_SPK_MIN_VAL = -128
+    OUT_SPK_MAX_VAL = 1
+    OUT_SPK_MIN_VAL = 0
 
 
     ###########
@@ -92,7 +92,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-
+    # Need to make sure that in_spk and out_spk have the same quantization parameters
+    if (IN_SPK_MAX_VAL != OUT_SPK_MAX_VAL or IN_SPK_MIN_VAL != OUT_SPK_MIN_VAL):
+        print("IN_SPK and OUT_SPK do not match")
+        exit()
 
 
 
@@ -123,7 +126,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     RESET_SCALE, RESET_ZERO_POINT = zero_point_quant(RESET_MAX_VAL, RESET_MIN_VAL)
 
     WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
-    BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE/IN_CURR_SCALE, 0
+    BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE, 0
 
     # Output Feature Map
     UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)

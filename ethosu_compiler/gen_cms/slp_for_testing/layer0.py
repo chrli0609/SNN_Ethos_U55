@@ -74,7 +74,7 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
     DECAYED_MEM_MAX_VAL = 1
     DECAYED_MEM_MIN_VAL = 0
 
-    VTH_MAX_VAL = 3
+    VTH_MAX_VAL = 1.5
     VTH_MIN_VAL = 0.5
 
 
@@ -349,10 +349,10 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
-            fm_elem_size=1,
+            fm_elem_size=None,
             fm_addr=DECAY_ADDR,
             scale=DECAY_ACC_SCALE,
             zero_point=DECAY_ACC_ZERO_POINT,
@@ -631,10 +631,10 @@ def main(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, cms_name, header_out_filepath):
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
-            fm_elem_size=1,
+            fm_elem_size=None,
             fm_addr=DECAY_ADDR,
             scale = DECAY_SCALE,
             zero_point = DECAY_ZERO_POINT,

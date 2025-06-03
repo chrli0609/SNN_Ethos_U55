@@ -21,29 +21,30 @@
 #include "include/extra_funcs.h"
 
 //#include "cmsis_gcc.h"
-#include "nn_models/spk_mnist_mlp/test_patterns/pattern_0.h"
+//#include "nn_models/spk_mnist_mlp/test_patterns/pattern_0.h"
 #include "pm.h" //SystemCoreClock
 
 
 // Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
 //#include "nn_models/single_tensor_dtcm_mlp/model.h"
-//#include "nn_models/multi_tensor_sram_mlp/model.h"
-#include "nn_models/spk_mnist_mlp/model.h"
+#include "nn_models/multi_tensor_sram_mlp/model.h"
+//#include "nn_models/spk_mnist_mlp/model.h"
 
 
 
-const int DEBUG_MODE = 0;
+const int DEBUG_MODE = 1;
 const int VIEW_TENSORS = 0;
 const int MEASURE_MODE = 0;
 const int BENCHMARK_MODEL = 0;
+const int CHECK_INPUT_OUTPUT = 0;
 
 
 
 //#include <unistd.h> // notice this! you need it!
 
 
-#define REGISTER_ADDRESS    0x20020200
-#define REGISTER            (*(volatile uint8_t*)REGISTER_ADDRESS)
+//#define REGISTER_ADDRESS    0x20020200
+//#define REGISTER            (*(volatile uint8_t*)REGISTER_ADDRESS)
 
 
 //void write_to_register(uint8_t value) {
@@ -68,8 +69,8 @@ const int BENCHMARK_MODEL = 0;
 
 
 
-#define TEST_REGISTER_ADDRESS    0x02000000
-#define TEST_REGISTER            (*(volatile int8_t*)TEST_REGISTER_ADDRESS)
+//#define TEST_REGISTER_ADDRESS    0x02000000
+//#define TEST_REGISTER            (*(volatile int8_t*)TEST_REGISTER_ADDRESS)
 
 
 //void write_to_register(uint8_t value) {
@@ -80,6 +81,8 @@ const int BENCHMARK_MODEL = 0;
 
 
 int main() {
+
+    printf("Just reflashed!!! ______________________________________________________\n");
 
 
     // Initialize the led
@@ -129,22 +132,22 @@ int main() {
     NN_Model* mlp_model = MLP_Init();
 
 
-    //srand(0);
-    //size_t NUM_SAMPLES;
-    //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
-    //else { NUM_SAMPLES = 2; }
+    srand(0);
+    size_t NUM_SAMPLES;
+    if (MEASURE_MODE) { NUM_SAMPLES = 1; }
+    else { NUM_SAMPLES = 2; }
         
-    //int8_t* in_spk_arr [NUM_SAMPLES];
-    //for (size_t i = 0; i < NUM_SAMPLES; i++) {
+    int8_t* in_spk_arr [NUM_SAMPLES];
+    for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
-        //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
-        //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-            ////in_spk[j] = rand() % 2;
-            //in_spk[j] = j % 2;
-        //}
+        int8_t in_spk [MLP_INPUT_LAYER_SIZE];
+        for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+            if (j % 2 == 0) { in_spk[j] = -128; }
+            else { in_spk[j] = 127; }
+        }
 
-        //in_spk_arr[i] = in_spk;
-    //}
+        in_spk_arr[i] = in_spk;
+    }
 
 
 
@@ -188,24 +191,24 @@ int main() {
 
 
 
-    //MLP_Inference(
-        //mlp_model,
-        //in_spk_arr,
-        //NUM_SAMPLES,
-
-        //out_spk
-    //);
-    MLP_Inference_test_patterns(
+    MLP_Inference(
         mlp_model,
-        test_input_0,
-        test_target_0,
-        //test_input_0_NUM_SAMPLES,
-        10,
-
-        25,
+        in_spk_arr,
+        NUM_SAMPLES,
 
         out_spk
     );
+    //MLP_Inference_test_patterns(
+        //mlp_model,
+        //test_input_0,
+        //test_target_0,
+        ////test_input_0_NUM_SAMPLES,
+        //4,
+
+        //25,
+
+        //out_spk
+    //);
 
 
     MLP_Free(mlp_model);

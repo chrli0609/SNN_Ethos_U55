@@ -31,8 +31,8 @@ bias_init = np.load("model_params/fc2_bias.npy")
 
 print("weights_init:", weights_init.shape, "\n", weights_init)
 
-np.save("weights_init.npy", weights_init)
-np.save("bias_init.npy", weights_init)
+#np.save("weights_init.npy", weights_init)
+#np.save("bias_init.npy", weights_init)
 
 
 
@@ -43,8 +43,8 @@ bias_padded = np.pad(bias_init, (0, out_padding), mode='constant')
 print("weights_padded:", weights_padded.shape, "\n", weights_padded)
 print("biases_padded:", bias_padded.shape, "\n", bias_padded)
 
-np.save("weights_padded.npy", weights_padded)
-np.save("bias_padded.npy", weights_padded)
+#np.save("weights_padded.npy", weights_padded)
+#np.save("bias_padded.npy", weights_padded)
 
 
 # Reshape weights
@@ -52,7 +52,7 @@ weights_reshaped = weights_padded.reshape(OUTPUT_LAYER_SIZE, 1, 1, INPUT_LAYER_S
 
 print("weights_reshaped:", weights_reshaped.shape, "\n", weights_reshaped)
 
-np.save("weights_reshaped.npy", weights_reshaped)
+#np.save("weights_reshaped.npy", weights_reshaped)
 
 
 

@@ -219,10 +219,15 @@ def gen_weights_and_biases(
 
 
     num_biases = len(bias_list)
-    #ofm_depth = weights_volume_ohwi.shape[0]
+
 
 
     # Make checks
+    if (weight_zero_point != 0):
+        print(f"Error: Weight zero point should always be 0!, but was found to be {weight_zero_point}")
+    
+
+
     #if num_biases != ofm_depth:
     #    print("Error: Incorrect Dim(Bias), expected len(bias_tensor) == len(weights_volume_ohwi.shape[0]), instead got:\n\tlen(bias_tenosr):", num_biases, "\n\tweights_tensor_ohwi.shape[0]:", ofm_depth)
     #    exit()
@@ -246,19 +251,33 @@ def gen_weights_and_biases(
         )
 
 
+    # Value used to re quantize from int32 (accumulator type) back down to int8
+    M_value = ifm_scale*weight_scale/ofm_scale
 
+
+    # Bias_zero_point = weight_zero_point = 0
+    bias_zero_point = weight_zero_point
 
     #print("bias_quant params: scale", ofm_scale, " zero_point", ofm_zero_point)
-    #bias_quantized = quantize_array_float_to_int8(np.array(bias_list, dtype='float32'), ofm_scale, ofm_zero_point).astype(np.int64)
+
+
+
+    # Bias scale is always ifm_scale * weight_scale
+    bias_scale = (ifm_scale * weight_scale) 
+
+    # Quantize bias from float32 to integer value (Vela API function npu_encode_bias() takes int64, but will convert it to int40)
+    bias_unquant = np.asarray(bias_list, dtype=np.float32)
+    bias_quantized = np.round(bias_unquant / bias_scale).astype(np.int64)
     
+
 
     bias_bytearr_list = []
     for i in range(num_biases):
 
         # convert floating point scale value to fixed point
-        scale, shift = float_to_fixed(ifm_scale*weight_scale/ofm_scale)
+        scale, shift = float_to_fixed(M_value)
         bias_bytearr_list.append(npu_encode_bias(
-            bias=np.int64(bias_list[i]),
+            bias=np.int64(bias_quantized[i]),
             scale=scale,
             shift=shift,
         ))
@@ -500,11 +519,11 @@ def create_feature_map(height: int, width: int, depth: int,
     
 
     # Stride is purely dependent on FM dimensions
-    stride_y = fm_elem_size*depth*width
-    stride_x = fm_elem_size*depth
-    stride_c = fm_elem_size
-    if stride_y is not None and stride_x is not None and stride_c is not None:
-        fm.strides = NpuShape3D(height=stride_y, width=stride_x, depth=stride_c)
+    #stride_y = fm_elem_size*depth*width
+    #stride_x = fm_elem_size*depth
+    #stride_c = fm_elem_size
+    #if stride_y is not None and stride_x is not None and stride_c is not None:
+        #fm.strides = NpuShape3D(height=stride_y, width=stride_x, depth=stride_c)
     
     # Default tile setup for single tile (most common case)
     fm.tiles = NpuTileBox(
