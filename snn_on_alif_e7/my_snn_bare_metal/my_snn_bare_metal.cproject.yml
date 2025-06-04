@@ -32,8 +32,9 @@ project:
 
         # NN models (only one should be used at a time)
         #- file: nn_models/single_tensor_dtcm_mlp/model.c
-        - file: nn_models/multi_tensor_sram_mlp/model.c
+        #- file: nn_models/multi_tensor_sram_mlp/model.c
         #- file: nn_models/spk_mnist_mlp/model.c
+        - file: nn_models/spk_mnist_784x32x10/model.c
 
 
           for-context:

@@ -18,7 +18,7 @@ while ($port.IsOpen) {
         }
     }
 
-    Start-Sleep -Milliseconds 100
+    Start-Sleep -Milliseconds 1
 }
 
 $port.Close()

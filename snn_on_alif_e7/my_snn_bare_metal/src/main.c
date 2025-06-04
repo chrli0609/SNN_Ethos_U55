@@ -27,12 +27,13 @@
 
 // Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
 //#include "nn_models/single_tensor_dtcm_mlp/model.h"
-#include "nn_models/multi_tensor_sram_mlp/model.h"
+//#include "nn_models/multi_tensor_sram_mlp/model.h"
 //#include "nn_models/spk_mnist_mlp/model.h"
+#include "nn_models/spk_mnist_784x32x10/model.h"
 
 
 
-const int DEBUG_MODE = 1;
+const int DEBUG_MODE = 0;
 const int VIEW_TENSORS = 0;
 const int MEASURE_MODE = 0;
 const int BENCHMARK_MODEL = 0;
@@ -130,24 +131,28 @@ int main() {
 
 
     NN_Model* mlp_model = MLP_Init();
+    printf("Model\n");
+    printf("\tFC_LIF_0: %d x %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE);
+    printf("\tFC_LIF_1: %d x %d\n", FC_LIF_LAYER_1_INPUT_LAYER_SIZE, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE);
+    
 
 
-    srand(0);
-    size_t NUM_SAMPLES;
-    if (MEASURE_MODE) { NUM_SAMPLES = 1; }
-    else { NUM_SAMPLES = 2; }
+    //srand(0);
+    //size_t NUM_SAMPLES;
+    //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
+    //else { NUM_SAMPLES = 2; }
         
-    int8_t* in_spk_arr [NUM_SAMPLES];
-    for (size_t i = 0; i < NUM_SAMPLES; i++) {
+    //int8_t* in_spk_arr [NUM_SAMPLES];
+    //for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
-        int8_t in_spk [MLP_INPUT_LAYER_SIZE];
-        for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-            if (j % 2 == 0) { in_spk[j] = -128; }
-            else { in_spk[j] = 127; }
-        }
+        //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
+        //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
+            //if (j % 2 == 0) { in_spk[j] = -128; }
+            //else { in_spk[j] = 127; }
+        //}
 
-        in_spk_arr[i] = in_spk;
-    }
+        //in_spk_arr[i] = in_spk;
+    //}
 
 
 
@@ -191,24 +196,24 @@ int main() {
 
 
 
-    MLP_Inference(
-        mlp_model,
-        in_spk_arr,
-        NUM_SAMPLES,
-
-        out_spk
-    );
-    //MLP_Inference_test_patterns(
+    //MLP_Inference(
         //mlp_model,
-        //test_input_0,
-        //test_target_0,
-        ////test_input_0_NUM_SAMPLES,
-        //4,
-
-        //25,
+        //in_spk_arr,
+        //NUM_SAMPLES,
 
         //out_spk
     //);
+    MLP_Inference_test_patterns(
+        mlp_model,
+        test_input_0,
+        test_target_0,
+        //test_input_0_NUM_SAMPLES,
+        test_input_0_NUM_SAMPLES,
+
+        MLP_NUM_TIME_STEPS,
+
+        out_spk
+    );
 
 
     MLP_Free(mlp_model);

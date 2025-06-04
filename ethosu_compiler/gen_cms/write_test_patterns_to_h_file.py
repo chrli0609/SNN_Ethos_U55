@@ -133,8 +133,8 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
 
 
         # Validate dimensions
-        test_input_num_rows, _ , _= test_input.shape
-        test_target_len = test_target.shape
+        test_input_num_rows = test_input.shape[0]
+        test_target_len = test_target.shape[0]
 
         
         if test_target_len != test_input_num_rows:
