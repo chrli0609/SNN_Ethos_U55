@@ -101,7 +101,7 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
     #output_file_path = "test_data.h"
     
     num_samples_macro_name = str(input_file_path.stem) + "_NUM_SAMPLES"
-    num_samples = 10
+    num_samples = 45
     
     # Allow command line arguments to override default paths
     if len(sys.argv) >= 2:
@@ -175,6 +175,7 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
             # Convert and write test_input array
             #numpy_to_c_array_2d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
             # Transpose first so we get different samples on the rows
+            f.write("// Num samples x num time steps x MLP Input size\n")
             numpy_to_c_array_3d(test_input, str(input_file_path.stem), mem_section_name, num_samples_macro_name, f)
             
             

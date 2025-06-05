@@ -140,15 +140,16 @@ int main() {
     //srand(0);
     //size_t NUM_SAMPLES;
     //if (MEASURE_MODE) { NUM_SAMPLES = 1; }
-    //else { NUM_SAMPLES = 2; }
+    //else { NUM_SAMPLES = 3; }
         
     //int8_t* in_spk_arr [NUM_SAMPLES];
     //for (size_t i = 0; i < NUM_SAMPLES; i++) {
 
         //int8_t in_spk [MLP_INPUT_LAYER_SIZE];
         //for (size_t j = 0; j < MLP_INPUT_LAYER_SIZE; j++){
-            //if (j % 2 == 0) { in_spk[j] = -128; }
-            //else { in_spk[j] = 127; }
+            //in_spk[j] = j % 2;
+            ////if (j % 2 == 0) { in_spk[j] = -128; }
+            ////else { in_spk[j] = 127; }
         //}
 
         //in_spk_arr[i] = in_spk;

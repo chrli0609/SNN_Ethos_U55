@@ -36,14 +36,14 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     Set FM Quantization Params
     '''
 
-    IN_SPK_MAX_VAL = 1 
-    IN_SPK_MIN_VAL = 0
+    IN_SPK_MAX_VAL = 127
+    IN_SPK_MIN_VAL = -128
 
     #Must be symmetric
     #WEIGHT_MAX_VAL = 127/100
     #WEIGHT_MIN_VAL = -128/100
-    WEIGHT_MAX_VAL = 0.15
-    WEIGHT_MIN_VAL = -0.15
+    WEIGHT_MAX_VAL = 0.35
+    WEIGHT_MIN_VAL = -0.35
 
     LN_BETA_MAX_VAL = 0
     LN_BETA_MIN_VAL = -5
@@ -54,7 +54,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     IN_CURR_MAX_VAL = 3
     IN_CURR_MIN_VAL = -1
 
-    V_MEM_MAX_VAL = 4
+    V_MEM_MAX_VAL = 3
     V_MEM_MIN_VAL = -1
 
     DECAY_ACC_MAX_VAL = 0
@@ -62,17 +62,20 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     DECAY_MAX_VAL = 1
     DECAY_MIN_VAL = 0
 
-    DECAYED_MEM_MAX_VAL = 1
-    DECAYED_MEM_MIN_VAL = 0
+    DECAYED_MEM_MAX_VAL = 3
+    DECAYED_MEM_MIN_VAL = -1
 
     VTH_MAX_VAL = 1.5
     VTH_MIN_VAL = 0.5
 
 
 
+    V_MEM_SUB_VTH_MAX_VAL = 1
+    V_MEM_SUB_VTH_MIN_VAL = 0
 
-    OUT_SPK_MAX_VAL = 1
-    OUT_SPK_MIN_VAL = 0
+
+    OUT_SPK_MAX_VAL = 127
+    OUT_SPK_MIN_VAL = -128
 
 
     ###########
@@ -92,7 +95,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-
+    # Need to make sure that in_spk and out_spk have the same quantization parameters
+    if (IN_SPK_MAX_VAL != OUT_SPK_MAX_VAL or IN_SPK_MIN_VAL != OUT_SPK_MIN_VAL):
+        print("IN_SPK and OUT_SPK do not match")
+        exit()
 
 
 
@@ -118,12 +124,15 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     DECAY_ACC_SCALE, DECAY_ACC_ZERO_POINT = zero_point_quant(DECAY_ACC_MAX_VAL, DECAY_ACC_MIN_VAL)
     IN_CURR_SCALE, IN_CURR_ZERO_POINT = zero_point_quant(IN_CURR_MAX_VAL, IN_CURR_MIN_VAL)
     DECAYED_MEM_SCALE, DECAYED_MEM_ZERO_POINT = zero_point_quant(DECAYED_MEM_MAX_VAL, DECAYED_MEM_MIN_VAL)
+    V_MEM_SUB_VTH_SCALE, V_MEM_SUB_VTH_ZERO_POINT = zero_point_quant(V_MEM_SUB_VTH_MAX_VAL, V_MEM_SUB_VTH_MIN_VAL)
 
 
     RESET_SCALE, RESET_ZERO_POINT = zero_point_quant(RESET_MAX_VAL, RESET_MIN_VAL)
 
     WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
     BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE, 0
+    # Bias at most 40 bit value
+    print("BIAS:\n\tMax val:", 2**39 / BIAS_SCALE, "\n\tMin val:", -2**39 / BIAS_SCALE)
 
     # Output Feature Map
     UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)
@@ -319,8 +328,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=DECAY_ADDR,
@@ -410,8 +419,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=IN_CURR_ADDR,
@@ -579,8 +588,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=DECAY_ADDR,
@@ -594,8 +603,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=DECAYED_MEM_ADDR,
@@ -655,8 +664,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=DECAYED_MEM_ADDR,
@@ -668,8 +677,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=IN_CURR_ADDR,
@@ -684,8 +693,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=V_MEM_ADDR,
@@ -746,7 +755,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=V_MEM_ADDR,
@@ -777,8 +787,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=OUT_SPK_ADDR,
-            scale=OUT_SPK_SCALE,
-            zero_point=OUT_SPK_ZERO_POINT,
+            scale=V_MEM_SUB_VTH_SCALE,
+            zero_point=V_MEM_SUB_VTH_ZERO_POINT,
             name="out_spk"
         )
 
@@ -812,7 +822,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         # It might be problematic to have the same scaling before and after LUT, currently is working though
         # if scale = 1, zero_point = 0, and dif = (v_mem - vth), where dif < 1, then it will only spike if dif is rounded to 1 (and not 0)
         check_spk_lut_dma_op, check_spk_lut_values = create_lut_and_dma(approximated_func=check_positive, lut_index=check_spk_lut_index, lut_region=LUT_REGION, data_type=ofm.data_type, 
-                        scale_pre_lut=OUT_SPK_SCALE, zero_point_pre_lut=OUT_SPK_ZERO_POINT,
+                        scale_pre_lut=V_MEM_SUB_VTH_SCALE, zero_point_pre_lut=V_MEM_SUB_VTH_ZERO_POINT,
                         scale_post_lut=OUT_SPK_SCALE, zero_point_post_lut=OUT_SPK_ZERO_POINT,
                         accelerator=ACCELERATOR,
                         debug_mode=DEBUG_MODE
@@ -888,8 +898,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ofm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=RESET_ADDR,
@@ -953,7 +963,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=V_MEM_ADDR,
@@ -967,8 +978,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         ifm2 = create_feature_map(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            layout=NpuLayout.NHWC,
+            layout=NpuLayout.NHCWB16,
+            #layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             fm_elem_size=1,
             fm_addr=RESET_ADDR,
@@ -1199,11 +1210,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-        '''No activation'''
-        #npu_op_list = [exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-
-        '''No Reduced Sum'''
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, reset_time_op]
 
 
 

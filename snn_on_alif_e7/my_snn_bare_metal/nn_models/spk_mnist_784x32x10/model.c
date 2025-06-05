@@ -384,8 +384,8 @@ int MLP_Inference_test_patterns(
 
     //int8_t*** test_patterns,
     //int8_t* test_targets,
-    int8_t test_patterns[test_input_0_NUM_SAMPLES][MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE],
-    int8_t test_targets[test_input_0_NUM_SAMPLES],
+    volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE],
+    volatile int8_t test_targets[test_input_0_NUM_SAMPLES],
 
     size_t num_samples,
 
@@ -502,16 +502,12 @@ int MLP_Inference_test_patterns(
 
             // Get the input for this time step!! 
             for (size_t i = 0; i < MLP_INPUT_LAYER_SIZE; i++){
-                //nnlayer0->tensor_ptrs[IN_SPK_TENSOR_IDX][i] = in_spk[i];
-                //if (in_spk[i] == 1) { nnlayer0->input[i] = (int8_t)127; }
-                //else if (in_spk[i] == 0) { nnlayer0->input[i] = (int8_t)-128; }
-                //else { printf("Found test input that is neither 1 or 0, exiting...\n"); exit(1); }
 
                 // For this sample, for this time step, for this neuron
-                if (test_patterns[it][time_step][i] == 1) { nnlayer0->input[i] = (int8_t)127; }
-                else if (test_patterns[it][time_step][i] == 0) { nnlayer0->input[i] = (int8_t)-128; }
-                else { printf("Found test input that is neither 1 or 0, exiting...\n"); exit(1); }
-                //nnlayer0->input[i] = in_spk[i];
+                //if (test_patterns[it][time_step][i] == 1) { nnlayer0->input[i] = (int8_t)127; }
+                //else if (test_patterns[it][time_step][i] == 0) { nnlayer0->input[i] = (int8_t)-128; }
+                //else { printf("Found test input that is neither 1 or 0, exiting...\n"); exit(1); }
+                nnlayer0->input[i] = test_patterns[it][time_step][i];
 
             }
 
@@ -731,14 +727,17 @@ int MLP_Inference_test_patterns(
             
             int8_t out_val;
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                out_val = nnlayer1->output[i];
-                if (out_val == 127) { out_neuron_sum[i] += 1;}
-                else if (out_val != -128) { 
-                    printf("Error!!!!!!!!! Receive output value other than 127 or -128!!!!!!!\n");
-                    printf("Received: %d\n", (int)out_val);
-                    print_dequant_int8(nnlayer1->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
+
+                out_neuron_sum[i] += nnlayer1->output[i];
+
+                //out_val = nnlayer1->output[i];
+                //if (out_val == 127) { out_neuron_sum[i] += 1;}
+                //else if (out_val != -128) { 
+                    //printf("Error!!!!!!!!! Receive output value other than 127 or -128!!!!!!!\n");
+                    //printf("Received: %d\n", (int)out_val);
+                    //print_dequant_int8(nnlayer1->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
                     
-                }
+                //}
 
             }
             
@@ -819,7 +818,7 @@ int MLP_Inference(
     int8_t* out_spk
 ) {
 
-    size_t num_time_steps = 25;
+    size_t num_time_steps = 2;
 
 
 
@@ -878,8 +877,8 @@ int MLP_Inference(
         // For storing sum of output spikes across the time steps
         size_t out_neuron_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
         // Init timer
-        uint32_t start_layer0 = 0;
-        uint32_t start_layer1 = 0;
+        int32_t start_layer0 = -1;
+        int32_t start_layer1 = -1;
 
 
         // Start measuring time
@@ -903,8 +902,10 @@ int MLP_Inference(
             //mult by 1000 to get back from micro sec --> ms
             //ms_time_not_updated_layer0_val = 1000*end_timer(start_layer0);
             // Set this as iteration first to make sure it works
-            //ms_time_not_updated_layer0_val = time_step - start_layer0 + 1;
-            ms_time_not_updated_layer0_val = 1;     //for testing just set this to 1 always
+
+
+
+            ms_time_not_updated_layer0_val = time_step - start_layer0;
             printf("ms_time_not_updated_layer0_val: %f\n", ms_time_not_updated_layer0_val);
             // layer0 time
             float ms_time_not_updated_layer0[1] = { ms_time_not_updated_layer0_val };
@@ -973,8 +974,7 @@ int MLP_Inference(
 
                 // Update how long it was we updated layer0 last
                 //ms_time_not_updated_layer1_val = end_timer(start_layer1);
-                //ms_time_not_updated_layer1_val = time_step - start_layer1 + 1;
-                ms_time_not_updated_layer1_val = 1; //for testing, just set to 1 always                
+                ms_time_not_updated_layer1_val = time_step - start_layer1;
 
                 float ms_time_not_updated_layer1[1] = { ms_time_not_updated_layer1_val };
                 quantize_array_float_to_int8(ms_time_not_updated_layer1, nnlayer1->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1,FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE, FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT);

@@ -18,11 +18,12 @@ import itertools
 
 
 
-from model import Net
+from model import Net, num_steps
 
 
 
-model_dir = Path("../../ethosu_compiler/gen_cms/spk_mnist_784x32x10/")
+#model_dir = Path("../../ethosu_compiler/gen_cms/spk_mnist_784x32x10/")
+model_dir = Path(".")
 
 #model_pt_path = model_dir / Path("model_params/save_model_dict.pt")
 model_pt_path = Path("save_model_dict_784x32x10.pt")
@@ -31,7 +32,6 @@ test_target_path = model_dir / Path("test_patterns/test_target_0.npy")
 
 
 
-num_steps = 25
 
 
 # Load model
@@ -73,12 +73,11 @@ correct = 0
 
 
 out_neuron_sum_list = []
-counter = 0
 with torch.no_grad():
   net.eval()
 
   #for i in range(len(test_inputs)):
-  for i in range(1):
+  for i in range(45):
     # forward pass (get output spikes and lif2 membrane potential)
     #test_spk, test_v_mem_lif2 = net(data.view(data.size(0), -1))
 
@@ -87,27 +86,11 @@ with torch.no_grad():
     test_spk, test_v_mem_lif2 = net(single_sample_test_input)
 
 
-    #for time_step in range(num_steps):
-      ##print("layer0->input\n", single_sample_test_input[time_step])
-
-
-
-      ## Print the model behvaiour at every time step
-      ##print("test_v_mem_lif2\n", test_v_mem_lif2[time_step])
-      ##print("test_spk\n", test_spk[time_step])
-      #write_C_style_output(single_sample_test_input[time_step], "Layer0->input")
-      #write_C_style_output(test_v_mem_lif1[time_step], "Layer1->output")
-      #write_C_style_output(test_v_mem_lif2[time_step], "Layer1->v_mem")
-      #write_C_style_output(test_spk[time_step], "Layer1->output")
-
     # calculate total accuracy
     _, predicted = test_spk.sum(dim=0).max(0)
-    #total += test_targets
     if (predicted == test_targets[i]):
       correct += 1
-    #correct += (predicted == test_targets).sum().item()
     total += 1
-    counter += 1
 
 
 
@@ -115,26 +98,6 @@ with torch.no_grad():
     print("out_neuron_sum of sample " + str(i) + ":\t", out_neuron_sum_list[i])
 
 
-    # get model prediction
-    #predicted = test_spk.sum(dim=0)
-
-    #print("prediction", predicted)
-    #print("target", test_targets[i])
-
-
-
-    #if (max_v_mem_1 < test_v_mem_lif1.max):
-      #max_v_mem_1 = test_v_mem_lif1.max
-    #if (min_v_mem_1 > test_v_mem_lif1.min):
-      #min_v_mem_1 = test_v_mem_lif1.min
-
-    #if (max_v_mem_2 < torch.max(test_v_mem_lif2)):
-      #max_v_mem_2 = torch.max(test_v_mem_lif2)
-    #if (min_v_mem_2 > torch.min(test_v_mem_lif2)):
-      #min_v_mem_2 = torch.min(test_v_mem_lif2)
-
-
-#print(f"lif 2 v_mem:\n\tmax: {max_v_mem_2}\n\tmin: {min_v_mem_2}")
 
 
 print(f"Total correctly classified test set images: {correct}/{total}")
