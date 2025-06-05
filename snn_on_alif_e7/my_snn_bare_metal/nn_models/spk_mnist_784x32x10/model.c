@@ -500,16 +500,7 @@ int MLP_Inference_test_patterns(
             }
 
 
-            // Get the input for this time step!! 
-            for (size_t i = 0; i < MLP_INPUT_LAYER_SIZE; i++){
-
-                // For this sample, for this time step, for this neuron
-                //if (test_patterns[it][time_step][i] == 1) { nnlayer0->input[i] = (int8_t)127; }
-                //else if (test_patterns[it][time_step][i] == 0) { nnlayer0->input[i] = (int8_t)-128; }
-                //else { printf("Found test input that is neither 1 or 0, exiting...\n"); exit(1); }
-                nnlayer0->input[i] = test_patterns[it][time_step][i];
-
-            }
+            nnlayer0->input = test_patterns[it][time_step];
 
         
             // Update how long it was we updated layer0 last
@@ -723,32 +714,17 @@ int MLP_Inference_test_patterns(
             /*
             Set up for reading output, show the sum of the different neuron outputs
             */
-
-            
-            int8_t out_val;
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-
                 out_neuron_sum[i] += nnlayer1->output[i];
-
-                //out_val = nnlayer1->output[i];
-                //if (out_val == 127) { out_neuron_sum[i] += 1;}
-                //else if (out_val != -128) { 
-                    //printf("Error!!!!!!!!! Receive output value other than 127 or -128!!!!!!!\n");
-                    //printf("Received: %d\n", (int)out_val);
-                    //print_dequant_int8(nnlayer1->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
-                    
-                //}
-
             }
-            
         
         }
 
         //  Print the total sum for each neuron output
-        printf("out_neuron_sum:\n");
-        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-            printf("\t%d: %d\n", i, out_neuron_sum[i]);
-        }
+        //printf("out_neuron_sum:\n");
+        //for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
+            //printf("\t%d: %d\n", i, out_neuron_sum[i]);
+        //}
 
         // Get the max value
         size_t max_value = 0;
@@ -768,11 +744,13 @@ int MLP_Inference_test_patterns(
         prediction_arr[it] = max_spk_idx;
 
         // Debug: Check how often we have 0 output spikes
-        bool have_at_least_one_spk = false;
-        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
-            if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
+        if (DEBUG_MODE) {
+            bool have_at_least_one_spk = false;
+            for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
+                if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
+            }
+            if (!have_at_least_one_spk) { number_of_no_spk += 1; printf("incrementing number_of_no_spk!\n");}
         }
-        if (!have_at_least_one_spk) { number_of_no_spk += 1; printf("incrementing number_of_no_spk!\n");}
         
 
 
@@ -781,16 +759,16 @@ int MLP_Inference_test_patterns(
         it++;
 
 
-        // Delay before starting next layer
-        elapsed_ms = end_timer(start);
-        float remaining_time = UPDATE_PERIOD - elapsed_ms; 
-        if (remaining_time > 0) { delay(remaining_time); 
-            //printf("Slept for %f\n", remaining_time);
-        }
-        else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
+        //// Delay before starting next layer
+        //elapsed_ms = end_timer(start);
+        //float remaining_time = UPDATE_PERIOD - elapsed_ms; 
+        //if (remaining_time > 0) { delay(remaining_time); 
+            ////printf("Slept for %f\n", remaining_time);
+        //}
+        //else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
 
-        //debug
-        if (DEBUG_MODE) { end_timer(debug_timer_start); }
+        ////debug
+        //if (DEBUG_MODE) { end_timer(debug_timer_start); }
 
 
     }

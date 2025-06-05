@@ -73,3 +73,5 @@
 2068	2543	7708293240128294	C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.elf	1be5c90143fb3ae
 34	125	7708294580540188	CMakeFiles/database	df409a10fb4bd423
 34	125	7708294580540188	C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp/1/CMakeFiles/database	df409a10fb4bd423
+14	1402	7708300351710694	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/nn_models/spk_mnist_784x32x10/model.c.obj	f0ea707415858ad3
+1403	1803	7708300365606980	C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.elf	1be5c90143fb3ae
