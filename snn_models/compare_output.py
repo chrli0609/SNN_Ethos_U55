@@ -256,8 +256,8 @@ def main():
     # test_parse_array_string()
     
     # Modify these paths to your actual files
-    file1_path = "../snn_on_alif_e7/scripts/output_pat_3.txt"
-    file2_path = "spk_mnist_mlp/output_pat_3.txt"
+    file1_path = "../snn_on_alif_e7/scripts/output_tmp.txt"
+    file2_path = "spk_mnist_mlp/output.txt"
     tolerance = 0.02
     
     try:

@@ -31,8 +31,13 @@ net.load_state_dict(torch.load("save_model_dict_784x32x10.pt", weights_only=Fals
 net.eval()
 
 
+# Get size padding to match divisible by 8 constraint on npu
+def next_multiple_of_8(x: int) -> int:
+    return ((x + 7) // 8) * 8
 
-# Extract weights and Biases (my own addition)
+
+size_padding_list = []
+
 
 def print_max_min(tensor):
   max_val = torch.max(tensor)
@@ -84,4 +89,23 @@ for layer in net.children():
                 print("Error: Bias mismatch for fc"+str(counter))
                 exit()
 
+
+        # Get size padding
+        input_padding = next_multiple_of_8(tmp_weight.size()[1]) - tmp_weight.size()[1]
+        output_padding = next_multiple_of_8(tmp_weight.size()[0]) - tmp_weight.size()[0]
+
+        print("layer:",counter, "getting size paddings", len(size_padding_list))
+        size_padding_list.append((input_padding, output_padding))
+
+        if (counter > 1):
+            print(len(size_padding_list))
+            print(len(size_padding_list[0]))
+            if (size_padding_list[-2][1] != input_padding):
+                print("Error: Input size padding for layer", counter, "and output size padding for layer", counter-1, "do not match")
+                break
+
+
         counter += 1
+
+
+

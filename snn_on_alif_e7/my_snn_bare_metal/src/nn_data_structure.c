@@ -110,6 +110,7 @@ NNLayer* NNLayer_Init(int8_t* tensor_arena, size_t tensor_arena_size, size_t num
     
 
 
+
     // Allocate memory for tensor pointers array
     layer->tensor_ptrs = (int8_t**)malloc(num_tensors * sizeof(int8_t*));
     if (!layer->tensor_ptrs) {
@@ -369,6 +370,7 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
 
 
 
+// Assume that NNLayer structs are already linked together
 NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     // Init Total Tensor Arena and store its pointer
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));
@@ -377,6 +379,16 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     //note: remove total_tensor_arena as attribute from NN_Model struct
     //nn_model->total_tensor_arena = total_arena_tensor;
     nn_model->first_nnlayer = first_nnlayer;
+
+    // Set nn model input tensor
+    nn_model->input = first_nnlayer->input;
+
+    // Set nn model output tensor
+    NNLayer* nnlayer = first_nnlayer;
+    while (nnlayer->next_layer != NULL) {
+        nnlayer = nnlayer->next_layer;
+    }
+    nn_model->output = nnlayer->output;
 
 
 

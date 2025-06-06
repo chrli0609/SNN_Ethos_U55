@@ -15,7 +15,7 @@ import itertools
 
 
 
-SHOW_INTERNAL = False
+SHOW_INTERNAL = True
 
 
 
@@ -69,13 +69,20 @@ num_outputs = 10
 num_steps = 25
 beta = 0.95
 
-def write_C_style_output(arr, arr_name):
+
+
+def write_C_style_output(arr, arr_name, padding=0):
   print(arr_name + ":\n")
 
   for val in arr:
     print(str('%.5f' % val) + ", ", end='')
 
+  for i in range(padding):
+    print(str('%.5f' % 0.0) + ", ", end='')
+     
+
   print("\n")
+
 
 
 # Define Network
@@ -89,7 +96,7 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta)
 
-    def forward(self, x):
+    def forward(self, x, size_padding_list=[]):
 
         # Initialize hidden states at t=0
         mem1 = self.lif1.init_leaky()
@@ -109,12 +116,11 @@ class Net(nn.Module):
 
             if (SHOW_INTERNAL):
               print("time step:", step)
-              write_C_style_output(x[step], "Layer0->input")
-              write_C_style_output(mem1, "Layer0->v_mem")
-              write_C_style_output(spk1, "Layer0->output")
-              print("spk1.size()", spk1.size())
-              write_C_style_output(spk1, "Layer1->input")
-              write_C_style_output(mem2, "Layer1->v_mem")
-              write_C_style_output(spk2, "Layer1->output")
+              write_C_style_output(x[step], "Layer0->input", size_padding_list[0][0])
+              write_C_style_output(mem1, "Layer0->v_mem", size_padding_list[0][1])
+              write_C_style_output(spk1, "Layer0->output", size_padding_list[0][1])
+              write_C_style_output(spk1, "Layer1->input", size_padding_list[1][0])
+              write_C_style_output(mem2, "Layer1->v_mem", size_padding_list[1][1])
+              write_C_style_output(spk2, "Layer1->output", size_padding_list[1][1])
 
         return torch.stack(spk2_rec, dim=0), torch.stack(mem2_rec, dim=0)

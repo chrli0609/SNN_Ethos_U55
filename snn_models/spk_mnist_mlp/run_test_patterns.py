@@ -18,7 +18,7 @@ import itertools
 
 
 
-from model import Net, num_steps
+from model import Net, num_inputs, num_hidden, num_outputs 
 
 
 
@@ -44,6 +44,7 @@ print("model:\n", net)
 
 
 
+from store_model_params import size_padding_list
   
 
 
@@ -77,13 +78,14 @@ with torch.no_grad():
   net.eval()
 
   #for i in range(len(test_inputs)):
-  for i in range(45):
+  #for i in range(45):
+  for i in range(1):
     # forward pass (get output spikes and lif2 membrane potential)
     #test_spk, test_v_mem_lif2 = net(data.view(data.size(0), -1))
 
     # Convert to PyTorch tensor with gradients enabled
     single_sample_test_input = torch.tensor(test_inputs[i], dtype=torch.float32, requires_grad=True)
-    test_spk, test_v_mem_lif2 = net(single_sample_test_input)
+    test_spk, test_v_mem_lif2 = net(single_sample_test_input, size_padding_list)
 
 
     # calculate total accuracy

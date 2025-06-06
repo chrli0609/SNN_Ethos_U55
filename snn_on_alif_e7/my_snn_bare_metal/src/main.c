@@ -38,45 +38,7 @@ const int VIEW_TENSORS = 0;
 const int MEASURE_MODE = 0;
 const int BENCHMARK_MODEL = 0;
 const int CHECK_INPUT_OUTPUT = 0;
-
-
-
-//#include <unistd.h> // notice this! you need it!
-
-
-//#define REGISTER_ADDRESS    0x20020200
-//#define REGISTER            (*(volatile uint8_t*)REGISTER_ADDRESS)
-
-
-//void write_to_register(uint8_t value) {
-//    REGISTER = value;
-//}
-
-
-
-
-//#define _GET_DRIVER_REF(ref, peri, chan) \
-//    extern ARM_DRIVER_##peri Driver_##peri##chan; \
-//    static ARM_DRIVER_##peri * ref = &Driver_##peri##chan;
-//#define GET_DRIVER_REF(ref, peri, chan) _GET_DRIVER_REF(ref, peri, chan)
-
-
-// Update to use the GPIO associated with P15_1 (W2)
-//GET_DRIVER_REF(gpio_led, GPIO, 15);
-//GET_DRIVER_REF(gpio_b, GPIO, BOARD_LEDRGB0_B_GPIO_PORT);
-//GET_DRIVER_REF(gpio_r, GPIO, BOARD_LEDRGB0_R_GPIO_PORT);
-
-//#define LED_PIN_NO  1
-
-
-
-//#define TEST_REGISTER_ADDRESS    0x02000000
-//#define TEST_REGISTER            (*(volatile int8_t*)TEST_REGISTER_ADDRESS)
-
-
-//void write_to_register(uint8_t value) {
-//    REGISTER = value;
-//}
+const int GET_SPK_GRAPH = 0;
 
 
 
@@ -86,42 +48,11 @@ int main() {
     printf("Just reflashed!!! ______________________________________________________\n");
 
 
-    // Initialize the led
-    //gpio_b->Initialize(BOARD_LEDRGB0_B_PIN_NO, NULL);
-    //gpio_b->PowerControl(BOARD_LEDRGB0_B_PIN_NO, ARM_POWER_FULL);
-    //gpio_b->SetDirection(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_DIRECTION_OUTPUT);
-    //gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_LOW);
-
-    //gpio_r->Initialize(BOARD_LEDRGB0_R_PIN_NO, NULL);
-    //gpio_r->PowerControl(BOARD_LEDRGB0_R_PIN_NO, ARM_POWER_FULL);
-    //gpio_r->SetDirection(BOARD_LEDRGB0_R_PIN_NO, GPIO_PIN_DIRECTION_OUTPUT);
-    //gpio_r->SetValue(BOARD_LEDRGB0_R_PIN_NO, GPIO_PIN_OUTPUT_STATE_LOW);
-
-
-    //gpio_led->Initialize(LED_PIN_NO, NULL);
-    //gpio_led->PowerControl(LED_PIN_NO, ARM_POWER_FULL);
-    //gpio_led->SetDirection(LED_PIN_NO, GPIO_PIN_DIRECTION_OUTPUT);
-
-
     /* Initialise the UART module to allow printf related functions (if using retarget) */
     BoardInit();
 
 
-    //static volatile __attribute__((section(".data_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
-    //static volatile __attribute__((section("model_params_sram0"))) int8_t large_buffer_sram0[256];  // 256 KB in SRAM0
-    //static volatile __attribute__((section("model_params_sram1"))) int8_t large_buffer_sram1[256];  // 256 KB in SRAM0
-    //static volatile __attribute__((section("model_params_dtcm"))) int8_t large_buffer_dtcm[256];  // 256 KB in SRAM0
 
-    //printf("Testing heap allocation\n");
-    //printf("Allocated addresses for sram0 test: 0x%08X\n", large_buffer_sram0);
-    //printf("Allocated addresses for dtcm test: 0x%08X\n", large_buffer_dtcm);
-    //printf("Allocated addresses for sram1 test: 0x%08X\n", large_buffer_sram1);
-
-    //printf("TEST_REGISTER_ADDRESS:  0x%08X\n", TEST_REGISTER_ADDRESS);
-    //TEST_REGISTER = 2;
-    //printf("TEST_REGISTER SHOULD BE 2: %d\n", TEST_REGISTER);
-    //TEST_REGISTER = 44;
-    //printf("TEST_REGISTER SHOULD BE 44: %d\n", TEST_REGISTER);
 
 
 
@@ -224,18 +155,6 @@ int main() {
 
 
 
-    printf("exited to while loop in main\n");
-        
-
-
-        
-
-    //################################################################
-
-   
-        
-    //gpio_led->SetValue(LED_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE)
-    //gpio_b->SetValue(BOARD_LEDRGB0_B_PIN_NO, GPIO_PIN_OUTPUT_STATE_TOGGLE);
-        
+    printf("End of main() reached\n");
 
 }
