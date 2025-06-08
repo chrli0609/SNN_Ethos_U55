@@ -17,16 +17,16 @@ typedef struct {
 
 // Const tensors for each FC_LIF_Layer
 typedef struct {
-    uint8_t* command_stream;
+    const uint8_t* command_stream;
     size_t command_stream_length;
 
-    int8_t* bias_and_weights;
+    const int8_t* bias_and_weights;
     size_t bias_and_weights_length;
 
-    int8_t* lif_params;
+    const int8_t* lif_params;
     size_t lif_params_length;
 
-    int8_t* luts;
+    const int8_t* luts;
     size_t luts_length;
 
 
@@ -58,9 +58,12 @@ typedef struct {
     // Pointers to the const tensors (i.e. weights+bias, lif_params (ln_beta & vth), lut)
     FC_LIF_Const_Param fc_lif_const_tensors;
 
+    float time_of_previous_update;
+
 
     int8_t* input;
     int8_t* update_nxt;
+    int8_t* update_curr;
     int8_t* output;
     struct NNLayer* next_layer;
 } NNLayer;

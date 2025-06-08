@@ -167,6 +167,9 @@ NNLayer* FC_LIF_Layer_Init(
     // Assign default value to Time_not_updated
     quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], 1, time_not_updated_scale, time_not_updated_zero_point);
 
+    // Assign default value to -1
+    nnlayer->time_of_previous_update = -1;
+
 
 
 
@@ -301,6 +304,10 @@ NN_Model* MLP_Init() {
     //3. Connect the models together to form a linked list
     nnlayer0_fc_lif->next_layer = nnlayer1_fc_lif;
     nnlayer1_fc_lif->next_layer = NULL;
+
+
+    nnlayer0_fc_lif->update_curr = NULL;
+    nnlayer1_fc_lif->update_curr = nnlayer0_fc_lif->update_nxt;
     
 
 
@@ -438,6 +445,39 @@ void reset_out_spk(NN_Model* mlp_model) {
     }
 }
 
+void reset_layer_update_time_stamp(NN_Model* mlp_model) {
+    NNLayer* nnlayer = mlp_model->first_nnlayer;
+    while(nnlayer != NULL) {
+        nnlayer->time_of_previous_update = -1;
+        nnlayer = nnlayer->next_layer;
+    }
+
+}
+
+// Resets the model between samples, i.e. membrane potential, out_spk, and time_stamp of previous update for each layer
+// Is equivalent to running reset_membrane_potential(), reset_out_spk() and reset_layer_update_time_stamp() in succession
+void reset_model_for_new_sample(NN_Model* mlp_model) {
+    NNLayer* nnlayer = mlp_model->first_nnlayer;
+    while(nnlayer != NULL) {
+
+        // Reset Membrane Potential
+        quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], nnlayer->tensor_sizes[V_MEM_QUANT_IDX], nnlayer->quant_params[V_MEM_QUANT_IDX].scale, nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point);
+
+        // Reset Out_spk
+        quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[OUT_SPK_TENSOR_IDX], nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX], nnlayer->quant_params[OUT_SPK_TENSOR_IDX].scale, nnlayer->quant_params[OUT_SPK_TENSOR_IDX].zero_point);
+
+        // Reset time stamp for previous update
+        nnlayer->time_of_previous_update = -1;
+
+        // Move to next layer
+        nnlayer = nnlayer->next_layer;
+    }
+
+}
+
+
+
+
 
 
 void print_dequant_int8(int8_t* arr, size_t arr_len, const char* arr_name, float scale, int zero_point) {
@@ -471,10 +511,6 @@ int MLP_Inference_test_patterns(
     int8_t* out_spk
 ) {
 
-
-
-
-
     // Measure system
     if (MEASURE_MODE) {
         printf("Num input neurons = %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE);    // Sweep over layer input_size
@@ -491,20 +527,11 @@ int MLP_Inference_test_patterns(
 
 
 
-    // Set First Layer as current layer
-    NNLayer* nnlayer0 = mlp_model->first_nnlayer;
-    // Second Layer
-    NNLayer* nnlayer1 = nnlayer0->next_layer;
-
 
     // For Benchmarking accuracy
     size_t correct = 0;
     size_t prediction_arr [test_input_0_NUM_SAMPLES] = { 0 };
 
-
-    // Timer temp variables
-    uint32_t start;
-    float elapsed_ms;
 
 
     float ms_time_not_updated_layer0_val, ms_time_not_updated_layer1_val;
@@ -533,13 +560,13 @@ int MLP_Inference_test_patterns(
         // Reset output spike in case last layer is never computed (because no output spikes at all from the layer before that)
         reset_out_spk(mlp_model);
 
+        // Reset time stamp for previous layer update
+        reset_layer_update_time_stamp(mlp_model);
+
 
         // For storing sum of output spikes across the time steps
         size_t out_neuron_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
 
-        // Init timer variables
-        int32_t start_layer0 = -1;
-        int32_t start_layer1 = -1;
         /* ________________________________________________________ */
 
 
@@ -548,7 +575,7 @@ int MLP_Inference_test_patterns(
         start = start_timer();
 
 
-            
+
         // Feed the same input to the network for num_time_steps
         for (size_t time_step = 0; time_step < num_time_steps; time_step++){
             if (CHECK_INPUT_OUTPUT) {
@@ -557,131 +584,79 @@ int MLP_Inference_test_patterns(
             }
 
 
-            nnlayer0->input = test_patterns[it][time_step];
+            // Set First Layer as current layer
+            NNLayer* nnlayer = mlp_model->first_nnlayer;
 
+
+            // Set new input
+            nnlayer->input = test_patterns[it][time_step];
+
+
+            while (nnlayer != NULL) {
+                
+
+                // Had at least 1 spike in layer0 --> run next layer
+                if ( nnlayer == mlp_model->first_nnlayer || ((int8_t)*(nnlayer->update_curr) == 127) ){
+
+
+                    // Update how long it was we updated layer0 last
+                    ms_time_not_updated_layer1_val = time_step - nnlayer->time_of_previous_update;
+                    quantize_float_scalar_to_int8_array(ms_time_not_updated_layer1_val, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+
+                    /* DEBUG PRINTOUTS */
+                    //printf("nnlayer:\n");
+                    if (VIEW_TENSORS) { printf("Pre nnlayer\n"); NNLayer_DequantizeAndPrint(nnlayer); }
+                    if (CHECK_INPUT_OUTPUT) { print_dequant_int8(nnlayer->input, FC_LIF_LAYER_1_INPUT_LAYER_SIZE, "Layer1->input", FC_LIF_LAYER_1_IN_SPK_SCALE, FC_LIF_LAYER_1_IN_SPK_ZERO_POINT); }
+                    if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
+
+
+
+                    // MLP Run Second Layer
+                    MLP_Run_Layer(
+                        nnlayer->tensor_arena,
+                        nnlayer->tensor_arena_size,
+
+                        nnlayer->fc_lif_const_tensors.command_stream,
+                        nnlayer->fc_lif_const_tensors.command_stream_length,
+                        nnlayer->fc_lif_const_tensors.bias_and_weights,
+                        nnlayer->fc_lif_const_tensors.bias_and_weights_length,
+
+                        nnlayer->fc_lif_const_tensors.lif_params,
+                        nnlayer->fc_lif_const_tensors.lif_params_length,
+                        nnlayer->fc_lif_const_tensors.luts,
+                        nnlayer->fc_lif_const_tensors.luts_length,
+
+                        nnlayer->input,
+                        nnlayer->tensor_sizes[IN_SPK_TENSOR_IDX],
+                        nnlayer->output,
+                        nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]
+                    );
         
-            // Update how long it was we updated layer0 last
-            ms_time_not_updated_layer0_val = time_step - start_layer0;
-            quantize_float_scalar_to_int8_array(ms_time_not_updated_layer0_val, nnlayer0->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer0->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer0->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer0->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+
+                    //start_layer1 = start_timer();
+                    nnlayer->time_of_previous_update = time_step;
+        
+                    if (VIEW_TENSORS) { printf("Post nnlayer:\n"); NNLayer_DequantizeAndPrint(nnlayer); }
+                    if (CHECK_INPUT_OUTPUT) {
+                        print_dequant_int8(nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->v_mem", FC_LIF_LAYER_1_V_MEM_SCALE, FC_LIF_LAYER_1_V_MEM_ZERO_POINT);
+                        print_dequant_int8(nnlayer->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
+                    }
 
 
+                } else if ((int8_t)*(nnlayer->update_curr) == -128) {
+                    //printf("No spike, skipping layer1 computation\n");
+                    //else no more to compute for this inference cycle
+                    break;
+                } else { printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); }
 
+                nnlayer = nnlayer->next_layer;
 
-            //DEBUG: Check Tensor Arena Values Before NPU OP
-            if (VIEW_TENSORS) { 
-                printf("Pre NNLayer0\n");
-                size_t in_spk_sum = 0;
-                //for (size_t i = 0; i < FC_LIF_LAYER_0_INPUT_LAYER_SIZE; i++) { in_spk_sum += in_spk[i]; }
-                //printf("In_spk_sum: %d\n", in_spk_sum);
-                //NNLayer_DequantizeAndPrint(nnlayer0);
             }
-
-            
-            if (CHECK_INPUT_OUTPUT) {
-                print_dequant_int8(nnlayer0->input, FC_LIF_LAYER_0_INPUT_LAYER_SIZE, "Layer0->input", FC_LIF_LAYER_0_IN_SPK_SCALE, FC_LIF_LAYER_0_IN_SPK_ZERO_POINT);
-            }
-
-            //uint32_t measure_layer0_start = debug_start_timer();
-            // MLP Run First Layer
-            MLP_Run_Layer(
-                nnlayer0->tensor_arena,
-                nnlayer0->tensor_arena_size,
-
-                Getfc_lif_layer_0CMSPointer(),
-                Getfc_lif_layer_0CMSLen(),
-                Getfc_lif_layer_0WeightsPointer(),
-                Getfc_lif_layer_0WeightsLen(),
-
-                Getfc_lif_layer_0LIFParamPointer(),
-                Getfc_lif_layer_0LIFParamLen(),
-                Getfc_lif_layer_0LUTPointer(),
-                Getfc_lif_layer_0LUTLen(),
-
-                nnlayer0->input,
-                nnlayer0->tensor_sizes[IN_SPK_TENSOR_IDX],
-                nnlayer0->output,
-                nnlayer0->tensor_sizes[OUT_SPK_TENSOR_IDX]
-            );
-            //uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
-            //if (MEASURE_MODE) { printf("Ticks elapsed for layer once in it: %d = %d\n", it, measure_layer0_elapsed_ticks); }
-            //printf("Just printed time it takes to compute 1 layer on NPU: %d\n", measure_layer0_elapsed_ticks);
-
-            // Start timer
-            //start_layer0 = start_timer();
-            start_layer0 = time_step;
-            
-            if (CHECK_INPUT_OUTPUT) {
-                print_dequant_int8(nnlayer0->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE, "Layer0->v_mem", FC_LIF_LAYER_0_V_MEM_SCALE, FC_LIF_LAYER_0_V_MEM_ZERO_POINT);
-                print_dequant_int8(nnlayer0->output, FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE, "Layer0->output", FC_LIF_LAYER_0_OUT_SPK_SCALE, FC_LIF_LAYER_0_OUT_SPK_ZERO_POINT);
-            }
-
-
-        
-            // Check resulting Tensor Arena Values after NPU OP
-            if (VIEW_TENSORS) {printf("Post NNLayer0\n"); NNLayer_DequantizeAndPrint(nnlayer0); }
-
-
-
-        
-
-            // Had at least 1 spike in layer0 --> run next layer
-            if (((int8_t)*(nnlayer0->tensor_ptrs[UPDATE_NXT_LAYER_IDX])) == 127) {
-
-
-                // Update how long it was we updated layer0 last
-                ms_time_not_updated_layer1_val = time_step - start_layer1;
-                quantize_float_scalar_to_int8_array(ms_time_not_updated_layer1_val, nnlayer1->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer1->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer1->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer1->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
-
-                /* DEBUG PRINTOUTS */
-                //printf("nnlayer1:\n");
-                if (VIEW_TENSORS) { printf("Pre NNLayer1\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
-                if (CHECK_INPUT_OUTPUT) { print_dequant_int8(nnlayer1->input, FC_LIF_LAYER_1_INPUT_LAYER_SIZE, "Layer1->input", FC_LIF_LAYER_1_IN_SPK_SCALE, FC_LIF_LAYER_1_IN_SPK_ZERO_POINT); }
-                if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
-
-
-
-                // MLP Run Second Layer
-                MLP_Run_Layer(
-                    nnlayer1->tensor_arena,
-                    nnlayer1->tensor_arena_size,
-
-                    Getfc_lif_layer_1CMSPointer(),
-                    Getfc_lif_layer_1CMSLen(),
-                    Getfc_lif_layer_1WeightsPointer(),
-                    Getfc_lif_layer_1WeightsLen(),
-
-                    Getfc_lif_layer_1LIFParamPointer(),
-                    Getfc_lif_layer_1LIFParamLen(),
-                    Getfc_lif_layer_1LUTPointer(),
-                    Getfc_lif_layer_1LUTLen(),
-
-                    nnlayer1->input,
-                    nnlayer1->tensor_sizes[IN_SPK_TENSOR_IDX],
-                    nnlayer1->output,
-                    nnlayer1->tensor_sizes[OUT_SPK_TENSOR_IDX]
-                );
-        
-
-                //start_layer1 = start_timer();
-                start_layer1 = time_step;
-        
-                if (VIEW_TENSORS) { printf("Post NNLayer1:\n"); NNLayer_DequantizeAndPrint(nnlayer1); }
-                if (CHECK_INPUT_OUTPUT) {
-                    print_dequant_int8(nnlayer1->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->v_mem", FC_LIF_LAYER_1_V_MEM_SCALE, FC_LIF_LAYER_1_V_MEM_ZERO_POINT);
-                    print_dequant_int8(nnlayer1->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
-                }
-
-
-            } else if (((int8_t)*(nnlayer0->tensor_ptrs[UPDATE_NXT_LAYER_IDX])) == -128) {
-                //printf("No spike, skipping layer1 computation\n");
-            } else { printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer0->tensor_ptrs[UPDATE_NXT_LAYER_IDX])); }
-
- 
 
             
             // Record the spikes (rate encoding --> use total number of spikes to determine prediction)
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                out_neuron_sum[i] += nnlayer1->output[i];
+                out_neuron_sum[i] += mlp_model->output[i];
             }
         
         }
