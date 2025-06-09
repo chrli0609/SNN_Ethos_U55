@@ -117,10 +117,10 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
         # Load numpy arrays
         print(f"Loading {input_file_path}...")
         test_input_untransposed = np.load(input_file_path)
-        print("Transpose test_inputs to get samples on rows instead of columns")
+        print("Transpose test_inputs to get samples on first axis instead of second")
         test_input_unstripped = np.transpose(test_input_untransposed, (1, 0, 2))  # Rearrange axes
         print(f"Loaded test_input with shape: {test_input_unstripped.shape}")
-        print("Extract only the first {num_samples} samples")
+        print(f"Extract only the first {num_samples} samples")
         test_input = test_input_unstripped[:num_samples]
         
         print(f"Loading {target_file_path}...")
