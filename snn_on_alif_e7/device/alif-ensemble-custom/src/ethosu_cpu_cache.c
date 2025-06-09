@@ -31,7 +31,8 @@
 
 #include "RTE_Components.h"         /* For CPU related defintiions */
 #include CMSIS_device_header
-#include "ethosu_driver.h"          /* Arm Ethos-U driver header */
+//#include "ethosu_driver.h"          /* Arm Ethos-U driver header */
+#include "../../arm_ethos_u55/include/ethosu_driver.h" /* Arm Ethos-U driver header */
 #include "log_macros.h"             /* Logging macros */
 
 /** Structure to maintain data cache states. */
