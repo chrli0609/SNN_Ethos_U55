@@ -13,6 +13,9 @@ def get_header_filepath(layer_name, model_name, current_working_directory, curre
     return header_out_filepath
 
 
+# For finding the next integer that is divisible by 8, since it is a requirement of the NPU that  the output size of each layer must be divisible by 8
+def next_multiple_of_8(x: int) -> int:
+    return ((x + 7) // 8) * 8
 
 from config_ops import create_feature_map, gen_weights_and_biases
 def get_int8_fc_weights_and_biases(
