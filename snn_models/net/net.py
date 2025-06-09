@@ -27,17 +27,61 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
         FYI: this setting achieves ~92% acc with QAT on.
 
 """
+# Network architecture parameters
+num_hid_layers = 2
+size_hid_layers = [64, 64]
 
-from model import Net, Model, decode, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
+#Network training parameters
+quant_aware = True
+spike_factor = 1e-5
+mean_weight_factor = 1e3
+epochs = 4
+n_time_bins = 25
 
 
-import random
-SEED = 42
-torch.manual_seed(SEED)
-np.random.seed(SEED)
-random.seed(SEED)
+class Net(torch.nn.Module):
+    def __init__(self, input_size, output_size, num_hidden, size_hidden, quant_aware, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        size_hidden.insert(0, input_size)
+        size_hidden.append(output_size)
+        self.layers_size = size_hidden
+        self.num_hidden = num_hidden
+        self.linear_layers = torch.nn.ModuleList(
+            [torch.nn.Linear(self.layers_size[i], self.layers_size[i+1]) for i in range(num_hidden+1)]
+        )
+        self.temp_layers = torch.nn.ModuleList(
+            [norse.torch.LIFBoxCell(norse.torch.LIFBoxParameters(tau_mem_inv=0.05), dt=1) for _ in range(num_hidden+1)]
+        )
+
+        self.quant_aware = quant_aware
+        if self.quant_aware:
+            self.quant = QuantStub()
+            self.dequant = DeQuantStub()
 
 
+    def forward(self, inp):
+        states = [None for _ in range(self.num_hidden+1)]
+        out_spikes = []
+        layer_spikes = []
+        if self.quant_aware: inp = self.quant(inp)
+        inp = inp.squeeze(2)
+        for x in inp:
+            x = torch.flatten(x, 1)
+            for idx, layer in enumerate(self.linear_layers):
+                x = layer(x)
+                x, states[idx] = self.temp_layers[idx](x, states[idx])
+                layer_spikes.append(x.flatten())
+            out_spikes.append(x)
+        
+        out = torch.stack(out_spikes)
+        if self.quant_aware: out = self.dequant(out)  # Dequantize output
+        return out, torch.cat(layer_spikes)
+
+
+def decode(x):
+    x = torch.sum(x, 0)
+    log_p_y = torch.nn.functional.log_softmax(x, dim=1)
+    return log_p_y
 
 
 def spike_regular(spikes, alpha):
@@ -58,8 +102,6 @@ def train(net, trainloader, optimizer):
     net.train()
     losses = []
 
-
-
     for (data, target) in tqdm(trainloader, leave=False):
         data, target = data, torch.LongTensor(target)
         optimizer.zero_grad()
@@ -79,17 +121,10 @@ def train(net, trainloader, optimizer):
     return losses, mean_loss
 
 
-from pathlib import Path
-#from store_model_params import model_dir, test_patterns_dir
-
-model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
-model_params_dir = Path("model_params")
-test_patterns_dir = Path("test_patterns")
 def test(net, testloader):
     net.eval()
     test_loss = 0
     correct = 0
-    counter = 0
     with torch.no_grad():
         for data, target in testloader:
             data, target = data, torch.LongTensor(target)
@@ -101,19 +136,6 @@ def test(net, testloader):
                 dim=1, keepdim=True
             )  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
-
-
-            # Store test data
-            tmp_test_data = data.cpu()
-            tmp_test_target = target.cpu()
-
-            np.save(model_dir / test_patterns_dir / Path("test_input_"+ str(counter) + ".npy"), tmp_test_data)
-            np.save(model_dir / test_patterns_dir / Path("test_target_" + str(counter) +".npy"), tmp_test_target)
-
-            #print("spikes", spikes)
-
-            counter += 1
-
 
     test_loss /= len(testloader.dataset)
 
@@ -153,6 +175,16 @@ testloader = torch.utils.data.DataLoader(testset,
 )
 
 
+class Model(torch.nn.Module):
+    def __init__(self, snn, decoder):
+        super(Model, self).__init__()
+        self.snn = snn
+        self.decoder = decoder
+
+    def forward(self, x):
+        x, out_spikes = self.snn(x)
+        log_p_y = self.decoder(x)
+        return log_p_y, out_spikes
 
 
 
@@ -161,7 +193,6 @@ snn = Net(input_size=784,
           num_hidden=num_hid_layers, 
           size_hidden=size_hid_layers, 
           quant_aware=quant_aware)
-
 
 
 if quant_aware:
@@ -173,18 +204,10 @@ net = Model(snn=snn, decoder=decode)
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
 
-def main():
-    for epoch in range(epochs):
-        training_loss, mean_loss = train(net, trainloader, optimizer)
-        print(test(net, testloader))
+for epoch in range(epochs):
+    training_loss, mean_loss = train(net, trainloader, optimizer)
+    print(test(net, testloader))
 
-    # Save the model or the weights as you want. Example for saving the model
-    #torch.save(net.snn, 'model.pkl')
-
-    torch.save(net.snn.state_dict(), 'model_state_dict.pkl')
-
-
-if __name__ == '__main__':
-    main()
-
-
+# Save the model or the weights as you want. Example for saving the model
+#torch.save(net.snn, 'model.pkl')
+torch.save(net.snn.state_dict(), 'model_state_dict.pkl')
