@@ -30,6 +30,7 @@
 //#include "nn_models/multi_tensor_sram_mlp/model.h"
 //#include "nn_models/spk_mnist_mlp/model.h"
 #include "nn_models/spk_mnist_784x32x10/model.h"
+//#include "nn_models/nmnist_784x64x64x10/model.h"
 
 
 
@@ -42,6 +43,13 @@ const int GET_SPK_GRAPH = 0;
 
 
 
+double avg_inference_time_MLP_Inference_test_pattern = 0;
+double avg_inference_time_MLP_Run_Layer = 0;
+double avg_inference_time_run_cms = 0;
+double avg_inference_time_ethosu_invoke_v3 = 0;
+double avg_inference_time_start_inference = 0;
+//double avg_inference_time_ = 0;
+//double avg_inference_time_ = 0;
 
 int main() {
 
@@ -153,6 +161,19 @@ int main() {
         
 
 
+
+    // Show inference speed
+    avg_inference_time_MLP_Inference_test_pattern /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_MLP_Run_Layer /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_run_cms /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_ethosu_invoke_v3 /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_start_inference /= (double)test_input_0_NUM_SAMPLES;
+
+    printf("avg_inference_time_MLP_Inference_test_pattern: %f us\n", avg_inference_time_MLP_Inference_test_pattern);
+    printf("avg_inference_time_MLP_Run_Layer: %f us\n", avg_inference_time_MLP_Run_Layer);
+    printf("avg_inference_time_run_cms: %f us\n", avg_inference_time_run_cms);
+    printf("avg_inference_time_ethosu_invoke_v3: %f us\n", avg_inference_time_ethosu_invoke_v3);
+    printf("avg_inference_time_start_inference: %f us\n", avg_inference_time_start_inference);
 
 
     printf("End of main() reached\n");
