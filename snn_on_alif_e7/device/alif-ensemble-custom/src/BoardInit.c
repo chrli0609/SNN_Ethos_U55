@@ -26,7 +26,8 @@ extern "C" {
 #include "RTE_Device.h"
 #include CMSIS_device_header
 #include "Driver_Common.h"
-#include "ethosu_driver.h"
+//#include "ethosu_driver.h"
+#include "../../arm_ethos_u55/include/ethosu_driver.h"
 #include "uart_stdout.h"
 #include "board.h"
 #include "power.h"
