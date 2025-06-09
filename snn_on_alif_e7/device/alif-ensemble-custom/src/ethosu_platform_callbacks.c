@@ -9,7 +9,8 @@
  *
  */
 #include "RTE_Components.h"
-#include "ethosu_driver.h"
+//#include "ethosu_driver.h"
+#include "../../arm_ethos_u55/include/ethosu_driver.h"
 
 #include CMSIS_device_header
 
