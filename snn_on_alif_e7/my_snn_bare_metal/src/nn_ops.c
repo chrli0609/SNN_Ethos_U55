@@ -32,7 +32,8 @@ extern int global_it;
 
 
 #include <inttypes.h>   //for PRIu64
-#include "pmu_ethosu.h" //For all ethosu PMU Functions
+//#include "pmu_ethosu.h" //For all ethosu PMU Functions
+#include "../../device/arm_ethos_u55/include/pmu_ethosu.h" //For all ethosu PMU Functions
 
 
 void print_input_output_tensor(struct ethosu_driver *drv) {
@@ -157,6 +158,9 @@ uint64_t start_cycles;
 uint32_t start_vals [4];
 
 
+extern double avg_inference_time_start_inference;
+uint32_t inference_speed_measure_start_tick_start_inference = 0;
+
 //This gets called by ethosu_inference_begin() in ethosu_cpu_cache.c
 void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 {
@@ -190,10 +194,20 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 
     }
 
+    // Start timer
+    inference_speed_measure_start_tick_start_inference = debug_start_timer();
+
 }
 
 void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 {
+
+
+    // Stop timer
+    uint32_t inference_speed_measure_elapsed_ticks = debug_end_timer(inference_speed_measure_start_tick_start_inference);
+    avg_inference_time_start_inference += inference_speed_measure_elapsed_ticks;
+
+
     // Your custom end‑of‑inference hook
     // e.g., log results or stop the timer
     if (MEASURE_MODE) {
@@ -262,6 +276,7 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
 
 
+extern double avg_inference_time_run_cms;
 
 int run_cms(
     const uint8_t* command_stream,
@@ -287,12 +302,17 @@ int run_cms(
 
 
     //uint32_t measure_layer0_start;
+                // Start timer
+                uint32_t inference_speed_measure_start_tick = debug_start_timer();
 
     if(ethosu_invoke_v3(drv, command_stream, command_stream_size, 
         base_addrs, base_addrs_size, num_tensors, NULL) != 0) {
         printf("Invoke_v3 Failed\n");
         return -1;
     }
+                // Stop timer
+                uint32_t inference_speed_measure_elapsed_ticks = debug_end_timer(inference_speed_measure_start_tick);
+                avg_inference_time_run_cms += inference_speed_measure_elapsed_ticks;
 
     //mydebug
     if (DEBUG_MODE) { printf("After invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv); }
