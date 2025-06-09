@@ -71,13 +71,17 @@ Set region for every layer
 
 */
 
-//static int8_t nnlayer0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-//static int8_t nnlayer0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-//static int8_t nnlayer0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-static int8_t nnlayer0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t nnlayer0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t nnlayer0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t nnlayer0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
+static int8_t nnlayer0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
+static int8_t nnlayer0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
+//static int8_t nnlayer0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
+//static int8_t nnlayer0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
+//static int8_t nnlayer0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
 
-static int8_t nnlayer1_tensor_arena[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+//static int8_t nnlayer1_tensor_arena[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
+////static int8_t nnlayer1_in_spk[FC_LIF_LAYER_1_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
+//static int8_t nnlayer1_out_spk[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
+
+static int8_t nnlayer1_tensor_arena[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
 //static int8_t nnlayer1_in_spk[FC_LIF_LAYER_1_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram0"))) __attribute__((aligned(16)));
-static int8_t nnlayer1_out_spk[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t nnlayer1_out_spk[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
