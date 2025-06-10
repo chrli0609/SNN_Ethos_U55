@@ -26,7 +26,7 @@ extern int BENCHMARK_MODEL;
 extern int CHECK_INPUT_OUTPUT;
 
 // How often we update (in micro sec)
-#define UPDATE_PERIOD 5000
+#define UPDATE_PERIOD 10000 //10 ms
 
 
 
@@ -48,6 +48,7 @@ NNLayer* FC_LIF_Layer_Init(
     size_t luts_length,
 
     // Non-const tensors
+    size_t num_non_const_tensors,
     size_t tensor_arena_size,
     int8_t* tensor_arena,
 
@@ -82,7 +83,7 @@ NNLayer* FC_LIF_Layer_Init(
     /* ____________________________________________ */
     /* 1. Initiate NNLayer Struct                   */
 
-    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, 7);
+    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, num_non_const_tensors);
     if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
 
     /* ___________________________________________ */
@@ -217,6 +218,7 @@ NN_Model* MLP_Init() {
 
 
 
+        FC_LIF_LAYER_0_NUM_NON_CONST_TENSORS,
         FC_LIF_LAYER_0_TENSOR_ARENA_SIZE,
         nnlayer0_tensor_arena,
         
@@ -266,6 +268,8 @@ NN_Model* MLP_Init() {
 
         Getfc_lif_layer_1LUTPointer(),
         Getfc_lif_layer_1LUTLen(),
+
+        FC_LIF_LAYER_1_NUM_NON_CONST_TENSORS,
         FC_LIF_LAYER_1_TENSOR_ARENA_SIZE,
         nnlayer1_tensor_arena,
         
@@ -300,6 +304,15 @@ NN_Model* MLP_Init() {
     );
 
 
+    int8_t* out_spk_sum = PersistentAllocator_GetAbsPointer(&nnlayer1_fc_lif->allocator, 
+        FC_LIF_LAYER_1_OUT_SPK_SUM_ADDR);
+    NNLayer_Assign(nnlayer1_fc_lif, OUT_SPK_SUM_TENSOR_IDX,  out_spk_sum , FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT, "out_spk_sum");
+    quantize_float_scalar_to_int8_array(0, nnlayer1_fc_lif->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT);
+    
+
+
+
+
 
     //3. Connect the models together to form a linked list
     nnlayer0_fc_lif->next_layer = nnlayer1_fc_lif;
@@ -308,12 +321,20 @@ NN_Model* MLP_Init() {
 
     nnlayer0_fc_lif->update_curr = NULL;
     nnlayer1_fc_lif->update_curr = nnlayer0_fc_lif->update_nxt;
+
+
+    
+
     
 
 
 
     // 3. Create NN_Model
     NN_Model* mlp_model = NN_Model_Init(NULL, nnlayer0_fc_lif);
+
+    // Set last 
+    mlp_model->out_spk_sum = nnlayer1_fc_lif->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX];
+
 
     return mlp_model;
 }
@@ -337,6 +358,7 @@ int MLP_Quantize_Inputs(NN_Model* mlp_model, float* in_spk, float* v_mem, float*
 }
 
 
+extern double avg_inference_time_time_step_loop;
 extern double avg_inference_time_MLP_Run_Layer;
 int MLP_Run_Layer(
     int8_t* tensor_arena,
@@ -457,11 +479,12 @@ void reset_layer_update_time_stamp(NN_Model* mlp_model) {
         nnlayer->time_of_previous_update = -1;
         nnlayer = nnlayer->next_layer;
     }
-
 }
 
+
+
 // Resets the model between samples, i.e. membrane potential, out_spk, and time_stamp of previous update for each layer
-// Is equivalent to running reset_membrane_potential(), reset_out_spk() and reset_layer_update_time_stamp() in succession
+// Is equivalent to running reset_membrane_potential(), reset_out_spk() and reset_layer_update_time_stamp() in succession, also resets out_spk_sum (which only exists on last layer)
 void reset_model_for_new_sample(NN_Model* mlp_model) {
     NNLayer* nnlayer = mlp_model->first_nnlayer;
     while(nnlayer != NULL) {
@@ -474,6 +497,12 @@ void reset_model_for_new_sample(NN_Model* mlp_model) {
 
         // Reset time stamp for previous update
         nnlayer->time_of_previous_update = -1;
+
+
+        // Reset out_sum_spk (only exists for last layer)
+        if (nnlayer->next_layer == NULL) {
+            quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], nnlayer->tensor_sizes[OUT_SPK_SUM_TENSOR_IDX], nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
+        }
 
         // Move to next layer
         nnlayer = nnlayer->next_layer;
@@ -505,6 +534,8 @@ void print_dequant_int8(int8_t* arr, size_t arr_len, const char* arr_name, float
 int global_it;
 
 extern double avg_inference_time_MLP_Inference_test_pattern;
+extern double avg_inference_time_MLP_Inference_test_pattern_while_loop;
+extern double avg_inference_time_per_sample;
 
 int MLP_Inference_test_patterns(
     NN_Model* mlp_model,
@@ -534,11 +565,15 @@ int MLP_Inference_test_patterns(
     uint32_t debug_timer_start; float debug_timer_elapsed_ms;
 
 
+    // For setting to WFE__ if inference time < UPDATE_PERIOD
+    uint32_t inference_start_tick;
+    uint32_t inference_elapsed_ticks;
 
 
     // For Benchmarking accuracy
     size_t correct = 0;
     size_t prediction_arr [test_input_0_NUM_SAMPLES] = { 0 };
+
 
     // For benchmarking inference speed
     double average_inference_time = 0;
@@ -553,13 +588,14 @@ int MLP_Inference_test_patterns(
     size_t it = 0;
     while (it < num_samples) {
 
-        if (CHECK_INPUT_OUTPUT) {
-            printf("==========================\new sample!!!==========================\n");
-            printf("it: %d\n", it);
-        }
+        //if (CHECK_INPUT_OUTPUT) {
+            //printf("==========================\new sample!!!==========================\n");
+            //printf("it: %d\n", it);
+        //}
 
-        global_it = it;
+        //global_it = it;
         
+        uint32_t inference_speed_measure_each_sample_start_tick = debug_start_timer();
 
 
         /*___________________________________________________________
@@ -570,16 +606,16 @@ int MLP_Inference_test_patterns(
         //// Reset time stamp for previous layer update
         reset_model_for_new_sample(mlp_model);
 
-
-        // For storing sum of output spikes across the time steps
-        size_t out_neuron_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
+        
+        
 
         /* ________________________________________________________ */
 
 
         // Start measuring time
         if (DEBUG_MODE) { debug_timer_start = start_timer(); }
-        //start = start_timer();
+
+        inference_start_tick = debug_start_timer();
 
 
 
@@ -589,6 +625,11 @@ int MLP_Inference_test_patterns(
                 printf("-----------------------new time step!!!--------------------------\n");
                 printf("time step: %d\n", time_step);
             }
+
+
+            uint32_t inference_speed_measure_time_step_loop_start_tick = debug_start_timer();
+
+            
 
 
             // Set First Layer as current layer
@@ -602,6 +643,10 @@ int MLP_Inference_test_patterns(
 
 
             while (nnlayer != NULL) {
+
+
+                uint32_t inference_speed_measure_while_loop_start_tick = debug_start_timer();
+
                 
 
                 // Had at least 1 spike in layer0 --> run next layer
@@ -610,16 +655,22 @@ int MLP_Inference_test_patterns(
 
                     // Update how long it was we updated layer0 last
                     time_steps_layer_not_updated = time_step - nnlayer->time_of_previous_update;
-                    quantize_float_scalar_to_int8_array(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+                    //quantize_float_scalar_to_int8_array(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+                    quantize_float_scalar_to_int8_scalar(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale_reciprocal, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
 
                     /* DEBUG PRINTOUTS */
+                    //if (nnlayer == mlp_model->first_nnlayer->next_layer) {
+                        //printf("BEFORE LAYER1 COMP\n");
+                        //print_dequant_int8(nnlayer->input, FC_LIF_LAYER_1_INPUT_LAYER_SIZE, "Layer1->input", FC_LIF_LAYER_1_IN_SPK_SCALE, FC_LIF_LAYER_1_IN_SPK_ZERO_POINT);
+                        //print_dequant_int8(nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->out_spk_sum", FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT);
+                    //}
                     //printf("nnlayer:\n");
                     //if (VIEW_TENSORS) { printf("Pre nnlayer\n"); NNLayer_DequantizeAndPrint(nnlayer); }
                     //if (CHECK_INPUT_OUTPUT) { print_dequant_int8(nnlayer->input, FC_LIF_LAYER_1_INPUT_LAYER_SIZE, "Layer1->input", FC_LIF_LAYER_1_IN_SPK_SCALE, FC_LIF_LAYER_1_IN_SPK_ZERO_POINT); }
                     //if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
 
 
-                uint32_t inference_speed_measure_start_tick = debug_start_timer();
+                    uint32_t inference_speed_measure_start_tick = debug_start_timer();
 
                     // MLP Run Second Layer
                     MLP_Run_Layer(
@@ -648,7 +699,14 @@ int MLP_Inference_test_patterns(
 
                     //start_layer1 = start_timer();
                     nnlayer->time_of_previous_update = time_step;
-        
+                    
+                    //if (nnlayer == mlp_model->first_nnlayer->next_layer) {
+                        //printf("AFTER LAYER1 COMP\n");
+                        //print_dequant_int8(nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->v_mem", FC_LIF_LAYER_1_V_MEM_SCALE, FC_LIF_LAYER_1_V_MEM_ZERO_POINT);
+                        //print_dequant_int8(nnlayer->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
+                        //print_dequant_int8(nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->out_spk_sum", FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT);
+
+                    //}
                     //if (VIEW_TENSORS) { printf("Post nnlayer:\n"); NNLayer_DequantizeAndPrint(nnlayer); }
                     //if (CHECK_INPUT_OUTPUT) {
                         //print_dequant_int8(nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->v_mem", FC_LIF_LAYER_1_V_MEM_SCALE, FC_LIF_LAYER_1_V_MEM_ZERO_POINT);
@@ -665,14 +723,17 @@ int MLP_Inference_test_patterns(
                 nnlayer = nnlayer->next_layer;
 
 
+                uint32_t inference_speed_measure_while_loop_elapsed_ticks = debug_end_timer(inference_speed_measure_while_loop_start_tick);
+                avg_inference_time_MLP_Inference_test_pattern_while_loop += inference_speed_measure_while_loop_elapsed_ticks;
+
+
 
             }
 
             
-            // Record the spikes (rate encoding --> use total number of spikes to determine prediction)
-            for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                out_neuron_sum[i] += mlp_model->output[i];
-            }
+        uint32_t inference_speed_measure_time_step_loop_elapsed_ticks = debug_end_timer(inference_speed_measure_time_step_loop_start_tick);
+        avg_inference_time_time_step_loop += inference_speed_measure_time_step_loop_elapsed_ticks;
+
         
         }
 
@@ -681,24 +742,31 @@ int MLP_Inference_test_patterns(
         size_t max_value = 0;
         size_t max_spk_idx = 0;
         size_t neuron_sum = 0;
+
         for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-            neuron_sum = out_neuron_sum[i]; 
+            neuron_sum = (size_t)(mlp_model->out_spk_sum[i] - FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT) * FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE;
             if (neuron_sum > max_value) {
                 max_value = neuron_sum;
                 max_spk_idx = i;
             }
+
+
+
+
         }
-        printf("Prediction: %d\n", max_spk_idx);
+        //printf("Prediction: %d\n", max_spk_idx);
 
         // Check if correct or not and add to counter
         if (max_spk_idx == (size_t)test_targets[it]) { correct += 1; }
         prediction_arr[it] = max_spk_idx;
 
+
+
         // Debug: Check how often we have 0 output spikes
         if (DEBUG_MODE) {
             bool have_at_least_one_spk = false;
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
-                if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
+                if (mlp_model->out_spk_sum[i] != 0) { have_at_least_one_spk = true; }
             }
             if (!have_at_least_one_spk) { number_of_no_spk += 1; printf("incrementing number_of_no_spk!\n");}
         }
@@ -708,13 +776,25 @@ int MLP_Inference_test_patterns(
         it++;
 
 
-        //// Delay before starting next layer
-        //elapsed_ms = end_timer(start);
-        //float remaining_time = UPDATE_PERIOD - elapsed_ms; 
-        //if (remaining_time > 0) { delay(remaining_time); 
-            ////printf("Slept for %f\n", remaining_time);
-        //}
-        //else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
+        uint32_t inference_speed_measure_each_sample_elapsed_ticks = debug_end_timer(inference_speed_measure_each_sample_start_tick);
+        avg_inference_time_per_sample += inference_speed_measure_each_sample_elapsed_ticks;
+
+
+
+        // Delay before starting next layer
+        //inference_elapsed_us = end_timer(start_inference_time_us);
+        inference_elapsed_ticks = debug_end_timer(inference_start_tick);
+        //extern uint32_t volatile ms_ticks;
+        //printf("inference_start_tick: %d\n", inference_start_tick);
+        //printf("curr_tick: %d\n", ms_ticks);
+        //printf("inference_elapsed_ticks: %d\n", inference_elapsed_ticks);
+        int32_t remaining_time = UPDATE_PERIOD - inference_elapsed_ticks; 
+        if (remaining_time > 0) {
+            printf("About to enter WFE__() for %d ticks (us)\n", remaining_time);
+            delay(remaining_time); 
+            printf("Exited WFE__()\n");
+        }
+        else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
 
         ////debug
         //if (DEBUG_MODE) { end_timer(debug_timer_start); }
@@ -734,7 +814,6 @@ int MLP_Inference_test_patterns(
     printf("Num samples with zero output spikes across all time steps: %d\n", number_of_no_spk);
 
 
-        
 
 }
 

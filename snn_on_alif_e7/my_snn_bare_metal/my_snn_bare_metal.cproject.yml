@@ -35,6 +35,7 @@ project:
         #- file: nn_models/multi_tensor_sram_mlp/model.c
         #- file: nn_models/spk_mnist_mlp/model.c
         - file: nn_models/spk_mnist_784x32x10/model.c
+        #- file: nn_models/nmnist_784x64x64x10/model.c
 
 
           for-context:

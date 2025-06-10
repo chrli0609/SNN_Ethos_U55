@@ -21,5 +21,6 @@
     ],
     "files.associations": {
         "uart_stdout.h": "c"
-    }
+    },
+    "cmake.sourceDirectory": "C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/tmp"
 }

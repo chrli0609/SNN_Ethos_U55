@@ -1,4 +1,5 @@
-$port = New-Object System.IO.Ports.SerialPort COM7,115200,None,8,one
+#$port = New-Object System.IO.Ports.SerialPort COM7,115200,None,8,one
+$port = New-Object System.IO.Ports.SerialPort COM31,115200,None,8,one
 #$port = New-Object System.IO.Ports.SerialPort COM8,55000,None,8,one
 $port.Encoding = [System.Text.Encoding]::UTF8
 

@@ -51,7 +51,9 @@ try {
 
     # Start the app-write-mram process and ensure it's running
     ./app-gen-toc -f alif-img.json
-    echo "COM8" | ./app-write-mram -p -d
+    #echo "COM8" | ./app-write-mram -p -d
+    #echo "COM12" | ./app-write-mram -p -d
+    echo "COM32" | ./app-write-mram -p -d
 
     rm ./build/images/alif-img.bin
     rm ./alif-img.json

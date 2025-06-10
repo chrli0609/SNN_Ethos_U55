@@ -88,6 +88,8 @@ fc_lif.gen_fc_lif(
     vth_list=layer0.vth_list,    
 
     cms_name=LAYER_0_CMS_NAME,
+    is_last_layer=False,
+
     DEBUG_MODE=DEBUG_MODE,
     ACCELERATOR=ACCELERATOR,
     header_out_filepath=header_out_filepath_layer0
@@ -104,6 +106,8 @@ fc_lif.gen_fc_lif(
     vth_list=layer1.vth_list,    
 
     cms_name=LAYER_1_CMS_NAME,
+    is_last_layer=True,
+
     DEBUG_MODE=DEBUG_MODE,
     ACCELERATOR=ACCELERATOR,
     header_out_filepath=header_out_filepath_layer1

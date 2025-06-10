@@ -81,6 +81,24 @@ float fixed_to_float(int16_t input, int fractional_bits) {
 
 
 
+// Quantize an float scalar to int8_t scalar
+void quantize_float_scalar_to_int8_scalar(
+  const float input_val,  // Input float scalar
+  int8_t *output,        // Output int8 array
+  float scale_reciprocal,            // Reciprocal of Quantization scale (use reciprocal to avoid division)
+  int32_t zero_point      // Quantization zero-point
+)
+{
+
+  int32_t quantized = (int32_t)roundf(input_val * scale_reciprocal) + zero_point;
+
+  // Clamp to [-128, 127]
+  if (quantized > 127) quantized = 127;
+  if (quantized < -128)   quantized = -128;
+
+  *output = (int8_t)quantized;
+}
+
 
 // Quantize an array of floats to int8_t
 void quantize_float_scalar_to_int8_array(

@@ -21,6 +21,15 @@ uint32_t start_timer();
 float end_timer(uint32_t start);
 
 
+
+// Primarily for converting quantize time_step correctly
+void quantize_float_scalar_to_int8_scalar(
+  const float input_val,  // Input float scalar
+  int8_t *output,         // Output int8 array
+  float scale_reciprocal, // Reciprocal of Quantization scale (use reciprocal to avoid division)
+  int32_t zero_point      // Quantization zero-point
+);
+
 void quantize_float_scalar_to_int8_array(
   const float input_val,  // Input float scalar
   int8_t *output,        // Output int8 array

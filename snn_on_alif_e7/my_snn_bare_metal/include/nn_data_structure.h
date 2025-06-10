@@ -36,6 +36,7 @@ typedef struct {
 typedef struct {
     float scale;
     int zero_point;
+    float scale_reciprocal;
 } tuple;
 
 typedef struct {
@@ -74,6 +75,7 @@ typedef struct {
 
     int8_t* input;
     int8_t* output;
+    int8_t* out_spk_sum;
 } NN_Model;
 
 

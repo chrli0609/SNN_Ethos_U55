@@ -42,7 +42,9 @@ const int CHECK_INPUT_OUTPUT = 0;
 const int GET_SPK_GRAPH = 0;
 
 
-
+double avg_inference_time_per_sample = 0;
+double avg_inference_time_time_step_loop = 0;
+double avg_inference_time_MLP_Inference_test_pattern_while_loop = 0;
 double avg_inference_time_MLP_Inference_test_pattern = 0;
 double avg_inference_time_MLP_Run_Layer = 0;
 double avg_inference_time_run_cms = 0;
@@ -163,19 +165,31 @@ int main() {
 
 
     // Show inference speed
+    avg_inference_time_per_sample /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_time_step_loop /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_MLP_Inference_test_pattern_while_loop /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_MLP_Inference_test_pattern /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_MLP_Run_Layer /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_run_cms /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_ethosu_invoke_v3 /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_start_inference /= (double)test_input_0_NUM_SAMPLES;
 
-    printf("avg_inference_time_MLP_Inference_test_pattern: %f us\n", avg_inference_time_MLP_Inference_test_pattern);
-    printf("avg_inference_time_MLP_Run_Layer: %f us\n", avg_inference_time_MLP_Run_Layer);
-    printf("avg_inference_time_run_cms: %f us\n", avg_inference_time_run_cms);
-    printf("avg_inference_time_ethosu_invoke_v3: %f us\n", avg_inference_time_ethosu_invoke_v3);
-    printf("avg_inference_time_start_inference: %f us\n", avg_inference_time_start_inference);
+    printf("avg_inference_time_per_sample:\t\t\t\t\t%f us\n", avg_inference_time_per_sample);
+    printf("avg_inference_time_time_step:\t\t\t\t\t%f us\n", avg_inference_time_time_step_loop);
+    printf("avg_inference_time_MLP_Inference_test_pattern_while_loop:\t%f us\n", avg_inference_time_MLP_Inference_test_pattern_while_loop);
+    printf("avg_inference_time_MLP_Inference_test_pattern:\t\t\t%f us\n", avg_inference_time_MLP_Inference_test_pattern);
+    printf("avg_inference_time_MLP_Run_Layer:\t\t\t\t%f us\n", avg_inference_time_MLP_Run_Layer);
+    printf("avg_inference_time_run_cms:\t\t\t\t\t%f us\n", avg_inference_time_run_cms);
+    printf("avg_inference_time_ethosu_invoke_v3:\t\t\t\t%f us\n", avg_inference_time_ethosu_invoke_v3);
+    printf("avg_inference_time_start_inference:\t\t\t\t%f us\n", avg_inference_time_start_inference);
 
 
-    printf("End of main() reached\n");
+    printf("End of main() reached, entering WFE__()\n");
+
+
+    // Enter WFE for 10 secs
+    delay(10000000);
+
+
 
 }

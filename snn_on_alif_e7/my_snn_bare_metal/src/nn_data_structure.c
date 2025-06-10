@@ -210,6 +210,7 @@ int NNLayer_Assign(NNLayer* layer, size_t element, int8_t* tensor_ptr, size_t te
     // Set quantization parameters
     layer->quant_params[element].scale = scale;
     layer->quant_params[element].zero_point = zero_point;
+    layer->quant_params[element].scale_reciprocal = 1/scale;
     
     // Allocate and copy tensor name
     if (tensor_name) {
@@ -389,6 +390,8 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
         nnlayer = nnlayer->next_layer;
     }
     nn_model->output = nnlayer->output;
+
+
 
 
 
