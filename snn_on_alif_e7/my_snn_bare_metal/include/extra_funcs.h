@@ -8,6 +8,7 @@
 
 
 
+size_t arg_max(int8_t* array, size_t array_len, float scale, int zero_point);
 
 
 void SysTick_Handler (void);

@@ -332,8 +332,6 @@ NN_Model* MLP_Init() {
     // 3. Create NN_Model
     NN_Model* mlp_model = NN_Model_Init(NULL, nnlayer0_fc_lif);
 
-    // Set last 
-    mlp_model->out_spk_sum = nnlayer1_fc_lif->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX];
 
 
     return mlp_model;
@@ -692,9 +690,10 @@ int MLP_Inference_test_patterns(
                         nnlayer->output,
                         nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]
                     );
-                // Stop timer
-                uint32_t inference_speed_measure_elapsed_ticks = debug_end_timer(inference_speed_measure_start_tick);
-                avg_inference_time_MLP_Inference_test_pattern += inference_speed_measure_elapsed_ticks;
+
+                    // Stop timer
+                    uint32_t inference_speed_measure_elapsed_ticks = debug_end_timer(inference_speed_measure_start_tick);
+                    avg_inference_time_MLP_Inference_test_pattern += inference_speed_measure_elapsed_ticks;
         
 
                     //start_layer1 = start_timer();
@@ -738,27 +737,14 @@ int MLP_Inference_test_patterns(
         }
 
 
-        // Get the max value
-        size_t max_value = 0;
-        size_t max_spk_idx = 0;
-        size_t neuron_sum = 0;
-
-        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-            neuron_sum = (size_t)(mlp_model->out_spk_sum[i] - FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT) * FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE;
-            if (neuron_sum > max_value) {
-                max_value = neuron_sum;
-                max_spk_idx = i;
-            }
+        size_t pred = arg_max(mlp_model->out_spk_sum, mlp_model->output_size, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
 
 
 
-
-        }
-        //printf("Prediction: %d\n", max_spk_idx);
 
         // Check if correct or not and add to counter
-        if (max_spk_idx == (size_t)test_targets[it]) { correct += 1; }
-        prediction_arr[it] = max_spk_idx;
+        if (pred == (size_t)test_targets[it]) { correct += 1; }
+        prediction_arr[it] = pred;
 
 
 

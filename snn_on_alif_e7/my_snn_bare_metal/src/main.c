@@ -50,8 +50,10 @@ double avg_inference_time_MLP_Run_Layer = 0;
 double avg_inference_time_run_cms = 0;
 double avg_inference_time_ethosu_invoke_v3 = 0;
 double avg_inference_time_start_inference = 0;
-//double avg_inference_time_ = 0;
-//double avg_inference_time_ = 0;
+double avg_inference_time_ethosu_invoke_async = 0;
+double avg_inference_time_ethosu_wait = 0;
+double avg_inference_time_post_inference_end = 0;
+double avg_inference_time_invalidate_ethosu_dcache = 0;
 
 int main() {
 
@@ -173,6 +175,10 @@ int main() {
     avg_inference_time_run_cms /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_ethosu_invoke_v3 /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_start_inference /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_ethosu_invoke_async /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_ethosu_wait /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_post_inference_end /= (double)test_input_0_NUM_SAMPLES;
+    avg_inference_time_invalidate_ethosu_dcache /= (double)test_input_0_NUM_SAMPLES;
 
     printf("avg_inference_time_per_sample:\t\t\t\t\t%f us\n", avg_inference_time_per_sample);
     printf("avg_inference_time_time_step:\t\t\t\t\t%f us\n", avg_inference_time_time_step_loop);
@@ -182,6 +188,10 @@ int main() {
     printf("avg_inference_time_run_cms:\t\t\t\t\t%f us\n", avg_inference_time_run_cms);
     printf("avg_inference_time_ethosu_invoke_v3:\t\t\t\t%f us\n", avg_inference_time_ethosu_invoke_v3);
     printf("avg_inference_time_start_inference:\t\t\t\t%f us\n", avg_inference_time_start_inference);
+    printf("avg_inference_time_ethosu_invoke_async:\t\t\t\t%f us\n", avg_inference_time_ethosu_invoke_async);
+    printf("avg_inference_time_ethosu_wait:\t\t\t\t%f us\n", avg_inference_time_ethosu_wait);
+    printf("avg_inference_time_post_inference_end:\t\t\t\t%f us\n", avg_inference_time_post_inference_end);
+    printf("avg_inference_time_invalidate_ethosu_dcache:\t\t\t\t%f\n", avg_inference_time_invalidate_ethosu_dcache);
 
 
     printf("End of main() reached, entering WFE__()\n");
@@ -193,3 +203,7 @@ int main() {
 
 
 }
+
+
+
+

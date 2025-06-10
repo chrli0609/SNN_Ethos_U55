@@ -6,6 +6,7 @@
 
 
 #include "include/extra_funcs.h"
+#include "nn_models/spk_mnist_784x32x10/model.h"
 
 
 
@@ -384,12 +385,24 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     // Set nn model input tensor
     nn_model->input = first_nnlayer->input;
 
+    // Set input_size
+    nn_model->input_size = nn_model->first_nnlayer->tensor_sizes[IN_SPK_TENSOR_IDX];
+
     // Set nn model output tensor
     NNLayer* nnlayer = first_nnlayer;
     while (nnlayer->next_layer != NULL) {
         nnlayer = nnlayer->next_layer;
     }
     nn_model->output = nnlayer->output;
+
+    // Set last_layer
+    nn_model->last_nnlayer = nnlayer;
+
+    // Set out_spk_sum pointer to the out_spk_sum of the last layer 
+    nn_model->out_spk_sum = nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX];
+
+    // Set output_size
+    nn_model->output_size = nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX];
 
 
 

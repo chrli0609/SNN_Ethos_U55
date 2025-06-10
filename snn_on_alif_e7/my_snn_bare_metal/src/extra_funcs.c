@@ -9,6 +9,24 @@
 #include "pm.h"                 //SystemCoreClock
 
 
+size_t arg_max(int8_t* array, size_t array_len, float scale, int zero_point) {
+    // Get the max value
+    size_t max_value = 0;
+    size_t max_spk_idx = 0;
+    size_t neuron_sum = 0;
+
+    for (size_t i = 0; i < array_len; i++) {
+        neuron_sum = (size_t)(array[i] - zero_point) * scale;
+        if (neuron_sum > max_value) {
+            max_value = neuron_sum;
+            max_spk_idx = i;
+        }
+    }
+    //printf("Prediction: %d\n", max_spk_idx);
+
+    return max_spk_idx;
+
+}
 
 
 uint32_t volatile ms_ticks = 0;

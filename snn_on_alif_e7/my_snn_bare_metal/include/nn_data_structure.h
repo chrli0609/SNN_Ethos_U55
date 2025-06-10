@@ -70,8 +70,13 @@ typedef struct {
 } NNLayer;
 
 typedef struct {
+    size_t input_size;
+    size_t output_size;
+
+
     int8_t* total_tensor_arena;
     NNLayer* first_nnlayer;
+    NNLayer* last_nnlayer;
 
     int8_t* input;
     int8_t* output;
