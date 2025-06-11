@@ -6,7 +6,8 @@
 
 
 #include "include/extra_funcs.h"
-#include "nn_models/spk_mnist_784x32x10/model.h"
+//#include "nn_models/spk_mnist_784x32x10/model.h"
+#include "nn_models/nmnist_784x64x64x10/model.h"
 
 
 

@@ -27,8 +27,8 @@
 #define TIME_NOT_UPDATED_QUANT_IDX      4
 #define UPDATE_NXT_LAYER_IDX            5
 #define OUT_SPK_TENSOR_IDX              6
+#define OUT_SPK_SUM_TENSOR_IDX              6
 
-#define OUT_SPK_SUM_TENSOR_IDX          7
 
 
 

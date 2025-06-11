@@ -29,8 +29,8 @@
 //#include "nn_models/single_tensor_dtcm_mlp/model.h"
 //#include "nn_models/multi_tensor_sram_mlp/model.h"
 //#include "nn_models/spk_mnist_mlp/model.h"
-#include "nn_models/spk_mnist_784x32x10/model.h"
-//#include "nn_models/nmnist_784x64x64x10/model.h"
+//#include "nn_models/spk_mnist_784x32x10/model.h"
+#include "nn_models/nmnist_784x64x64x10/model.h"
 
 
 
@@ -54,6 +54,26 @@ double avg_inference_time_ethosu_invoke_async = 0;
 double avg_inference_time_ethosu_wait = 0;
 double avg_inference_time_post_inference_end = 0;
 double avg_inference_time_invalidate_ethosu_dcache = 0;
+
+
+
+
+// only defined so we dont get syntax error in ethosu_driver.c
+double ait_reset_model_for_new_sample = 0;
+double ait_set_test_pattern_pointer_to_model = 0;
+double ait_get_time_since_last_update = 0;
+double ait_ethosu_reserve_driver = 0;
+double ait_check_npu_nn_op_validity = 0;
+double ait_process_cms_preamble = 0;
+double ait_verify_base_addr = 0;
+double ait_ethosu_flush_dcache = 0;
+double ait_ethosu_request_power = 0;
+double ait_ethosu_dev_run_command_stream = 0;
+double ait_wait_npu_task_complete_irq = 0;
+double ait_ethosu_release_power = 0;
+double ait_ethosu_invalidate_dcache = 0;
+double ait_ethosu_release_driver = 0;
+double ait_arg_max = 0;
 
 int main() {
 
