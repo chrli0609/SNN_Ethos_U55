@@ -78,6 +78,8 @@ typedef struct {
     NNLayer* first_nnlayer;
     NNLayer* last_nnlayer;
 
+    size_t num_layers;
+
     int8_t* input;
     int8_t* output;
     int8_t* out_spk_sum;

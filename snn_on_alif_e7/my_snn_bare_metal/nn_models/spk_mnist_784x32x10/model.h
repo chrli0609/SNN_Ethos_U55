@@ -13,6 +13,7 @@
 #include "nn_models/spk_mnist_784x32x10/test_patterns/pattern_0.h"
 
 // Set model input and output sizes
+#define MLP_NUM_LAYERS 2
 #define MLP_INPUT_LAYER_SIZE    FC_LIF_LAYER_0_INPUT_LAYER_SIZE
 #define MLP_OUTPUT_LAYER_SIZE   FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE
 

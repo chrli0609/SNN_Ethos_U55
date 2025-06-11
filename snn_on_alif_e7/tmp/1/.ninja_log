@@ -162,3 +162,10 @@
 68	547	7712778058012612	CMakeFiles/Arm_Machine_Learning_NPU_Support_Ethos-U_Driver_Generic_U55_1_23_2.dir/8e8800d1db57ec5788310c963206b908/1.23.2/ethos_u_core_driver/src/ethosu_driver.c.obj	cd6d356633d39beb
 56	2888	7712778057896412	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/src/main.c.obj	eef1022002192b61
 2888	3629	7712778086204357	C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.elf	1be5c90143fb3ae
+45	328	7713551436812120	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/src/nn_ops.c.obj	13833014e88174e6
+69	394	7713551437047601	CMakeFiles/Arm_Machine_Learning_NPU_Support_Ethos-U_Driver_Generic_U55_1_23_2.dir/8e8800d1db57ec5788310c963206b908/1.23.2/ethos_u_core_driver/src/ethosu_driver.c.obj	cd6d356633d39beb
+54	1771	7713551436897108	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/src/nn_data_structure.c.obj	95af5000a73b6035
+37	1811	7713551436731626	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/src/main.c.obj	eef1022002192b61
+62	1821	7713551436982286	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/nn_models/spk_mnist_784x32x10/model.c.obj	f0ea707415858ad3
+11	1378	7713552218680322	CMakeFiles/Group_Main.dir/C_/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/my_snn_bare_metal/src/main.c.obj	eef1022002192b61
+1378	1766	7713552232354637	C:/Users/chris/skolsaker/ak5/mex/project/SNN_Ethos_U55/snn_on_alif_e7/out/my_snn_bare_metal/Alif-E7-M55-HP/debug/my_snn_bare_metal.elf	1be5c90143fb3ae

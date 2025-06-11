@@ -1,0 +1,15 @@
+Average number of times we have at least one spike at each layer: (num_time_steps = 25)
+
+Layer: 0
+
+        Avg number of times we update layer: 25.000000
+
+        Average number of spikes we had (if we had at least one spike): 14.699556
+
+
+
+Layer: 1
+
+        Avg number of times we update layer: 25.000000
+
+        Average number of spikes we had (if we had at least one spike): 1.456000

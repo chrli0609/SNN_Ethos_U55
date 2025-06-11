@@ -377,6 +377,8 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     // Init Total Tensor Arena and store its pointer
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));
     
+    // set number of layers
+    nn_model->num_layers = MLP_NUM_LAYERS;
     
     //note: remove total_tensor_arena as attribute from NN_Model struct
     //nn_model->total_tensor_arena = total_arena_tensor;
