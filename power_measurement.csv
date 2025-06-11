@@ -1,0 +1,5 @@
+Count,Range,Func1,Meas1,Func2,Meas2
+    1,A:50 mA   ,CURR      ,0.01957499,flashing		,          
+    2,A:50 mA   ,CURR      ,0.02718633,inference	,          
+    3,A:50 mA   ,CURR      ,0.02665323,in WFE		,          
+    4,A:50 mA   ,CURR      ,0.02854963,post WFE		,          

@@ -212,11 +212,13 @@ int main() {
     printf("avg_inference_time_invalidate_ethosu_dcache:\t\t\t\t%f\n", avg_inference_time_invalidate_ethosu_dcache);
 
 
-    printf("End of main() reached, entering WFE__()\n");
+    printf("End of main() reached, entering WFE__() for 10 secs\n");
 
 
     // Enter WFE for 10 secs
     delay(10000000);
+
+    printf("Exited WFE__()\n");
 
 
 

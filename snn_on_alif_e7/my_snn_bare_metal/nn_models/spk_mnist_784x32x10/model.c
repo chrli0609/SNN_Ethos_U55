@@ -559,7 +559,10 @@ int MLP_Inference_test_patterns(
     int8_t* out_spk
 ) {
 
+
     // Measure system
+    printf("Start inference!\n");
+
     if (MEASURE_MODE) {
         printf("Num input neurons = %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE);    // Sweep over layer input_size
         printf("Num output neurons = %d\n", FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE);  // Sweep over layer output_size
@@ -836,6 +839,7 @@ int MLP_Inference_test_patterns(
 
 
     }
+    printf("End inference!\n");
 
 
     printf("All Predictions:\n");
