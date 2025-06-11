@@ -40,7 +40,7 @@ avg_inference_time_invalidate_ethosu_dcache,1564.911111,,,,,,,,,,,,,ethosu_reque
 ,,,,,,,,,,,,,,ethosu_release_power()
 ,,,,,,,,,,,,,,ethosu_invalidate_dcache()
 ,,,,,,,,,,,ethosu_release_driver(),,,
-,,,,,,,,,,,,,,
+,,,,,,,,arg_max,,,,,,
 ,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,
@@ -65,5 +65,6 @@ ait_wait_npu_task_complete_irq,2321.4,,,,,,,,,,,,,
 ait_ethosu_release_power,0.066667,,,,,,,,,,,,,
 ait_ethosu_invalidate_dcache,1580.2,,,,,,,,,,,,,
 ait_ethosu_release_driver,6.466667,,,,,,,,,,,,,
+ait_arg_max,2.044444,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,
 sum,5823.377778,,,,,,,,,,,,,

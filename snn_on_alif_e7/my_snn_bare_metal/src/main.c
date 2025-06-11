@@ -72,6 +72,7 @@ double ait_wait_npu_task_complete_irq = 0;
 double ait_ethosu_release_power = 0;
 double ait_ethosu_invalidate_dcache = 0;
 double ait_ethosu_release_driver = 0;
+double ait_arg_max = 0;
 
 
 int main() {
@@ -198,7 +199,8 @@ int main() {
     avg_inference_time_ethosu_wait /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_post_inference_end /= (double)test_input_0_NUM_SAMPLES;
     avg_inference_time_invalidate_ethosu_dcache /= (double)test_input_0_NUM_SAMPLES;
-
+    ait_arg_max /= (double)test_input_0_NUM_SAMPLES;
+    
 
 
     ait_reset_model_for_new_sample /= (double)test_input_0_NUM_SAMPLES;
@@ -249,6 +251,7 @@ int main() {
     printf("ait_ethosu_release_power, %f,\n", ait_ethosu_release_power);
     printf("ait_ethosu_invalidate_dcache, %f,\n", ait_ethosu_invalidate_dcache);
     printf("ait_ethosu_release_driver, %f,\n", ait_ethosu_release_driver);
+    printf("ait_arg_max, %f,\n", ait_arg_max);
 
     
 

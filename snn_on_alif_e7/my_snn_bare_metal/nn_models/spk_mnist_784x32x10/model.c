@@ -544,6 +544,9 @@ extern double avg_inference_time_per_sample;
 extern double ait_reset_model_for_new_sample;
 extern double ait_set_test_pattern_pointer_to_model;
 extern double ait_get_time_since_last_update;
+extern double ait_ethosu_release_driver;
+extern double ait_arg_max;
+
 
 int MLP_Inference_test_patterns(
     NN_Model* mlp_model,
@@ -745,10 +748,10 @@ int MLP_Inference_test_patterns(
 
 
 
-                // Raster plot
-                for (size_t i = 0; i < nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]; i++) {
-                    record_out_spks[layer_number][i] += nnlayer->output[i];
-                }
+                //// Raster plot
+                //for (size_t i = 0; i < nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]; i++) {
+                    //record_out_spks[layer_number][i] += nnlayer->output[i];
+                //}
 
                 
                 // Move to next layer in model
@@ -770,9 +773,14 @@ int MLP_Inference_test_patterns(
         
         }
 
+        
+        //measure inference
+        uint32_t ait_arg_max_start_tick = debug_start_timer();
 
         size_t pred = arg_max(mlp_model->out_spk_sum, mlp_model->output_size, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
 
+        //measure inference
+        ait_arg_max += debug_end_timer(ait_arg_max_start_tick);
 
 
 
