@@ -1,0 +1,69 @@
+Rate encoding MNIST 784x32x10,sram1,sram0,"layer0: dtcm, layer1: sram0",dtcm,,,,,,,,,,
+avg_inference_time_MLP_Inference_test_pattern,8876.155556,8876.511111,6033.888889,6014.666667,,,,,,,,,,
+avg_inference_time_MLP_Run_Layer,8826.288889,8826.488889,5976.022222,5955.155556,,,,,,,,,,
+avg_inference_time_run_cms,8750.511111,8750.511111,5913.133333,5876.711111,,,,,,,,,,
+avg_inference_time_ethosu_invoke_v3,8713.488889,8715.288889,5889.044444,5874.955556,,,,,,,,,,
+avg_inference_time_start_inference,2529.555556,2530.755556,2487.822222,2483.111111,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+Rate encoding MNIST 784x32x10,,,,,,,,,,,,,,
+avg_inference_time_per_sample,6096.622222,,What this actually means:,(micro seconds),,,,,,,,,,
+avg_inference_time_time_step,6078.466667,,"for each sample, we spend:",,,,,,,,,,,
+avg_inference_time_MLP_Inference_test_pattern_while_loop,6060.422222,,Average Time Spent to process each sample,6096.622222,,,,,,,,,,
+avg_inference_time_MLP_Inference_test_pattern,6029.488889,,Average Time Spent processing layers for each sample,6078.466667,,,sample,reset_model_for_new_sample(),,,,,,
+avg_inference_time_MLP_Run_Layer,5976.644444,,,,,,,set_test_pattern_pointer_to_model_input,,,,,,
+avg_inference_time_run_cms,5905.8,,,,,,,time_step (x num time steps),layer0,get_n_set_time_since_last_update,,,,
+avg_inference_time_ethosu_invoke_v3,5892.711111,,,,,,,,,compute layer0,ethosu_reserve_driver(),,,
+avg_inference_time_start_inference,2481.844444,,Average Time Spent doing NPU calculation,2481.844444,,,,,,,ethosu_Invoke_v3(),ethosu_invoke_async(),"check validity (cms, memory mapping, must be 16 bit aligned etc)",
+avg_inference_time_ethosu_invoke_async,1912.8,,Average Time Spent in ethosu_invoke_async for each sample,1912.8,,,,,,,,,"process cms preamble (npu configurations, length of cms)",
+avg_inference_time_ethosu_wait,3937.888889,,Average Time Spent in ethosu_wait for each sample,3937.888889,,,,,,,,,handle_command_stream,verify base_addr are 16 byte aligned
+avg_inference_time_post_inference_end,1589.288889,,Average Time spent invalidating ethosu dcache,1564.911111,,,,,,,,,,ethosu_flush_dcache()
+avg_inference_time_invalidate_ethosu_dcache,1564.911111,,,,,,,,,,,,,ethosu_request_power() (turn off power gating)
+,,,,,,,,,,,,,,ethosu_dev_run_command_stream() (sets addresses and starts npu operation)
+,,,,,,,,,,,,ethosu_wait(),,Wait for NPU to return that it is complete
+,,,,,,,,,,,,,,ethosu_release_power()
+,,,,,,,,,,,,,,ethosu_invalidate_dcache()
+,,,,,,,,,,,ethosu_release_driver(),,,
+,,,,,,,,,layer1,get_time_since_last_update,,,,
+,,,,,,,,,,compute layer1,ethosu_reserve_driver(),,,
+,,,,,,,,,,,ethosu_Invoke_v3(),ethosu_invoke_async(),"check validity (cms, memory mapping, must be 16 bit aligned etc)",
+,,,,,,,,,,,,,"process cms preamble (npu configurations, length of cms)",
+,,,,,,,,,,,,,handle_command_stream,verify base_addr are 16 byte aligned
+,,,,,,,,,,,,,,ethosu_flush_dcache()
+,,,,,,,,,,,,,,ethosu_request_power() (turn off power gating)
+,,,,,,,,,,,,,,ethosu_dev_run_command_stream() (sets addresses and starts npu operation)
+,,,,,,,,,,,,ethosu_wait(),,Wait for NPU to return that it is complete
+,,,,,,,,,,,,,,ethosu_release_power()
+,,,,,,,,,,,,,,ethosu_invalidate_dcache()
+,,,,,,,,,,,ethosu_release_driver(),,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+Rate encoding MNIST 784x32x10,,,,,,,,,,,,,,
+Section:,exe time (us),,,,,,,,,,,,,
+ait_reset_model_for_new_sample,8.044444,,,,,,,,,,,,,
+ait_set_test_pattern_pointer_to_model,0.044444,,,,,,,,,,,,,
+ait_get_time_since_last_update,48.933333,,,,,,,,,,,,,
+ait_ethosu_reserve_driver,3.066667,,,,,,,,,,,,,
+ait_check_npu_nn_op_validity,24.111111,,,,,,,,,,,,,
+ait_process_cms_preamble,46.977778,,,,,,,,,,,,,
+ait_verify_base_addr,0.422222,,,,,,,,,,,,,
+ait_ethosu_flush_dcache,1546.488889,,,,,,,,,,,,,
+ait_ethosu_request_power,136.066667,,,,,,,,,,,,,
+ait_ethosu_dev_run_command_stream,101.088889,,,,,,,,,,,,,
+ait_wait_npu_task_complete_irq,2321.4,,,,,,,,,,,,,
+ait_ethosu_release_power,0.066667,,,,,,,,,,,,,
+ait_ethosu_invalidate_dcache,1580.2,,,,,,,,,,,,,
+ait_ethosu_release_driver,6.466667,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+sum,5823.377778,,,,,,,,,,,,,

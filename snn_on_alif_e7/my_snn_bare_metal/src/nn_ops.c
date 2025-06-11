@@ -208,68 +208,68 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
     avg_inference_time_start_inference += inference_speed_measure_elapsed_ticks;
 
 
-    // Your custom end‑of‑inference hook
-    // e.g., log results or stop the timer
-    if (MEASURE_MODE) {
-        uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
+    //// Your custom end‑of‑inference hook
+    //// e.g., log results or stop the timer
+    //if (MEASURE_MODE) {
+        //uint32_t measure_layer0_elapsed_ticks = debug_end_timer(measure_layer0_start);
 
-        uint64_t end_cycles = ETHOSU_PMU_Get_CCNTR(drv);
+        //uint64_t end_cycles = ETHOSU_PMU_Get_CCNTR(drv);
 
-        uint32_t end_vals [4];
-        for (size_t i = 0; i < 4; i++ ){
-            end_vals[i] = ETHOSU_PMU_Get_EVCNTR(drv, i);
-        }
-
-
-
-        // 7. Disable counters
-        for (size_t i = 0; i < 4; i++ ){
-            ETHOSU_PMU_CNTR_Disable(drv, EVTYPES[i]);
-        }
+        //uint32_t end_vals [4];
+        //for (size_t i = 0; i < 4; i++ ){
+            //end_vals[i] = ETHOSU_PMU_Get_EVCNTR(drv, i);
+        //}
 
 
-        // 10. Disable PMU if no longer needed
-        ETHOSU_PMU_Disable(drv);
 
-        // Log results
-        uint64_t cycles = end_cycles - start_cycles;
-
-        uint32_t measured_vals [4];
-        for (size_t i = 0; i < 4; i++ ){
-            measured_vals[i] = end_vals[i] - start_vals[i];
-            printf("%s = %" PRIu32 "\n", event_type_names[EVTYPES[i]], measured_vals[i]);
-
-        }
-
-        // 9. Report or log
-        //double utilization = (double)mac_active / (double)(mac_active + idle_cycles + block_stalls + axi_stalls);
-        //printf("NPU_active + NPU_IDLE should be equal to NPU Cycles:%" PRIu32 "\n", mac_active+idle_cycles);
-        printf("Npu cycles for it: %d = %" PRIu64 "\n", global_it, cycles);
-        //printf("Npu MAC Active for it: %d = %" PRIu32 "\n", global_it, macs);
-        ////printf("Npu MAC 8bit Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
-        //printf("Npu CCs where DPU is Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
-        //printf("Npu AXI0 Reads for it: %d = %" PRIu32 "\n", global_it, axi0_reads);
-        //printf("Npu Blockdep Stalls for it: %d = %" PRIu32 "\n", global_it, blockdep_stalls);
-        ////printf("Utilization: %f\n", utilization);
-        ////printf("\tidle_cycles: %" PRIu32 "\n", idle_cycles);
-        ////printf("\tblock_stalls: %" PRIu32 "\n", block_stalls);
-        ////printf("\taxi_stalls: %" PRIu32 "\n", axi_stalls);
-
-        //printf("Investigate start and end values:\n");
-        //printf("\tNPU Cycles:\t\t\tstart: %" PRIu64 "\tend: %" PRIu64"\n", start_cycles, end_cycles);
-        //printf("\tNPU MAC Operations:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac, end_mac);
-        ////printf("\tNPU MAC 8-bit Operations:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac_8bit, end_mac_8bit);
-        //printf("\tNPU CCs where DPU is active:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_dpu, end_dpu);
-        //printf("\tNPU AXI0 Reads:\t\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_axi0_read, end_axi0_read);
-        //printf("\tNPU BlockDep Stalls:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_blockdep_stalls, end_blockdep_stalls);
+        //// 7. Disable counters
+        //for (size_t i = 0; i < 4; i++ ){
+            //ETHOSU_PMU_CNTR_Disable(drv, EVTYPES[i]);
+        //}
 
 
-        // Print CPU timer results
-        printf("Ticks elapsed for layer once in it: %d = %d \xC2\xB5s\n", global_it, measure_layer0_elapsed_ticks);
-        //printf("Ticks elapsed for layer once in it: %d = %d ms\n", global_it, measure_layer0_elapsed_ticks);
-        //printf("Ticks elapsed for layer once in it: %d = %" PRIu64 " \n", global_it, cycles);
+        //// 10. Disable PMU if no longer needed
+        //ETHOSU_PMU_Disable(drv);
 
-    }
+        //// Log results
+        //uint64_t cycles = end_cycles - start_cycles;
+
+        //uint32_t measured_vals [4];
+        //for (size_t i = 0; i < 4; i++ ){
+            //measured_vals[i] = end_vals[i] - start_vals[i];
+            //printf("%s = %" PRIu32 "\n", event_type_names[EVTYPES[i]], measured_vals[i]);
+
+        //}
+
+        //// 9. Report or log
+        ////double utilization = (double)mac_active / (double)(mac_active + idle_cycles + block_stalls + axi_stalls);
+        ////printf("NPU_active + NPU_IDLE should be equal to NPU Cycles:%" PRIu32 "\n", mac_active+idle_cycles);
+        //printf("Npu cycles for it: %d = %" PRIu64 "\n", global_it, cycles);
+        ////printf("Npu MAC Active for it: %d = %" PRIu32 "\n", global_it, macs);
+        //////printf("Npu MAC 8bit Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
+        ////printf("Npu CCs where DPU is Active for it: %d = %" PRIu32 "\n", global_it, cc_dpu_active);
+        ////printf("Npu AXI0 Reads for it: %d = %" PRIu32 "\n", global_it, axi0_reads);
+        ////printf("Npu Blockdep Stalls for it: %d = %" PRIu32 "\n", global_it, blockdep_stalls);
+        //////printf("Utilization: %f\n", utilization);
+        //////printf("\tidle_cycles: %" PRIu32 "\n", idle_cycles);
+        //////printf("\tblock_stalls: %" PRIu32 "\n", block_stalls);
+        //////printf("\taxi_stalls: %" PRIu32 "\n", axi_stalls);
+
+        ////printf("Investigate start and end values:\n");
+        ////printf("\tNPU Cycles:\t\t\tstart: %" PRIu64 "\tend: %" PRIu64"\n", start_cycles, end_cycles);
+        ////printf("\tNPU MAC Operations:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac, end_mac);
+        //////printf("\tNPU MAC 8-bit Operations:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_mac_8bit, end_mac_8bit);
+        ////printf("\tNPU CCs where DPU is active:\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_dpu, end_dpu);
+        ////printf("\tNPU AXI0 Reads:\t\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_axi0_read, end_axi0_read);
+        ////printf("\tNPU BlockDep Stalls:\t\tstart: %" PRIu32 "\tend: %" PRIu32"\n", start_blockdep_stalls, end_blockdep_stalls);
+
+
+        //// Print CPU timer results
+        //printf("Ticks elapsed for layer once in it: %d = %d \xC2\xB5s\n", global_it, measure_layer0_elapsed_ticks);
+        ////printf("Ticks elapsed for layer once in it: %d = %d ms\n", global_it, measure_layer0_elapsed_ticks);
+        ////printf("Ticks elapsed for layer once in it: %d = %" PRIu64 " \n", global_it, cycles);
+
+    //}
 }
 
 
@@ -277,6 +277,9 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
 
 extern double avg_inference_time_run_cms;
+
+extern double ait_ethosu_reserve_driver;
+extern double ait_ethosu_release_driver;
 
 int run_cms(
     const uint8_t* command_stream,
@@ -288,12 +291,16 @@ int run_cms(
 ) {
 
 
+    uint32_t ait_ethosu_reserve_driver_start_tick = debug_start_timer();
+
     // Reserve the Ethos-U driver
     struct ethosu_driver* drv = ethosu_reserve_driver();
     if (!drv) {
         printf("Failed to reserve Ethos-U driver\n");
         return -1;
     }
+
+    ait_ethosu_reserve_driver += debug_end_timer(ait_ethosu_reserve_driver_start_tick);
 
     if (DEBUG_MODE) {
         printf("reserved ethosu_drv: %p\n", drv);
@@ -303,7 +310,7 @@ int run_cms(
 
     //uint32_t measure_layer0_start;
                 // Start timer
-                uint32_t inference_speed_measure_start_tick = debug_start_timer();
+    uint32_t inference_speed_measure_start_tick = debug_start_timer();
 
     if(ethosu_invoke_v3(drv, command_stream, command_stream_size, 
         base_addrs, base_addrs_size, num_tensors, NULL) != 0) {
@@ -318,7 +325,11 @@ int run_cms(
     if (DEBUG_MODE) { printf("After invoke_v3: &drv = %p, drv = %p\n", (void*)&drv, (void*)drv); }
 
 
+    uint32_t ait_ethosu_release_driver_start_tick = debug_start_timer();
+
     ethosu_release_driver(drv);
+
+    ait_ethosu_release_driver += debug_end_timer(ait_ethosu_release_driver_start_tick);
 
     if (DEBUG_MODE) { printf("Driver release successfully\n"); }
 
