@@ -18,7 +18,7 @@ from extra_func import *
 
 def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, 
          weights_volume_ohwi, bias_list, beta_list, vth_list,
-         cms_name, DEBUG_MODE, ACCELERATOR, header_out_filepath):
+         cms_name, is_last_layer, DEBUG_MODE, ACCELERATOR, header_out_filepath):
 
 
 
@@ -35,6 +35,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     '''
     Set FM Quantization Params
     '''
+
 
     IN_SPK_MAX_VAL = 127
     IN_SPK_MIN_VAL = -128
@@ -76,6 +77,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     OUT_SPK_MAX_VAL = 127
     OUT_SPK_MIN_VAL = -128
+    if (is_last_layer):
+        # MAX VAL == NUM_TIME_STEPS
+        OUT_SPK_SUM_MAX_VAL = 25
+        OUT_SPK_SUM_MIN_VAL = 0
 
 
     ###########
@@ -137,6 +142,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     # Output Feature Map
     UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)
     OUT_SPK_SCALE, OUT_SPK_ZERO_POINT = zero_point_quant(OUT_SPK_MAX_VAL, OUT_SPK_MIN_VAL)
+    if (is_last_layer):
+        OUT_SPK_SUM_SCALE, OUT_SPK_SUM_ZERO_POINT = zero_point_quant(OUT_SPK_SUM_MAX_VAL, OUT_SPK_SUM_MIN_VAL)
 
 
 
@@ -156,17 +163,33 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
     # Assign Memory segments in SRAM Scratch (region 1)
-		
-    BIAS_ADDR           	=   0 
-    WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
-    TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-    TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-    V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-    TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-    UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+    
+    if (not is_last_layer):
+        BIAS_ADDR           	=   0 
+        WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
+        TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
+        TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+        V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+        TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+        UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
 
-    TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+        TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+        NUM_NON_CONST_TENSORS = 7
+    
+    else:
+
+        BIAS_ADDR           	=   0 
+        WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
+        TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
+        TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+        V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+        OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+        TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
+        UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+
+        TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+        NUM_NON_CONST_TENSORS = 8
 
 
 
@@ -214,7 +237,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
         sizes_dict = {
-
+            cms_name.upper()+"_NUM_NON_CONST_TENSORS"   : NUM_NON_CONST_TENSORS,    #num tensors in sram scratchpad
 
             cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
             cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,             
@@ -252,7 +275,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-
         quant_param_dict = {
             cms_name.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
             cms_name.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
@@ -287,6 +309,12 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             cms_name.upper()+"_OUT_SPK_SCALE" : OUT_SPK_SCALE,
             cms_name.upper()+"_OUT_SPK_ZERO_POINT" : OUT_SPK_ZERO_POINT,
         }
+
+
+        if (is_last_layer):
+                addr_dict[cms_name.upper()+"_OUT_SPK_SUM_ADDR"] = OUT_SPK_SUM_ADDR
+                quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_SCALE"] = OUT_SPK_SUM_SCALE
+                quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_ZERO_POINT"] = OUT_SPK_SUM_ZERO_POINT
 
         return sizes_dict, addr_dict, quant_param_dict
 
@@ -1190,6 +1218,99 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
         return reset_time_op
+    
+
+
+
+    def def_increment_spk_list(OUT_SPK_SUM_ADDR,    OUT_SPK_SUM_SCALE,  OUT_SPK_SUM_ZERO_POINT,
+                               OUT_SPK_ADDR,        OUT_SPK_SCALE,      OUT_SPK_ZERO_POINT):
+
+        IFM2_IS_FIRST_OPERAND = False
+
+
+        ifm = create_feature_map(
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            region=SRAM_SCRATCH_REGION,
+            layout=NpuLayout.NHWC,
+            data_type=NpuDataType.INT8,
+            fm_elem_size=1,
+            fm_addr=OUT_SPK_SUM_ADDR,
+            scale = OUT_SPK_SUM_SCALE,
+            zero_point = OUT_SPK_SUM_ZERO_POINT,
+            name="out_spk_sum"
+        )
+
+
+        # Same scaling as VTH (since reset is either 0 or 1)
+        ifm2 = create_feature_map(
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            region=OUTPUT_REGION,
+            layout=NpuLayout.NHWC,
+            data_type=NpuDataType.INT8,
+            fm_elem_size=1,
+            fm_addr=OUT_SPK_ADDR,
+            scale = OUT_SPK_SCALE,
+            zero_point = OUT_SPK_ZERO_POINT,
+            name="out_spk"
+        )
+
+
+        ofm = create_feature_map(
+            height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+            region=SRAM_SCRATCH_REGION,
+            layout=NpuLayout.NHWC,
+            data_type=NpuDataType.INT8,
+            fm_elem_size=1,
+            fm_addr=OUT_SPK_SUM_ADDR,
+            scale = OUT_SPK_SUM_SCALE,
+            zero_point = OUT_SPK_SUM_ZERO_POINT,
+            name="out_spk_sum"
+        )
+
+        #block_config = NpuShape3D(2, 2, 32)
+
+        activation = create_activation(
+            activation_op=NpuActivationOp.NONE_OR_RELU,
+            min_val=None,
+            max_val=None,
+        )
+
+
+
+
+        incr_out_spk_sum_op = NpuElementWiseOperation(NpuElementWiseOp.ADD)
+    
+        #elementwise operation
+        incr_out_spk_sum_op.reversed_operands = IFM2_IS_FIRST_OPERAND
+        incr_out_spk_sum_op.rescale = None
+
+        #NpuBlockOperation
+        incr_out_spk_sum_op.ifm = ifm
+        incr_out_spk_sum_op.ifm2 = ifm2
+        incr_out_spk_sum_op.ifm2_scalar = None   #set if ifm2 is a scalar
+        incr_out_spk_sum_op.ofm = ofm
+        incr_out_spk_sum_op.kernel = None
+        incr_out_spk_sum_op.weights = []
+        incr_out_spk_sum_op.biases = []
+        incr_out_spk_sum_op.padding = None
+        incr_out_spk_sum_op.activation = activation
+
+        block_config = get_block_config(incr_out_spk_sum_op, ACCELERATOR)
+        incr_out_spk_sum_op.block_config = block_config
+        incr_out_spk_sum_op.rounding_mode = NpuRoundingMode.TFL
+        incr_out_spk_sum_op.fused_quantize = False
+        incr_out_spk_sum_op.ifm_upscale = NpuResamplingMode.NONE
+        incr_out_spk_sum_op.accumulator_type = NpuAccumulatorType.Default
+
+
+        #check_block_config_legal(block_config, incr_out_spk_sum_op, ACCELERATOR)
+
+
+
+        return incr_out_spk_sum_op
+    
+
+
 
     def layer_merge_and_write(cms_name, header_out_filepath):
 
@@ -1206,10 +1327,16 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
+
         npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
 
+        if (is_last_layer):
+            incr_out_spk_sum_op = def_increment_spk_list(OUT_SPK_SUM_ADDR,  OUT_SPK_SUM_SCALE,   OUT_SPK_SUM_ZERO_POINT,
+                                                         OUT_SPK_ADDR,      OUT_SPK_SCALE,      OUT_SPK_ZERO_POINT)
+            
+            npu_op_list.append(incr_out_spk_sum_op)
 
 
 

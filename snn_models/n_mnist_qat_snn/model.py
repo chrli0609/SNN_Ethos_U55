@@ -6,10 +6,16 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import tonic
 from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, prepare_qat
+
 from norse.torch.functional.reset import reset_subtract
 
 
+
+FIND_MAX_MIN_VALS = True
+
 # Network architecture parameters
+input_size = 28*28
+output_size = 10
 num_hid_layers = 2
 size_hid_layers = [64, 64]
 
@@ -17,7 +23,7 @@ size_hid_layers = [64, 64]
 quant_aware = True
 spike_factor = 1e-5
 mean_weight_factor = 1e3
-epochs = 8
+epochs = 10
 n_time_bins = 25
 
 class Net(torch.nn.Module):
@@ -46,9 +52,7 @@ class Net(torch.nn.Module):
         layer_spikes = []
         if self.quant_aware: inp = self.quant(inp)
 
-        #print("pre squeeze:", inp.size())
         inp = inp.squeeze(2)
-        #print("post squeeze:", inp.size())
         for x in inp:
             x = torch.flatten(x, 1)
             for idx, layer in enumerate(self.linear_layers):
@@ -58,7 +62,6 @@ class Net(torch.nn.Module):
             out_spikes.append(x)
         
         out = torch.stack(out_spikes)
-        #print("out.size()", out.size())
         if self.quant_aware: out = self.dequant(out)  # Dequantize output
         return out, torch.cat(layer_spikes)
 
@@ -66,9 +69,6 @@ class Net(torch.nn.Module):
 
 def decode(x):
     x = torch.sum(x, 0)
-
-    #print("x.size()", x.size())
-    #print("x", x)
 
     log_p_y = torch.nn.functional.log_softmax(x, dim=1)
 
@@ -85,3 +85,38 @@ class Model(torch.nn.Module):
         x, out_spikes = self.snn(x)
         log_p_y = self.decoder(x)
         return log_p_y, out_spikes
+
+
+
+
+snn = Net(input_size=input_size, 
+          output_size=output_size, 
+          num_hidden=num_hid_layers, 
+          size_hidden=size_hid_layers, 
+          quant_aware=quant_aware)
+
+
+
+if quant_aware:
+
+
+    #snn.qconfig = torch.quantization.QConfig(
+    #    activation=torch.quantization.default_observer,
+    #    weight=torch.quantization.default_per_tensor_weight_observer  # force per-tensor weight quantization
+    #)
+    #torch.quantization.prepare_qat(snn, inplace=True)
+    #snn.qconfig = get_default_qat_qconfig("fbgemm")  # or "qnnpack" for ARM
+    #prepare_qat(snn, inplace=True)
+
+    from torch.ao.quantization import QConfig
+    from torch.ao.quantization.observer import MinMaxObserver
+
+    
+    snn.qconfig = QConfig(
+        activation=MinMaxObserver.with_args(dtype=torch.quint8, qscheme=torch.per_tensor_affine),
+        weight=MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine),
+    )
+    torch.backends.quantized.engine = 'fbgemm'  # or whichever you use
+    torch.quantization.prepare_qat(snn, inplace=True)
+
+net = Model(snn=snn, decoder=decode)

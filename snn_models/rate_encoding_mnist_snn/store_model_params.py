@@ -49,6 +49,7 @@ torch.set_printoptions(threshold=float('inf'))
 print(net)
 counter = 1
 for layer in net.children():
+    print("layer\n", layer)
     if isinstance(layer, nn.Linear):
         #print(layer.state_dict()['weight'])
         print("fc"+str(counter)+" weights")

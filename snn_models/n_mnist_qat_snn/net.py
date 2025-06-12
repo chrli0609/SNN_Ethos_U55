@@ -28,7 +28,7 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 
 """
 
-from model import Net, Model, decode, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
+from model import Net, Model, decode, net, snn, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
 
 
 import random
@@ -156,7 +156,7 @@ testloader = torch.utils.data.DataLoader(testset,
 
 
 
-
+'''
 snn = Net(input_size=784, 
           output_size=10, 
           num_hidden=num_hid_layers, 
@@ -171,6 +171,7 @@ if quant_aware:
 
 
 net = Model(snn=snn, decoder=decode)
+'''
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
 

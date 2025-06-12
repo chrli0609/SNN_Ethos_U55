@@ -26,7 +26,7 @@ extern int BENCHMARK_MODEL;
 extern int CHECK_INPUT_OUTPUT;
 
 // How often we update (in micro sec)
-#define UPDATE_PERIOD 5000
+#define UPDATE_PERIOD 10000 //10 ms
 
 
 
@@ -48,6 +48,7 @@ NNLayer* FC_LIF_Layer_Init(
     size_t luts_length,
 
     // Non-const tensors
+    size_t num_non_const_tensors,
     size_t tensor_arena_size,
     int8_t* tensor_arena,
 
@@ -82,7 +83,7 @@ NNLayer* FC_LIF_Layer_Init(
     /* ____________________________________________ */
     /* 1. Initiate NNLayer Struct                   */
 
-    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, 7);
+    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, num_non_const_tensors);
     if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
 
     /* ___________________________________________ */
@@ -216,7 +217,7 @@ NN_Model* MLP_Init() {
         Getfc_lif_layer_0LUTLen(),
 
 
-
+        FC_LIF_LAYER_0_NUM_NON_CONST_TENSORS,
         FC_LIF_LAYER_0_TENSOR_ARENA_SIZE,
         nnlayer0_tensor_arena,
         
@@ -266,6 +267,8 @@ NN_Model* MLP_Init() {
 
         Getfc_lif_layer_1LUTPointer(),
         Getfc_lif_layer_1LUTLen(),
+
+        FC_LIF_LAYER_1_NUM_NON_CONST_TENSORS,
         FC_LIF_LAYER_1_TENSOR_ARENA_SIZE,
         nnlayer1_tensor_arena,
         
@@ -312,6 +315,8 @@ NN_Model* MLP_Init() {
 
         Getfc_lif_layer_2LUTPointer(),
         Getfc_lif_layer_2LUTLen(),
+
+        FC_LIF_LAYER_2_NUM_NON_CONST_TENSORS,
         FC_LIF_LAYER_2_TENSOR_ARENA_SIZE,
         nnlayer2_tensor_arena,
         
@@ -345,8 +350,19 @@ NN_Model* MLP_Init() {
 
     );
 
+    printf("just about to assign out_spk_sum\n");
+
+    int8_t* out_spk_sum = PersistentAllocator_GetAbsPointer(&nnlayer2_fc_lif->allocator, 
+        FC_LIF_LAYER_2_OUT_SPK_SUM_ADDR);
+
+    printf("done with getting global addr\n");
+    NNLayer_Assign(nnlayer2_fc_lif, OUT_SPK_SUM_TENSOR_IDX,  out_spk_sum , FC_LIF_LAYER_2_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_2_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_2_OUT_SPK_SUM_ZERO_POINT, "out_spk_sum");
+
+    printf("assigned, about to set init value\n");
+    quantize_float_scalar_to_int8_array(0, nnlayer2_fc_lif->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], FC_LIF_LAYER_2_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_2_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_2_OUT_SPK_SUM_ZERO_POINT);
 
 
+    printf("done wth assigning out_spk_sum\n");
     //3. Connect the models together to form a linked list
     nnlayer0_fc_lif->next_layer = nnlayer1_fc_lif;
     nnlayer1_fc_lif->next_layer = nnlayer2_fc_lif;
@@ -517,6 +533,12 @@ void reset_model_for_new_sample(NN_Model* mlp_model) {
         // Reset time stamp for previous update
         nnlayer->time_of_previous_update = -1;
 
+
+        // Reset out_sum_spk (only exists for last layer)
+        if (nnlayer->next_layer == NULL) {
+            quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], nnlayer->tensor_sizes[OUT_SPK_SUM_TENSOR_IDX], nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
+        }
+
         // Move to next layer
         nnlayer = nnlayer->next_layer;
     }
@@ -574,6 +596,9 @@ int MLP_Inference_test_patterns(
     uint32_t debug_timer_start; float debug_timer_elapsed_ms;
 
 
+    // For setting to WFE__ if inference time < UPDATE_PERIOD
+    uint32_t inference_start_tick;
+    uint32_t inference_elapsed_ticks;
 
 
     // For Benchmarking accuracy
@@ -603,6 +628,7 @@ int MLP_Inference_test_patterns(
         global_it = it;
         
 
+        uint32_t inference_speed_measure_each_sample_start_tick = debug_start_timer();
 
         /*___________________________________________________________
           Reset the parameters that need to be reset for every sample  */
@@ -650,7 +676,8 @@ int MLP_Inference_test_patterns(
 
                     // Update how long it was we updated layer0 last
                     time_steps_layer_not_updated = time_step - nnlayer->time_of_previous_update;
-                    quantize_float_scalar_to_int8_array(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+                    //quantize_float_scalar_to_int8_array(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
+                    quantize_float_scalar_to_int8_scalar(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale_reciprocal, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
 
                     /* DEBUG PRINTOUTS */
                     //printf("nnlayer:\n");
@@ -705,38 +732,39 @@ int MLP_Inference_test_patterns(
             
             // Record the spikes (rate encoding --> use total number of spikes to determine prediction)
             //printf("output:\n");
-            for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                out_neuron_sum[i] += mlp_model->output[i];
+            //for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
+                //out_neuron_sum[i] += mlp_model->output[i];
 
-                //printf("%d: %d\n", i, mlp_model->output[i]);
-            }
+                ////printf("%d: %d\n", i, mlp_model->output[i]);
+            //}
         
         }
 
         
-        // Get the max value
-        double max_value = -500;
-        size_t max_spk_idx = 0;
-        double neuron_sum = 0;
-        for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-            neuron_sum = out_neuron_sum[i]; 
-            if (neuron_sum > max_value) {
-                max_value = neuron_sum;
-                max_spk_idx = i;
-            }
-        }
-        printf("arg max Prediction: %d\n", max_spk_idx);
+        //// Get the max value
+        //double max_value = -500;
+        //size_t max_spk_idx = 0;
+        //double neuron_sum = 0;
+        //for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
+            //neuron_sum = out_neuron_sum[i]; 
+            //if (neuron_sum > max_value) {
+                //max_value = neuron_sum;
+                //max_spk_idx = i;
+            //}
+        //}
+        //printf("arg max Prediction: %d\n", max_spk_idx);
+        size_t pred = arg_max(mlp_model->out_spk_sum, mlp_model->output_size, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
 
 
         // Check if correct or not and add to counter
-        if (max_spk_idx == (size_t)test_targets[it]) { correct += 1; }
-        prediction_arr[it] = max_spk_idx;
+        if (pred == (size_t)test_targets[it]) { correct += 1; }
+        prediction_arr[it] = pred;
 
         // Debug: Check how often we have 0 output spikes
-        //if (DEBUG_MODE) {
+        //if (DEBUG_MODE) 
             bool have_at_least_one_spk = false;
             for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++){
-                if (out_neuron_sum[i] != 0) { have_at_least_one_spk = true; }
+                if (mlp_model->out_spk_sum[i] != 0) { have_at_least_one_spk = true; }
             }
             if (!have_at_least_one_spk) { number_of_no_spk += 1; printf("incrementing number_of_no_spk!\n");}
         //}

@@ -11,7 +11,7 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 
 
 
-from model import Model, Net, num_hid_layers, size_hid_layers, quant_aware, decode
+from model import Model, Net, net, snn, num_hid_layers, size_hid_layers, quant_aware, decode
 
 
 # Where to load from (no storing in this script)
@@ -24,14 +24,6 @@ test_patterns_dir = Path("test_patterns")
 
 
 # Load model
-snn = Net(input_size=784, 
-          output_size=10, 
-          num_hidden=num_hid_layers, 
-          size_hidden=size_hid_layers, 
-          quant_aware=quant_aware)
-if quant_aware:
-    snn.qconfig = get_default_qat_qconfig("fbgemm")  # or "qnnpack" for ARM
-    prepare_qat(snn, inplace=True)
 #net.load_state_dict(torch.load("save_model_dict_784x32x10.pt", weights_only=False))
 snn.load_state_dict(torch.load("model_state_dict.pkl"))
 

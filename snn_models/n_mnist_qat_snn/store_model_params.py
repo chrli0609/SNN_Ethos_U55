@@ -11,7 +11,7 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 
 
 
-from model import Model, Net, num_hid_layers, size_hid_layers, quant_aware, decode
+from model import Model, Net, net, snn, num_hid_layers, size_hid_layers, quant_aware, decode
 
 
 
@@ -26,6 +26,7 @@ test_patterns_dir = Path("test_patterns")
 
 
 # Load model
+'''
 snn = Net(input_size=784, 
           output_size=10, 
           num_hidden=num_hid_layers, 
@@ -34,21 +35,35 @@ snn = Net(input_size=784,
 if quant_aware:
     snn.qconfig = get_default_qat_qconfig("fbgemm")  # or "qnnpack" for ARM
     prepare_qat(snn, inplace=True)
+'''
 #net.load_state_dict(torch.load("save_model_dict_784x32x10.pt", weights_only=False))
 snn.load_state_dict(torch.load("model_state_dict.pkl"))
 
+snn.eval()
+snn_quant = torch.quantization.convert(snn, inplace=False)
 
-net = Model(snn=snn, decoder=decode)
+net = Model(snn=snn_quant, decoder=decode)
 net.eval()
+
 
 print("model", net)
 
 # Save weights and biases of each fully connected (fc) layer
-for idx, layer in enumerate(snn.linear_layers):
-    weight = layer.weight.detach().cpu().numpy()
-    bias = layer.bias.detach().cpu().numpy()
+for idx, layer in enumerate(snn_quant.linear_layers):
+
+    print(layer.weight().__class__)
+    print(layer.weight().dtype)
+    #print("weight", layer.weight().q_per_channel_scales())
+    print("weight", layer.weight().q_scale())
+    print("weight", layer.weight().q_zero_point())
+
+    weight = layer.weight().dequantize().cpu().numpy()
+    bias = layer.bias().data.detach().cpu().numpy()
 
     weight_filepath = model_dir / model_params_dir / Path("fc"+str(idx)+"_weights.npy")
     bias_filepath = model_dir / model_params_dir / Path("fc"+str(idx)+"_biases.npy")
+
     np.save(weight_filepath, weight)
     np.save(bias_filepath, bias)
+
+    # save quantization parameters
