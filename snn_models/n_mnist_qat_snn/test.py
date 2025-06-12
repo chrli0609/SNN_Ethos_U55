@@ -14,8 +14,9 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 from model import Model, Net, num_hid_layers, size_hid_layers, quant_aware, decode
 
 
-# Where to store
-model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+# Where to load from (no storing in this script)
+#model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+model_dir = Path("./")
 model_params_dir = Path("model_params")
 test_patterns_dir = Path("test_patterns")
 
@@ -42,6 +43,17 @@ net.eval()
 
 
 def test(net, test_data, test_target):
+
+    print("data", test_data.shape)
+    print("target", test_target.shape)
+
+    # Only keep the first 45 samples (since thats the ones we have for the NPU)
+    test_data = test_data[:, :45, ...]
+    test_target = test_target[:45]
+
+    print("data", test_data.shape)
+    print("target", test_target.shape)
+
     net.eval()
     test_loss = 0
     correct = 0
@@ -67,7 +79,7 @@ def test(net, test_data, test_target):
 
 
 
-        print("target:", target, "\tpred:", pred)
+        #print("target:", target, "\tpred:", pred)
 
 
         # Store test data

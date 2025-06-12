@@ -713,11 +713,11 @@ int MLP_Inference_test_patterns(
         
         }
 
-
+        
         // Get the max value
-        size_t max_value = 0;
+        double max_value = -500;
         size_t max_spk_idx = 0;
-        size_t neuron_sum = 0;
+        double neuron_sum = 0;
         for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
             neuron_sum = out_neuron_sum[i]; 
             if (neuron_sum > max_value) {
@@ -725,7 +725,8 @@ int MLP_Inference_test_patterns(
                 max_spk_idx = i;
             }
         }
-        printf("Prediction: %d\n", max_spk_idx);
+        printf("arg max Prediction: %d\n", max_spk_idx);
+
 
         // Check if correct or not and add to counter
         if (max_spk_idx == (size_t)test_targets[it]) { correct += 1; }

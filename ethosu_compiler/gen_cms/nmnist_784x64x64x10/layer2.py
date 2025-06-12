@@ -71,7 +71,7 @@ print("Min bias value", bias_list.min())
 # Generate Beta values
 beta_list = []
 for i in range(OUTPUT_LAYER_SIZE):
-    beta_list.append(20)
+    beta_list.append(0.95)
 
 # Generate Vth values
 vth_list = []

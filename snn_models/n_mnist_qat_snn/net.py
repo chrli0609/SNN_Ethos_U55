@@ -32,7 +32,7 @@ from model import Net, Model, decode, n_time_bins, num_hid_layers, size_hid_laye
 
 
 import random
-SEED = 42
+SEED = 50
 torch.manual_seed(SEED)
 np.random.seed(SEED)
 random.seed(SEED)
@@ -82,7 +82,8 @@ def train(net, trainloader, optimizer):
 from pathlib import Path
 #from store_model_params import model_dir, test_patterns_dir
 
-model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+#model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+model_dir = Path("./")
 model_params_dir = Path("model_params")
 test_patterns_dir = Path("test_patterns")
 def test(net, testloader):

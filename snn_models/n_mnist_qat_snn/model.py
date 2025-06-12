@@ -6,7 +6,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import tonic
 from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, prepare_qat
-
+from norse.torch.functional.reset import reset_subtract
 
 
 # Network architecture parameters
@@ -17,7 +17,7 @@ size_hid_layers = [64, 64]
 quant_aware = True
 spike_factor = 1e-5
 mean_weight_factor = 1e3
-epochs = 4
+epochs = 8
 n_time_bins = 25
 
 class Net(torch.nn.Module):
@@ -31,7 +31,7 @@ class Net(torch.nn.Module):
             [torch.nn.Linear(self.layers_size[i], self.layers_size[i+1]) for i in range(num_hidden+1)]
         )
         self.temp_layers = torch.nn.ModuleList(
-            [norse.torch.LIFBoxCell(norse.torch.LIFBoxParameters(tau_mem_inv=0.05), dt=1) for _ in range(num_hidden+1)]
+            [norse.torch.LIFBoxCell(norse.torch.LIFBoxParameters(tau_mem_inv=0.05, reset_method=reset_subtract), dt=1) for _ in range(num_hidden+1)]
         )
 
         self.quant_aware = quant_aware
@@ -58,6 +58,7 @@ class Net(torch.nn.Module):
             out_spikes.append(x)
         
         out = torch.stack(out_spikes)
+        #print("out.size()", out.size())
         if self.quant_aware: out = self.dequant(out)  # Dequantize output
         return out, torch.cat(layer_spikes)
 
@@ -65,7 +66,12 @@ class Net(torch.nn.Module):
 
 def decode(x):
     x = torch.sum(x, 0)
+
+    #print("x.size()", x.size())
+    #print("x", x)
+
     log_p_y = torch.nn.functional.log_softmax(x, dim=1)
+
     return log_p_y
 
 

@@ -9,6 +9,8 @@
 #include "pm.h"                 //SystemCoreClock
 
 
+
+
 size_t arg_max(int8_t* array, size_t array_len, float scale, int zero_point) {
     // Get the max value
     size_t max_value = 0;

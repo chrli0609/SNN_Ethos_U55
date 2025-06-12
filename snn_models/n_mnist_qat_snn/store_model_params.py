@@ -17,7 +17,8 @@ from model import Model, Net, num_hid_layers, size_hid_layers, quant_aware, deco
 
 
 # Where to store
-model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+#model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
+model_dir = Path("./")
 model_params_dir = Path("model_params")
 test_patterns_dir = Path("test_patterns")
 
