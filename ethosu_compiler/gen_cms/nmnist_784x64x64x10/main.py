@@ -25,9 +25,18 @@ Command line argument: LAYER_0_OUTPUT_SIZE
 '''
 
 MODEL_NAME = "nmnist_784x64x64x10"
+NUM_LAYERS = 3
 LAYER_0_CMS_NAME = "fc_lif_layer_0"
 LAYER_1_CMS_NAME = "fc_lif_layer_1"
 LAYER_2_CMS_NAME = "fc_lif_layer_2"
+
+LAYERS_NAME_LIST = [
+    LAYER_0_CMS_NAME,
+    LAYER_1_CMS_NAME,
+    LAYER_2_CMS_NAME
+]
+
+
 
 
 '''
@@ -136,6 +145,27 @@ fc_lif.gen_fc_lif(
 )
 
 
+
+
+
+from extra_func import get_connectivity_filepath
+connectivity_filepath = get_connectivity_filepath(MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
+# Write connectivity file
+from write_connectivity_h_file import clear_connectivity_file, write_init_func, write_init_func_array
+
+clear_connectivity_file(connectivity_filepath)
+
+for i in range(NUM_LAYERS):
+    write_init_func(connectivity_filepath, LAYER_0_CMS_NAME)
+write_init_func_array(connectivity_filepath, LAYER_0_CMS_NAME, NUM_LAYERS)
+
+
+
+
+
+
+
+
 # Generate file for test patterns
 from nmnist_write_test_patterns_to_h_file import test_patterns_2_h_file
 
@@ -145,7 +175,3 @@ test_patterns_2_h_file( ".data_sram0",
                         Path("test_patterns/test_target_"+TEST_PATTERN+".npy"),
                         test_pattern_header_filepath
                        )
-
-
-
-

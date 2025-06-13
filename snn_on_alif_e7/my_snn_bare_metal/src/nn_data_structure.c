@@ -1,4 +1,3 @@
-
 #include "include/nn_data_structure.h"
 
 #include <stdlib.h> //malloc/free
@@ -188,40 +187,33 @@ int NNLayer_Assign(NNLayer* layer, size_t element, int8_t* tensor_ptr, size_t te
         return -1;  // Invalid layer
     }
     
-    printf("1\n");
     // Check if element index is valid
     if (element >= layer->num_tensors) {
         return -2;  // Invalid element index
     }
     
-    printf("2\n");
     // Free previous tensor if it exists
 
     if (layer->tensor_ptrs[element] != NULL) {
         free(layer->tensor_ptrs[element]);
     }
     
-    printf("3\n");
     // Free previous name if it exists
     if (layer->tensor_names[element] != NULL) {
         free(layer->tensor_names[element]);
     }
 
-    printf("4\n");
     // Assign new tensor pointer
     layer->tensor_ptrs[element] = tensor_ptr;
     
-    printf("5\n");
     // Set tensor size
     layer->tensor_sizes[element] = tensor_size;
     
-    printf("6\n");
     // Set quantization parameters
     layer->quant_params[element].scale = scale;
     layer->quant_params[element].zero_point = zero_point;
     layer->quant_params[element].scale_reciprocal = 1/scale;
     
-    printf("7\n");
     // Allocate and copy tensor name
     if (tensor_name) {
         layer->tensor_names[element] = strdup(tensor_name);

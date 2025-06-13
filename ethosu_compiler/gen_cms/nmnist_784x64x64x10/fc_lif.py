@@ -77,10 +77,13 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     OUT_SPK_MAX_VAL = 127
     OUT_SPK_MIN_VAL = -128
+
+
     if (is_last_layer):
         # MAX VAL == NUM_TIME_STEPS
         OUT_SPK_SUM_MAX_VAL = 25
         OUT_SPK_SUM_MIN_VAL = 0
+
 
 
     ###########
@@ -142,8 +145,11 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     # Output Feature Map
     UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)
     OUT_SPK_SCALE, OUT_SPK_ZERO_POINT = zero_point_quant(OUT_SPK_MAX_VAL, OUT_SPK_MIN_VAL)
+
     if (is_last_layer):
         OUT_SPK_SUM_SCALE, OUT_SPK_SUM_ZERO_POINT = zero_point_quant(OUT_SPK_SUM_MAX_VAL, OUT_SPK_SUM_MIN_VAL)
+    else:
+        OUT_SPK_SUM_SCALE, OUT_SPK_SUM_ZERO_POINT = 0, 0
 
 
 
@@ -176,6 +182,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
         TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
         NUM_NON_CONST_TENSORS = 7
+
+        OUT_SPK_SUM_ADDR = -1
     
     else:
 
@@ -237,6 +245,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
         sizes_dict = {
+
+            cms_name.upper()+"_IS_LAST_LAYER"           : int(is_last_layer),    #num tensors in sram scratchpad
             cms_name.upper()+"_NUM_NON_CONST_TENSORS"   : NUM_NON_CONST_TENSORS,    #num tensors in sram scratchpad
 
             cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
@@ -311,10 +321,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         }
 
 
-        if (is_last_layer):
-                addr_dict[cms_name.upper()+"_OUT_SPK_SUM_ADDR"] = OUT_SPK_SUM_ADDR
-                quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_SCALE"] = OUT_SPK_SUM_SCALE
-                quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_ZERO_POINT"] = OUT_SPK_SUM_ZERO_POINT
+        #if (is_last_layer):
+        addr_dict[cms_name.upper()+"_OUT_SPK_SUM_ADDR"] = OUT_SPK_SUM_ADDR
+        quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_SCALE"] = OUT_SPK_SUM_SCALE
+        quant_param_dict[cms_name.upper()+"_OUT_SPK_SUM_ZERO_POINT"] = OUT_SPK_SUM_ZERO_POINT
 
         return sizes_dict, addr_dict, quant_param_dict
 

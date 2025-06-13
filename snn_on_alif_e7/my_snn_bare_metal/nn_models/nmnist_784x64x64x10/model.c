@@ -1,4 +1,4 @@
-#include "nn_models/nmnist_784x64x64x10/model.h"
+#include "model.h"
 
 
 #include <stdio.h> //printf
@@ -10,10 +10,17 @@
 #include "include/extra_funcs.h" //quantize_array_float_to_int8(), timer functions
 #include "layers/fc_lif_layer_0.h"
 #include "layers/fc_lif_layer_1.h"
-//#include "model.h"
+#include "layers/fc_lif_layer_2.h"
+
+#include "connectivity.h"
+
+
+
 #include "nn_data_structure.h"
 #include "include/nn_ops.h"     // For run_cms() in MLP_Run_Layer()
-#include "nn_models/nmnist_784x64x64x10/test_patterns/pattern_0.h"
+
+// Test patterns
+#include "test_patterns/pattern_0.h"
 
 //#include "nn_models/nmnist_784x64x64x10/test_patterns/pattern_0.h"    // Import test pattern
 
@@ -46,6 +53,12 @@ NNLayer* FC_LIF_Layer_Init(
 
     const int8_t* luts,
     size_t luts_length,
+
+
+    int is_last_layer,
+    size_t out_spk_sum_relative_addr,
+    float out_spk_sum_scale,
+    int out_spk_sum_zero_point,
 
     // Non-const tensors
     size_t num_non_const_tensors,
@@ -173,6 +186,12 @@ NNLayer* FC_LIF_Layer_Init(
 
 
 
+    // There is an extra tensor out_spk_sum if it is last layer
+    if (is_last_layer) {
+        int8_t* out_spk_sum = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, out_spk_sum_relative_addr);
+        NNLayer_Assign(nnlayer, OUT_SPK_SUM_TENSOR_IDX,  out_spk_sum , output_layer_size, out_spk_sum_scale, out_spk_sum_zero_point, "out_spk_sum");
+        quantize_float_scalar_to_int8_array(0, nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], output_layer_size, out_spk_sum_scale, out_spk_sum_zero_point);
+    }
 
     // Assign layer input and output (so other layers know where to read and write from)
     nnlayer->input = in_spk;
@@ -181,11 +200,11 @@ NNLayer* FC_LIF_Layer_Init(
 
 
 
+
     return nnlayer;
 
 
 }
-
 
 
 
@@ -201,183 +220,37 @@ NN_Model* MLP_Init() {
 
     // Do this for each layer we have
     // First NNLayer
-    printf("about to init nnlayer0\n");
-    NNLayer* nnlayer0_fc_lif = FC_LIF_Layer_Init(
-
-        Getfc_lif_layer_0CMSPointer(),
-        Getfc_lif_layer_0CMSLen(),
-
-        Getfc_lif_layer_0WeightsPointer(),
-        Getfc_lif_layer_0WeightsLen(),
-
-        Getfc_lif_layer_0LIFParamPointer(),
-        Getfc_lif_layer_0LIFParamLen(),
-
-        Getfc_lif_layer_0LUTPointer(),
-        Getfc_lif_layer_0LUTLen(),
 
 
-        FC_LIF_LAYER_0_NUM_NON_CONST_TENSORS,
-        FC_LIF_LAYER_0_TENSOR_ARENA_SIZE,
-        nnlayer0_tensor_arena,
-        
-        
-        nnlayer0_in_spk,
-        nnlayer0_out_spk,
+    NNLayer* layer_pointers[MLP_NUM_LAYERS];
+    for (size_t layer_num = 0; layer_num < MLP_NUM_LAYERS; layer_num++) {
+        layer_pointers[layer_num] = init_layers_func[layer_num]();
+    }
+
+    for (size_t layer_num = 0; layer_num < MLP_NUM_LAYERS; layer_num++) {
+
+        // Set Next layer (to get linked list)
+        if (layer_num < MLP_NUM_LAYERS-1) {
+            layer_pointers[layer_num]->next_layer = layer_pointers[layer_num+1];
+        } else {
+            layer_pointers[layer_num]->next_layer = NULL;
+        }
 
 
-        FC_LIF_LAYER_0_BIAS_ADDR,
-        FC_LIF_LAYER_0_WEIGHT_ADDR,
-        FC_LIF_LAYER_0_V_MEM_ADDR,
-        FC_LIF_LAYER_0_TIME_NOT_UPDATED_ADDR,
-        FC_LIF_LAYER_0_UPDATE_NXT_LAYER_ADDR,
-        
+        // Set update curr
+        if (layer_num != 0) {
+            layer_pointers[layer_num]->update_curr = layer_pointers[layer_num-1]->update_nxt;
+        } else {
+            layer_pointers[layer_num]->update_curr = NULL;
+        }
+
+    }
+
     
-
-
-        FC_LIF_LAYER_0_INPUT_LAYER_SIZE,
-        FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE,
-        FC_LIF_LAYER_0_BIAS_LEN,
-        FC_LIF_LAYER_0_WEIGHT_LEN,
-
-
-        FC_LIF_LAYER_0_IN_SPK_SCALE,
-        FC_LIF_LAYER_0_IN_SPK_ZERO_POINT,
-
-        FC_LIF_LAYER_0_V_MEM_SCALE,
-        FC_LIF_LAYER_0_V_MEM_ZERO_POINT,
-        FC_LIF_LAYER_0_TIME_NOT_UPDATED_SCALE,
-        FC_LIF_LAYER_0_TIME_NOT_UPDATED_ZERO_POINT,
-
-        FC_LIF_LAYER_0_OUT_SPK_SCALE,
-        FC_LIF_LAYER_0_OUT_SPK_ZERO_POINT
-
-    );
-
-    printf("About to init nnlayer1\n");
-    NNLayer* nnlayer1_fc_lif = FC_LIF_Layer_Init(
-        Getfc_lif_layer_1CMSPointer(),
-        Getfc_lif_layer_1CMSLen(),
-
-        Getfc_lif_layer_1WeightsPointer(),
-        Getfc_lif_layer_1WeightsLen(),
-
-        Getfc_lif_layer_1LIFParamPointer(),
-        Getfc_lif_layer_1LIFParamLen(),
-
-        Getfc_lif_layer_1LUTPointer(),
-        Getfc_lif_layer_1LUTLen(),
-
-        FC_LIF_LAYER_1_NUM_NON_CONST_TENSORS,
-        FC_LIF_LAYER_1_TENSOR_ARENA_SIZE,
-        nnlayer1_tensor_arena,
-        
-        nnlayer0_out_spk,
-        nnlayer1_out_spk,
-
-        FC_LIF_LAYER_1_BIAS_ADDR,
-        FC_LIF_LAYER_1_WEIGHT_ADDR,
-        FC_LIF_LAYER_1_V_MEM_ADDR,
-        FC_LIF_LAYER_1_TIME_NOT_UPDATED_ADDR,
-        FC_LIF_LAYER_1_UPDATE_NXT_LAYER_ADDR,
-    
-
-
-        FC_LIF_LAYER_1_INPUT_LAYER_SIZE,
-        FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE,
-        FC_LIF_LAYER_1_BIAS_LEN,
-        FC_LIF_LAYER_1_WEIGHT_LEN,
-
-
-        FC_LIF_LAYER_1_IN_SPK_SCALE,
-        FC_LIF_LAYER_1_IN_SPK_ZERO_POINT,
-
-        FC_LIF_LAYER_1_V_MEM_SCALE,
-        FC_LIF_LAYER_1_V_MEM_ZERO_POINT,
-        FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE,
-        FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT,
-
-        FC_LIF_LAYER_1_OUT_SPK_SCALE,
-        FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT
-
-    );
-
-    printf("About to init nnlayer2\n");
-    NNLayer* nnlayer2_fc_lif = FC_LIF_Layer_Init(
-        Getfc_lif_layer_2CMSPointer(),
-        Getfc_lif_layer_2CMSLen(),
-
-        Getfc_lif_layer_2WeightsPointer(),
-        Getfc_lif_layer_2WeightsLen(),
-
-        Getfc_lif_layer_2LIFParamPointer(),
-        Getfc_lif_layer_2LIFParamLen(),
-
-        Getfc_lif_layer_2LUTPointer(),
-        Getfc_lif_layer_2LUTLen(),
-
-        FC_LIF_LAYER_2_NUM_NON_CONST_TENSORS,
-        FC_LIF_LAYER_2_TENSOR_ARENA_SIZE,
-        nnlayer2_tensor_arena,
-        
-        nnlayer1_out_spk,
-        nnlayer2_out_spk,
-
-        FC_LIF_LAYER_2_BIAS_ADDR,
-        FC_LIF_LAYER_2_WEIGHT_ADDR,
-        FC_LIF_LAYER_2_V_MEM_ADDR,
-        FC_LIF_LAYER_2_TIME_NOT_UPDATED_ADDR,
-        FC_LIF_LAYER_2_UPDATE_NXT_LAYER_ADDR,
-    
-
-
-        FC_LIF_LAYER_2_INPUT_LAYER_SIZE,
-        FC_LIF_LAYER_2_OUTPUT_LAYER_SIZE,
-        FC_LIF_LAYER_2_BIAS_LEN,
-        FC_LIF_LAYER_2_WEIGHT_LEN,
-
-
-        FC_LIF_LAYER_2_IN_SPK_SCALE,
-        FC_LIF_LAYER_2_IN_SPK_ZERO_POINT,
-
-        FC_LIF_LAYER_2_V_MEM_SCALE,
-        FC_LIF_LAYER_2_V_MEM_ZERO_POINT,
-        FC_LIF_LAYER_2_TIME_NOT_UPDATED_SCALE,
-        FC_LIF_LAYER_2_TIME_NOT_UPDATED_ZERO_POINT,
-
-        FC_LIF_LAYER_2_OUT_SPK_SCALE,
-        FC_LIF_LAYER_2_OUT_SPK_ZERO_POINT
-
-    );
-
-    printf("just about to assign out_spk_sum\n");
-
-    int8_t* out_spk_sum = PersistentAllocator_GetAbsPointer(&nnlayer2_fc_lif->allocator, 
-        FC_LIF_LAYER_2_OUT_SPK_SUM_ADDR);
-
-    printf("done with getting global addr\n");
-    NNLayer_Assign(nnlayer2_fc_lif, OUT_SPK_SUM_TENSOR_IDX,  out_spk_sum , FC_LIF_LAYER_2_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_2_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_2_OUT_SPK_SUM_ZERO_POINT, "out_spk_sum");
-
-    printf("assigned, about to set init value\n");
-    quantize_float_scalar_to_int8_array(0, nnlayer2_fc_lif->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX], FC_LIF_LAYER_2_OUTPUT_LAYER_SIZE, FC_LIF_LAYER_2_OUT_SPK_SUM_SCALE, FC_LIF_LAYER_2_OUT_SPK_SUM_ZERO_POINT);
-
-
-    printf("done wth assigning out_spk_sum\n");
-    //3. Connect the models together to form a linked list
-    nnlayer0_fc_lif->next_layer = nnlayer1_fc_lif;
-    nnlayer1_fc_lif->next_layer = nnlayer2_fc_lif;
-    nnlayer2_fc_lif->next_layer = NULL;
-
-
-    nnlayer0_fc_lif->update_curr = NULL;
-    nnlayer1_fc_lif->update_curr = nnlayer0_fc_lif->update_nxt;
-    nnlayer2_fc_lif->update_curr = nnlayer1_fc_lif->update_nxt;
-    
-
 
 
     // 3. Create NN_Model
-    NN_Model* mlp_model = NN_Model_Init(NULL, nnlayer0_fc_lif);
+    NN_Model* mlp_model = NN_Model_Init(NULL, layer_pointers[0]);
 
     return mlp_model;
 }

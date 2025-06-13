@@ -4,6 +4,15 @@ from cms_interpreter import register_cms_2_assembly
 
 
 from pathlib import Path
+
+
+
+def get_connectivity_filepath(model_name, current_working_directory, current_to_model_directory):
+    connectivity_filepath = current_working_directory / current_to_model_directory / Path(model_name) / Path("connectivity.h")
+
+    return connectivity_filepath
+
+
 '''
 Header filepath: current_working_directory / current_to_model_directory / model_name / layers / layer_name.h
 '''
@@ -388,3 +397,4 @@ def check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias
         print("exiting...")
         exit()
     
+
