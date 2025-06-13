@@ -11,21 +11,52 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 
 
 
-from model import Model, Net, net, snn, num_hid_layers, size_hid_layers, quant_aware, decode
+#from model import Model, Net, net, snn, num_hid_layers, size_hid_layers, quant_aware, decode
+import argparse
+import importlib
+
+# Parse CLI args
+parser = argparse.ArgumentParser()
+parser.add_argument("--model", required=True, help="Model folder name, e.g. model_1 or model_2")
+args = parser.parse_args()
+
+# Dynamically import the model module
+model_module = importlib.import_module(f"{args.model}.model")
+
+
+
+
+
+#from model import Net, Model, decode, net, snn, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
+
+# Explicitly extract attributes
+Net = model_module.Net
+Model = model_module.Model
+decode = model_module.decode
+net = model_module.net
+snn = model_module.snn
+n_time_bins = model_module.n_time_bins
+num_hid_layers = model_module.num_hid_layers
+size_hid_layers = model_module.size_hid_layers
+epochs = model_module.epochs
+quant_aware = model_module.quant_aware
+spike_factor = model_module.spike_factor
+mean_weight_factor = model_module.mean_weight_factor
 
 
 # Where to load from (no storing in this script)
 #model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
-model_dir = Path("./")
-model_params_dir = Path("model_params")
-test_patterns_dir = Path("test_patterns")
+#model_dir = Path("./")
+model_dir = Path(args.model)
+model_params_dir = Path(model_module.model_params_dir)
+test_patterns_dir = Path(model_module.test_patterns_dir)
 
 
 
 
 # Load model
 #net.load_state_dict(torch.load("save_model_dict_784x32x10.pt", weights_only=False))
-snn.load_state_dict(torch.load("model_state_dict.pkl"))
+snn.load_state_dict(torch.load(model_dir / Path("model_state_dict.pkl")))
 
 
 net = Model(snn=snn, decoder=decode)

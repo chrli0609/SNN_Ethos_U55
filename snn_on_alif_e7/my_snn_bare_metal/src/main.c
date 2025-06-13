@@ -30,7 +30,8 @@
 //#include "nn_models/multi_tensor_sram_mlp/model.h"
 //#include "nn_models/spk_mnist_mlp/model.h"
 //#include "nn_models/spk_mnist_784x32x10/model.h"
-#include "nn_models/nmnist_784x64x64x10/model.h"
+//#include "nn_models/nmnist_784x64x64x10/model.h"
+#include "nn_models/nmnist_784x32x32x32x10/model.h"
 
 
 
@@ -94,9 +95,6 @@ int main() {
 
 
     NN_Model* mlp_model = MLP_Init();
-    printf("Model\n");
-    printf("\tFC_LIF_0: %d x %d\n", FC_LIF_LAYER_0_INPUT_LAYER_SIZE, FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE);
-    printf("\tFC_LIF_1: %d x %d\n", FC_LIF_LAYER_1_INPUT_LAYER_SIZE, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE);
     
 
 
@@ -171,7 +169,6 @@ int main() {
         mlp_model,
         test_input_0,
         test_target_0,
-        //test_input_0_NUM_SAMPLES,
         test_input_0_NUM_SAMPLES,
 
         MLP_NUM_TIME_STEPS,

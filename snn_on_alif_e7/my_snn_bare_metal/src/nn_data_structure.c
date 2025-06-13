@@ -6,7 +6,8 @@
 
 #include "include/extra_funcs.h"
 //#include "nn_models/spk_mnist_784x32x10/model.h"
-#include "nn_models/nmnist_784x64x64x10/model.h"
+//#include "nn_models/nmnist_784x64x64x10/model.h"
+#include "nn_models/nmnist_784x32x32x32x10/model.h"
 
 
 
@@ -374,7 +375,7 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
 
 
 // Assume that NNLayer structs are already linked together
-NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
+NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t out_spk_sum_tensor_idx) {
     // Init Total Tensor Arena and store its pointer
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));
     
@@ -387,7 +388,8 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     nn_model->input = first_nnlayer->input;
 
     // Set input_size
-    nn_model->input_size = nn_model->first_nnlayer->tensor_sizes[IN_SPK_TENSOR_IDX];
+    //nn_model->input_size = nn_model->first_nnlayer->tensor_sizes[IN_SPK_TENSOR_IDX];
+    nn_model->input_size = input_size;
 
     // Set nn model output tensor
     NNLayer* nnlayer = first_nnlayer;
@@ -400,10 +402,12 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer) {
     nn_model->last_nnlayer = nnlayer;
 
     // Set out_spk_sum pointer to the out_spk_sum of the last layer 
-    nn_model->out_spk_sum = nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX];
+    //nn_model->out_spk_sum = nnlayer->tensor_ptrs[OUT_SPK_SUM_TENSOR_IDX];
+    nn_model->out_spk_sum = nnlayer->tensor_ptrs[out_spk_sum_tensor_idx];
 
     // Set output_size
-    nn_model->output_size = nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX];
+    //nn_model->output_size = nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX];
+    nn_model->output_size = output_size;
 
 
 

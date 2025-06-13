@@ -7,6 +7,51 @@ from pathlib import Path
 
 
 
+
+def align_input_output_sizes_to_8(init_input_size, init_output_size, is_first_layer):
+
+    if is_first_layer:
+        aligned_input_size = init_input_size
+    else:
+        aligned_input_size = next_multiple_of_8(init_input_size)
+
+    aligned_output_size = next_multiple_of_8(init_output_size)
+
+    in_padding = aligned_input_size - init_input_size
+    out_padding = aligned_output_size - init_output_size
+
+
+    return aligned_input_size, aligned_output_size, in_padding, out_padding
+
+
+import numpy as np
+
+def process_weights_and_biases(weights_filepath, biases_filepath, input_layer_size, output_layer_size, in_padding, out_padding):
+    ## Get weights and biases
+    weights_init = np.load(weights_filepath)
+    bias_init = np.load(biases_filepath)
+
+    # Append by how much we are missing
+    weights_padded = np.pad(weights_init, ((0, out_padding), (0, in_padding)), mode='constant')
+    bias_padded = np.pad(bias_init, (0, out_padding), mode='constant')
+
+
+    # Reshape weights
+    weights_reshaped = weights_padded.reshape(output_layer_size, 1, 1, input_layer_size)
+
+
+    weights_volume_ohwi = weights_reshaped
+    bias_list = bias_padded
+
+    print("Max weight value:", weights_volume_ohwi.max())
+    print("Min weight value", weights_volume_ohwi.min())
+    print("Max bias value", bias_list.max())
+    print("Min bias value", bias_list.min())
+
+    return weights_volume_ohwi, bias_list
+
+
+
 def get_connectivity_filepath(model_name, current_working_directory, current_to_model_directory):
     connectivity_filepath = current_working_directory / current_to_model_directory / Path(model_name) / Path("connectivity.h")
 

@@ -1,13 +1,17 @@
 from pathlib import Path
 import os
 import sys
-CURR_WORKING_DIR = Path(os.getcwd())
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 from ethosu.vela.api import NpuAccelerator
 
+import fc_lif
+
+from extra_func import get_header_filepath, get_connectivity_filepath, process_weights_and_biases, align_input_output_sizes_to_8
+from write_connectivity_h_file import clear_connectivity_file, write_tensor_declarations, write_init_func, write_init_func_array
 
 
+CURR_WORKING_DIR = Path(os.getcwd())
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 # Only set to true if running check_npu_op_time.ps1
 SWEEP_NUM_NEURONS = False
@@ -20,22 +24,22 @@ CURR_WORKING_DIR_TO_MODEL_DIR = Path("../../../snn_on_alif_e7/my_snn_bare_metal/
 
 
 
-'''
-Command line argument: LAYER_0_OUTPUT_SIZE
-'''
-
 MODEL_NAME = "nmnist_784x64x64x10"
 NUM_LAYERS = 3
-LAYER_0_CMS_NAME = "fc_lif_layer_0"
-LAYER_1_CMS_NAME = "fc_lif_layer_1"
-LAYER_2_CMS_NAME = "fc_lif_layer_2"
+LAYER_BASE_NAME = "fc_lif_layer_"
 
-LAYERS_NAME_LIST = [
-    LAYER_0_CMS_NAME,
-    LAYER_1_CMS_NAME,
-    LAYER_2_CMS_NAME
+INIT_LAYER_SIZES_LIST = [
+    28*28,
+    64,
+    64,
+    10
 ]
 
+MEM_STORE_LOC_LIST = [
+    "model_params_sram1",
+    "model_params_sram1",
+    "model_params_sram1"
+]
 
 
 
@@ -52,114 +56,79 @@ Set Test Pattern to use
 TEST_PATTERN = '0'
 
 
-import fc_lif
-import layer0
-import layer1
-import layer2
-
-if SWEEP_NUM_NEURONS:
-    if len(sys.argv) > 1:
-            try:
-                layer0.OUTPUT_LAYER_SIZE = int(sys.argv[1])
-            except:
-                print("Expected Integer command line argument but received:", sys.argv[1])
-                exit()
-    else:
-        print("AN ERROR HAS OCCURRRED, INCORRECT COMMAND LINE ARGUMENTS SET WHEN CALLING main.py")
 
 
 
 
 
-
-
-# Assign header filenames
-from extra_func import get_header_filepath
-header_out_filepath_layer0 = get_header_filepath(LAYER_0_CMS_NAME, MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
-header_out_filepath_layer1 = get_header_filepath(LAYER_1_CMS_NAME, MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
-header_out_filepath_layer2 = get_header_filepath(LAYER_2_CMS_NAME, MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
-
-
-# Ensure Layer Input/Output Dimensions match
-if not SWEEP_NUM_NEURONS:
-    if (layer0.OUTPUT_LAYER_SIZE != layer1.INPUT_LAYER_SIZE):
-        print("Error: Layer Dimensions don't match")
-    
-    
-
-
-
-fc_lif.gen_fc_lif(
-    INPUT_LAYER_SIZE=layer0.INPUT_LAYER_SIZE,
-    OUTPUT_LAYER_SIZE=layer0.OUTPUT_LAYER_SIZE,
-
-
-    weights_volume_ohwi=layer0.weights_volume_ohwi,
-    bias_list=layer0.bias_list,
-    beta_list=layer0.beta_list,
-    vth_list=layer0.vth_list,    
-
-    cms_name=LAYER_0_CMS_NAME,
-    is_last_layer=False,
-
-    DEBUG_MODE=DEBUG_MODE,
-    ACCELERATOR=ACCELERATOR,
-    header_out_filepath=header_out_filepath_layer0
-)
-
-fc_lif.gen_fc_lif(
-    INPUT_LAYER_SIZE=layer1.INPUT_LAYER_SIZE,
-    OUTPUT_LAYER_SIZE=layer1.OUTPUT_LAYER_SIZE,
-
-
-    weights_volume_ohwi=layer1.weights_volume_ohwi,
-    bias_list=layer1.bias_list,
-    beta_list=layer1.beta_list,
-    vth_list=layer1.vth_list,    
-
-    cms_name=LAYER_1_CMS_NAME,
-    is_last_layer=False,    
-
-    DEBUG_MODE=DEBUG_MODE,
-    ACCELERATOR=ACCELERATOR,
-    header_out_filepath=header_out_filepath_layer1
-)
-
-
-fc_lif.gen_fc_lif(
-    INPUT_LAYER_SIZE=layer2.INPUT_LAYER_SIZE,
-    OUTPUT_LAYER_SIZE=layer2.OUTPUT_LAYER_SIZE,
-
-
-    weights_volume_ohwi=layer2.weights_volume_ohwi,
-    bias_list=layer2.bias_list,
-    beta_list=layer2.beta_list,
-    vth_list=layer2.vth_list,    
-
-    cms_name=LAYER_2_CMS_NAME,
-    is_last_layer=True,
-
-    DEBUG_MODE=DEBUG_MODE,
-    ACCELERATOR=ACCELERATOR,
-    header_out_filepath=header_out_filepath_layer2
-)
-
-
-
-
-
-from extra_func import get_connectivity_filepath
-connectivity_filepath = get_connectivity_filepath(MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
 # Write connectivity file
-from write_connectivity_h_file import clear_connectivity_file, write_init_func, write_init_func_array
-
+connectivity_filepath = get_connectivity_filepath(MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
 clear_connectivity_file(connectivity_filepath)
+write_tensor_declarations(connectivity_filepath, LAYER_BASE_NAME, NUM_LAYERS, MEM_STORE_LOC_LIST)
 
-for i in range(NUM_LAYERS):
-    write_init_func(connectivity_filepath, LAYER_0_CMS_NAME)
-write_init_func_array(connectivity_filepath, LAYER_0_CMS_NAME, NUM_LAYERS)
+for layer_num in range(NUM_LAYERS):
+
+    # Get layer names
+    layer_name = f"{LAYER_BASE_NAME}{layer_num}"
+
+    if layer_num == 0:
+        is_first_layer = True
+    else:
+        is_first_layer = False
+
+    aligned_input_size, aligned_output_size, in_padding, out_padding = align_input_output_sizes_to_8(INIT_LAYER_SIZES_LIST[layer_num], INIT_LAYER_SIZES_LIST[layer_num+1], is_first_layer)
 
 
+    weights_volume_ohwi, bias_list = process_weights_and_biases(Path("model_params") / Path(layer_name + "_weights.npy"),
+                                                                Path("model_params") / Path(layer_name + "_biases.npy"),
+                                                                aligned_input_size,
+                                                                aligned_output_size,
+                                                                in_padding, out_padding)
+
+    ##### Set LIF Param values #######
+
+    # Generate Beta values
+    beta_list = []
+    for j in range(aligned_output_size):
+        beta_list.append(0.95)
+
+    # Generate Vth values
+    vth_list = []
+    for k in range(aligned_output_size):
+        vth_list.append(1)
+
+
+    #layer_name = f"layer{layer_num}"
+    #layer = importlib.import_module(f"layers.{layer_name}")
+    header_out_filepath = get_header_filepath(LAYER_BASE_NAME+str(layer_num), MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
+
+    fc_lif.gen_fc_lif(
+        INPUT_LAYER_SIZE=aligned_input_size,
+        OUTPUT_LAYER_SIZE=aligned_output_size,
+
+        weights_volume_ohwi=weights_volume_ohwi,
+        bias_list=bias_list,
+        beta_list=beta_list,
+        vth_list=vth_list,
+
+        cms_name=LAYER_BASE_NAME+str(layer_num),
+        is_last_layer=(layer_num == NUM_LAYERS - 1),
+
+        DEBUG_MODE=DEBUG_MODE,
+        ACCELERATOR=ACCELERATOR,
+        header_out_filepath=header_out_filepath,
+    )
+    
+
+
+    write_init_func(connectivity_filepath, LAYER_BASE_NAME+str(layer_num))
+
+write_init_func_array(connectivity_filepath, LAYER_BASE_NAME, NUM_LAYERS)
+
+
+
+    
+    
 
 
 

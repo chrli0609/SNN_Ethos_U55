@@ -5,24 +5,16 @@
 #include <stdlib.h> //malloc
 
 
-
-
+#include "include/nn_ops.h"     // For run_cms() in MLP_Run_Layer()
 #include "include/extra_funcs.h" //quantize_array_float_to_int8(), timer functions
-#include "layers/fc_lif_layer_0.h"
-#include "layers/fc_lif_layer_1.h"
-#include "layers/fc_lif_layer_2.h"
+
+
 
 #include "connectivity.h"
 
 
 
-#include "nn_data_structure.h"
-#include "include/nn_ops.h"     // For run_cms() in MLP_Run_Layer()
 
-// Test patterns
-#include "test_patterns/pattern_0.h"
-
-//#include "nn_models/nmnist_784x64x64x10/test_patterns/pattern_0.h"    // Import test pattern
 
 
 
@@ -221,10 +213,14 @@ NN_Model* MLP_Init() {
     // Do this for each layer we have
     // First NNLayer
 
+    printf("SNN Model:\n");
 
     NNLayer* layer_pointers[MLP_NUM_LAYERS];
     for (size_t layer_num = 0; layer_num < MLP_NUM_LAYERS; layer_num++) {
         layer_pointers[layer_num] = init_layers_func[layer_num]();
+
+        printf("\tFC_LIF_%d: %d X %d\n", layer_num, layer_pointers[layer_num]->tensor_sizes[IN_SPK_TENSOR_IDX], layer_pointers[layer_num]->tensor_sizes[OUT_SPK_TENSOR_IDX]);
+
     }
 
     for (size_t layer_num = 0; layer_num < MLP_NUM_LAYERS; layer_num++) {
@@ -250,7 +246,7 @@ NN_Model* MLP_Init() {
 
 
     // 3. Create NN_Model
-    NN_Model* mlp_model = NN_Model_Init(NULL, layer_pointers[0]);
+    NN_Model* mlp_model = NN_Model_Init(NULL, layer_pointers[0], MLP_INPUT_LAYER_SIZE, MLP_OUTPUT_LAYER_SIZE, OUT_SPK_SUM_TENSOR_IDX);
 
     return mlp_model;
 }

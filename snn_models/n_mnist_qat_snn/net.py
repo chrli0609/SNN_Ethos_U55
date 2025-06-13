@@ -28,7 +28,41 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 
 """
 
-from model import Net, Model, decode, net, snn, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
+
+import argparse
+import importlib
+
+# Parse CLI args
+parser = argparse.ArgumentParser()
+parser.add_argument("--model", required=True, help="Model folder name, e.g. model_1 or model_2")
+args = parser.parse_args()
+
+# Dynamically import the model module
+model_module = importlib.import_module(f"{args.model}.model")
+
+
+
+
+
+#from model import Net, Model, decode, net, snn, n_time_bins, num_hid_layers, size_hid_layers, epochs, quant_aware, spike_factor, mean_weight_factor
+
+# Explicitly extract attributes
+Net = model_module.Net
+Model = model_module.Model
+decode = model_module.decode
+net = model_module.net
+snn = model_module.snn
+n_time_bins = model_module.n_time_bins
+num_hid_layers = model_module.num_hid_layers
+size_hid_layers = model_module.size_hid_layers
+epochs = model_module.epochs
+quant_aware = model_module.quant_aware
+spike_factor = model_module.spike_factor
+mean_weight_factor = model_module.mean_weight_factor
+
+
+
+
 
 
 import random
@@ -83,9 +117,25 @@ from pathlib import Path
 #from store_model_params import model_dir, test_patterns_dir
 
 #model_dir = Path("../../ethosu_compiler/gen_cms/nmnist_784x64x64x10/")
-model_dir = Path("./")
-model_params_dir = Path("model_params")
-test_patterns_dir = Path("test_patterns")
+#model_dir = Path("./")
+model_dir = Path(args.model)
+
+# Where to store stuff
+model_params_dir = Path(model_module.model_params_dir)
+test_patterns_dir = Path(model_module.test_patterns_dir)
+
+print("model_dir", model_dir)
+print("model_params_dir:", model_params_dir)
+print("test_patterns_dir:", test_patterns_dir)
+test_data_filepath = model_dir / test_patterns_dir / Path("test_input_"+ str(2) + ".npy")
+print("test_data_filepath", test_data_filepath)
+print("test_data_filepath", test_data_filepath.__class__)
+print("test_data_filepath is dir", test_data_filepath.is_dir())
+print("test_data_filepath is file", test_data_filepath.is_file())
+print("test_data_filepath exists", test_data_filepath.exists())
+
+
+
 def test(net, testloader):
     net.eval()
     test_loss = 0
@@ -104,12 +154,21 @@ def test(net, testloader):
             correct += pred.eq(target.view_as(pred)).sum().item()
 
 
+
+            test_data_filepath = model_dir / test_patterns_dir / Path("test_input_"+ str(counter) + ".npy")
+            test_target_filepath = model_dir / test_patterns_dir / Path("test_target_" + str(counter) +".npy")
+
+
+
+
+            
+
             # Store test data
             tmp_test_data = data.cpu()
             tmp_test_target = target.cpu()
 
-            np.save(model_dir / test_patterns_dir / Path("test_input_"+ str(counter) + ".npy"), tmp_test_data)
-            np.save(model_dir / test_patterns_dir / Path("test_target_" + str(counter) +".npy"), tmp_test_target)
+            np.save(test_data_filepath, tmp_test_data)
+            np.save(test_target_filepath, tmp_test_target)
 
             #print("spikes", spikes)
 
@@ -156,22 +215,6 @@ testloader = torch.utils.data.DataLoader(testset,
 
 
 
-'''
-snn = Net(input_size=784, 
-          output_size=10, 
-          num_hidden=num_hid_layers, 
-          size_hidden=size_hid_layers, 
-          quant_aware=quant_aware)
-
-
-
-if quant_aware:
-    snn.qconfig = get_default_qat_qconfig("fbgemm")  # or "qnnpack" for ARM
-    prepare_qat(snn, inplace=True)
-
-
-net = Model(snn=snn, decoder=decode)
-'''
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
 
@@ -183,7 +226,7 @@ def main():
     # Save the model or the weights as you want. Example for saving the model
     #torch.save(net.snn, 'model.pkl')
 
-    torch.save(net.snn.state_dict(), 'model_state_dict.pkl')
+    torch.save(net.snn.state_dict(), model_dir / Path('model_state_dict.pkl'))
 
 
 if __name__ == '__main__':

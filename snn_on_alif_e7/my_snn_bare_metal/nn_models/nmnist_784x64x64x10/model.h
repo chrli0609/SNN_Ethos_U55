@@ -6,12 +6,12 @@
 
 
 // Include Layers
-#include "nn_models/nmnist_784x64x64x10/layers/fc_lif_layer_0.h"
-#include "nn_models/nmnist_784x64x64x10/layers/fc_lif_layer_1.h"
-#include "nn_models/nmnist_784x64x64x10/layers/fc_lif_layer_2.h"
+#include "layers/fc_lif_layer_0.h"
+#include "layers/fc_lif_layer_1.h"
+#include "layers/fc_lif_layer_2.h"
 
 /// Include Test Patterns
-#include "nn_models/nmnist_784x64x64x10/test_patterns/pattern_0.h"
+#include "test_patterns/pattern_0.h"
 
 // Set model input and output sizes
 #define MLP_INPUT_LAYER_SIZE    FC_LIF_LAYER_0_INPUT_LAYER_SIZE
@@ -31,6 +31,7 @@
 #define UPDATE_NXT_LAYER_IDX            5
 #define OUT_SPK_TENSOR_IDX              6
 
+// Only exists for last layer
 #define OUT_SPK_SUM_TENSOR_IDX          7
 
 
@@ -131,18 +132,6 @@ Set region for every layer
 //static int8_t fc_lif_layer_0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
 //static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
 //static int8_t fc_lif_layer_0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-static int8_t fc_lif_layer_0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t fc_lif_layer_0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-
-static int8_t fc_lif_layer_1_tensor_arena[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t fc_lif_layer_1_out_spk[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-
-
-static int8_t fc_lif_layer_2_tensor_arena[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-static int8_t fc_lif_layer_2_out_spk[FC_LIF_LAYER_1_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
-
-
 
 
 
