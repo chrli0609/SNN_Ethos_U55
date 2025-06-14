@@ -1,0 +1,20 @@
+,"Tensor arena on SRAM1, Weights on MRAM",Weights on SRAM,"Tensor arena on DTCM, weights on sram","Tensor arena on DTCM, weights on MRAM"
+ait_reset_model_for_new_sample,19.511111,,19.666667,19.444444
+ait_set_test_pattern_pointer_to_model,1.133333,,2.688889,6.088889
+ait_get_time_since_last_update,27.266667,,23.022222,15.666667
+ait_ethosu_reserve_driver,0,,0,0
+ait_check_npu_nn_op_validity,22.533333,,38.666667,43.955556
+ait_process_cms_preamble,87.488889,,53.288889,63.288889
+ait_verify_base_addr,21.666667,,28.977778,44.822222
+ait_ethosu_flush_dcache,3739.533333,,1619.488889,2878.777778
+ait_ethosu_request_power,138.022222,,164.6,134.866667
+ait_ethosu_dev_run_command_stream,155.266667,,144.711111,138.266667
+ait_wait_npu_task_complete_irq,2828.8,,3315.022222,2780.466667
+ait_ethosu_release_power,23.511111,,31.066667,18.688889
+ait_ethosu_invalidate_dcache,3773.844444,,1609.377778,2907.888889
+ait_ethosu_release_driver,0,,0,0
+ait_arg_max,94,,92,91
+,,,,
+,,,,
+sum,10932.57778,0,7142.577779,9143.222224
+avg_inference_exe_time_per_sample,11414.93333,,7440.177778,9560.022222
