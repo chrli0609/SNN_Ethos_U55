@@ -18,7 +18,7 @@ from extra_func import *
 
 def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, 
          weights_volume_ohwi, bias_list, beta_list, vth_list,
-         cms_name, is_last_layer, DEBUG_MODE, ACCELERATOR, header_out_filepath):
+         cms_name, weights_and_biases_on_sram, is_last_layer, DEBUG_MODE, ACCELERATOR, header_out_filepath):
 
 
 
@@ -167,37 +167,82 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
+    # Can at most only ever be 8 tensors we have to track on SRAM Sratch region: bias, weight, tmp1, tmp2, v_mem, out_spk_sum, time_not_updataed, update_nxt_layer
+    MAX_NUM_TENSORS_TO_TRACK = 8
 
     # Assign Memory segments in SRAM Scratch (region 1)
     
     if (not is_last_layer):
-        BIAS_ADDR           	=   0 
-        WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
-        TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-        TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-        V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-        TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-        UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+
+        if (not weights_and_biases_on_sram):
 
 
-        TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
-        NUM_NON_CONST_TENSORS = 7
+            # SRAM SCRATCH REGION
+            TMP1_ADDR           	=	0
+            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
-        OUT_SPK_SUM_ADDR = -1
+
+            TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + 16
+
+            OUT_SPK_SUM_ADDR = -1
+
+
+
+            # WEIGHTS AND BIAS REGION
+            BIAS_ADDR = 0
+            WEIGHT_ADDR = BIAS_ADDR + len(bias_byte_arr_init)
+
+
+        else:
+
+            BIAS_ADDR           	=   0 
+            WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
+            TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
+            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+
+
+            TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+
+            OUT_SPK_SUM_ADDR = -1
     
     else:
 
-        BIAS_ADDR           	=   0 
-        WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
-        TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-        TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-        V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-        OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-        TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
-        UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+        if (not weights_and_biases_on_sram):
+            # SRAM SCRATCH REGION
+            TMP1_ADDR           	=	0
+            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
+            UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
-        TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
-        NUM_NON_CONST_TENSORS = 8
+            TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + 16
+
+
+            # WEIGHTS AND BIAS REGION
+            BIAS_ADDR = 0
+            WEIGHT_ADDR = BIAS_ADDR + len(bias_byte_arr_init)
+
+        
+
+        else:
+
+            BIAS_ADDR           	=   0 
+            WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
+            TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
+            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
+            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
+            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
+            UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
+
+            TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
 
 
 
@@ -247,7 +292,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         sizes_dict = {
 
             cms_name.upper()+"_IS_LAST_LAYER"           : int(is_last_layer),    #num tensors in sram scratchpad
-            cms_name.upper()+"_NUM_NON_CONST_TENSORS"   : NUM_NON_CONST_TENSORS,    #num tensors in sram scratchpad
+            cms_name.upper()+"_MAX_NUM_TENSORS_TO_TRACK"   : MAX_NUM_TENSORS_TO_TRACK,    #num tensors in sram scratchpad
 
             cms_name.upper()+"_TENSOR_ARENA_SIZE "  : TENSOR_ARENA_SIZE,
             cms_name.upper()+"_INPUT_LAYER_SIZE "   : INPUT_LAYER_SIZE,             
@@ -432,7 +477,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         return dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index
 
 
-    def def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR):
+    def def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR, weights_and_biases_on_sram):
 
 
 
@@ -543,13 +588,24 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         #WEIGHT_ADDR = BIAS_ADDR + len(bias_byte_arr)
     
     
-        WEIGHT_N_BIAS_ADDR = BIAS_ADDR #Bias before weights
+        if (weights_and_biases_on_sram):
+            WEIGHT_N_BIAS_ADDR = BIAS_ADDR #Bias before weights
 
-        #DMA    
-        dma_src = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=weight_n_bias_len)
-        dma_dst = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
-        dma_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
+            #DMA    
+            dma_src = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=weight_n_bias_len)
+            dma_dst = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
+            dma_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
 
+
+            weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
+            biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
+        
+        else:
+
+            dma_op = None
+
+            weights = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
+            biases = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
 
 
 
@@ -559,8 +615,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         padding = NpuPadding(top=0, left=0, bottom=0, right=0)
 
 
-        weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
-        biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
 
     
 
@@ -601,6 +655,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
         return my_op, dma_op, weight_byte_arr, bias_byte_arr, 
+
 
 
 
@@ -1326,7 +1381,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
         # Define the individual NPU Operations
         dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
-        fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR)
+
+
         mul_decay_op = def_mul_decay_Vmem()
         add_decayed_mem_in_curr = def_add_decayed_mem_in_curr()
         check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth()
@@ -1338,7 +1394,18 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op]
+
+        if (not weights_and_biases_on_sram):
+            fully_connected_op, _ , weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR, weights_and_biases_on_sram)
+            npu_op_list.append(fully_connected_op)
+        else:
+            fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR, weights_and_biases_on_sram)
+            npu_op_list.extend([dma_op, fully_connected_op])
+
+        
+        npu_op_list.extend([mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op])
 
 
 

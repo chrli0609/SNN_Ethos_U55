@@ -53,7 +53,7 @@ NNLayer* FC_LIF_Layer_Init(
     int out_spk_sum_zero_point,
 
     // Non-const tensors
-    size_t num_non_const_tensors,
+    size_t max_num_tensors_to_track,
     size_t tensor_arena_size,
     int8_t* tensor_arena,
 
@@ -88,7 +88,7 @@ NNLayer* FC_LIF_Layer_Init(
     /* ____________________________________________ */
     /* 1. Initiate NNLayer Struct                   */
 
-    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, num_non_const_tensors);
+    NNLayer* nnlayer = NNLayer_Init(tensor_arena, tensor_arena_size, max_num_tensors_to_track);
     if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
 
     /* ___________________________________________ */
@@ -120,10 +120,22 @@ NNLayer* FC_LIF_Layer_Init(
 
     //int8_t* in_spk_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
         //in_spk_relative_addr);
-    int8_t* bias_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-        bias_relative_addr);
-    int8_t* weight_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
-        weight_relative_addr);
+    
+    int weights_and_biases_on_sram = 0;
+
+    int8_t* bias_arena;
+    int8_t* weight_arena;
+    if (weights_and_biases_on_sram) {
+        bias_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+            bias_relative_addr);
+        weight_arena = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
+            weight_relative_addr);
+    } else {
+        bias_arena = bias_and_weights;
+        weight_arena = bias_and_weights + weight_relative_addr;
+    }
+
+
     
     // Only turn on when debugging
     //int8_t* tmp1_quant = PersistentAllocator_GetAbsPointer(&nnlayer->allocator, 
@@ -548,15 +560,7 @@ int MLP_Inference_test_patterns(
                     //quantize_float_scalar_to_int8_array(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->tensor_sizes[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
                     quantize_float_scalar_to_int8_scalar(time_steps_layer_not_updated, nnlayer->tensor_ptrs[TIME_NOT_UPDATED_QUANT_IDX], nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].scale_reciprocal, nnlayer->quant_params[TIME_NOT_UPDATED_QUANT_IDX].zero_point);
 
-                    /* DEBUG PRINTOUTS */
-                    //printf("nnlayer:\n");
-                    if (VIEW_TENSORS) { printf("Pre nnlayer\n"); NNLayer_DequantizeAndPrint(nnlayer); }
-                    if (CHECK_INPUT_OUTPUT) { print_dequant_int8(nnlayer->input, FC_LIF_LAYER_1_INPUT_LAYER_SIZE, "Layer1->input", FC_LIF_LAYER_1_IN_SPK_SCALE, FC_LIF_LAYER_1_IN_SPK_ZERO_POINT); }
-                    if (DEBUG_MODE) { printf("starting MLP RUN Layer1 now\n"); }
 
-
-
-                    // MLP Run Second Layer
                     MLP_Run_Layer(
                         nnlayer->tensor_arena,
                         nnlayer->tensor_arena_size,
@@ -581,16 +585,9 @@ int MLP_Inference_test_patterns(
                     //start_layer1 = start_timer();
                     nnlayer->time_of_previous_update = time_step;
         
-                    if (VIEW_TENSORS) { printf("Post nnlayer:\n"); NNLayer_DequantizeAndPrint(nnlayer); }
-                    if (CHECK_INPUT_OUTPUT) {
-                        print_dequant_int8(nnlayer->tensor_ptrs[V_MEM_QUANT_IDX], FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->v_mem", FC_LIF_LAYER_1_V_MEM_SCALE, FC_LIF_LAYER_1_V_MEM_ZERO_POINT);
-                        print_dequant_int8(nnlayer->output, FC_LIF_LAYER_1_OUTPUT_LAYER_SIZE, "Layer1->output", FC_LIF_LAYER_1_OUT_SPK_SCALE, FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT);
-                    }
 
 
                 } else if ((int8_t)*(nnlayer->update_curr) == -128) {
-                    //printf("No spike, skipping layer1 computation\n");
-                    //else no more to compute for this inference cycle
                     break;
                 } else { printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); }
 
@@ -599,29 +596,10 @@ int MLP_Inference_test_patterns(
             }
 
             
-            // Record the spikes (rate encoding --> use total number of spikes to determine prediction)
-            //printf("output:\n");
-            //for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-                //out_neuron_sum[i] += mlp_model->output[i];
-
-                ////printf("%d: %d\n", i, mlp_model->output[i]);
-            //}
         
         }
 
         
-        //// Get the max value
-        //double max_value = -500;
-        //size_t max_spk_idx = 0;
-        //double neuron_sum = 0;
-        //for (size_t i = 0; i < MLP_OUTPUT_LAYER_SIZE; i++) {
-            //neuron_sum = out_neuron_sum[i]; 
-            //if (neuron_sum > max_value) {
-                //max_value = neuron_sum;
-                //max_spk_idx = i;
-            //}
-        //}
-        //printf("arg max Prediction: %d\n", max_spk_idx);
         size_t pred = arg_max(mlp_model->out_spk_sum, mlp_model->output_size, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].scale, mlp_model->last_nnlayer->quant_params[OUT_SPK_SUM_TENSOR_IDX].zero_point);
 
 

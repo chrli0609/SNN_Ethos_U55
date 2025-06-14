@@ -112,6 +112,7 @@ for layer_num in range(NUM_LAYERS):
         vth_list=vth_list,
 
         cms_name=LAYER_BASE_NAME+str(layer_num),
+        weights_and_biases_on_sram=False,
         is_last_layer=(layer_num == NUM_LAYERS - 1),
 
         DEBUG_MODE=DEBUG_MODE,

@@ -61,7 +61,7 @@ def write_init_func(connectivity_h_filepath, layer_name):
         f.write("\t\t" + layer_name.upper() + "_OUT_SPK_SCALE" + ",\n")
         f.write("\t\t" + layer_name.upper() + "_OUT_SPK_SUM_ZERO_POINT" + ",\n")
 
-        f.write("\t\t" + layer_name.upper() + "_NUM_NON_CONST_TENSORS" + ",\n")
+        f.write("\t\t" + layer_name.upper() + "_MAX_NUM_TENSORS_TO_TRACK" + ",\n")
 
         f.write("\t\t" + layer_name.upper() + "_TENSOR_ARENA_SIZE" + ",\n")
 
