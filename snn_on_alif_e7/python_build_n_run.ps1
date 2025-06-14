@@ -1,6 +1,7 @@
 
 param (
-    [string]$PythonScriptDir,# = "../ethosu_compiler/gen_cms/mlp_int8/",
+    [string]$model,
+    [string]$PythonScriptDir = "../ethosu_compiler/gen_cms/",
     [string]$PythonScriptFilename = "main.py",
     [string]$SecondaryScriptFilename = "build_n_run.ps1"
 )
@@ -16,7 +17,7 @@ try {
 
     #cd $PythonScriptDir
     #$pythonOutput = & python $PythonScriptFilename $outputNeurons 2>&1
-    $pythonOutput = python $PythonScriptFilename $inputNeurons $outputNeurons
+    $pythonOutput = python $PythonScriptFilename --model $model
     Write-Output "This is python output!"
     Write-Output "$pythonOutput"
     #$pythonOutput = & python3 $PythonScriptFilename

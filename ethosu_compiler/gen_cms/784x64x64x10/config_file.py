@@ -19,11 +19,16 @@ INIT_LAYER_SIZES_LIST = [
 ]
 
 MEM_STORE_LOC_LIST = [
-    "model_params_sram1",
-    "model_params_sram1",
-    "model_params_sram1"
+    "model_params_dtcm",
+    "model_params_dtcm",
+    "model_params_dtcm"
 ]
 
+WEIGHTS_AND_BIASES_ON_SRAM_LIST = [
+    False,
+    False,
+    False 
+]
 
 
 '''
@@ -37,3 +42,4 @@ ACCELERATOR = NpuAccelerator.Ethos_U55_256
 Set Test Pattern to use
 '''
 TEST_PATTERN_NUM = 0
+

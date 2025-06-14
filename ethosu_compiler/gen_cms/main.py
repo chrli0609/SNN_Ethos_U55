@@ -37,7 +37,9 @@ model_module = importlib.import_module(f"{args.model}.config_file")
 
 # Write connectivity file
 connectivity_filepath = get_connectivity_filepath(model_module.MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
-connectivity_filepath.mkdir(parents=True, exist_ok=True)
+
+# Create parent dirs if they dont exist already
+connectivity_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 
 clear_file_and_write_preamble(connectivity_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS)
@@ -88,7 +90,7 @@ for layer_num in range(model_module.NUM_LAYERS):
         vth_list=vth_list,
 
         cms_name=model_module.LAYER_BASE_NAME+str(layer_num),
-        weights_and_biases_on_sram=False,
+        weights_and_biases_on_sram=model_module.WEIGHTS_AND_BIASES_ON_SRAM_LIST[layer_num],
         is_last_layer=(layer_num == model_module.NUM_LAYERS - 1),
 
         DEBUG_MODE=DEBUG_MODE,
@@ -118,7 +120,7 @@ from nmnist_write_test_patterns_to_h_file import test_patterns_2_h_file
 test_pattern_header_filepath = CURR_WORKING_DIR / CURR_WORKING_DIR_TO_MODEL_DIR / Path(model_module.MODEL_NAME) / Path("test_patterns") / Path("pattern_"+str(model_module.TEST_PATTERN_NUM)+".h")
 
 # Create dir of doesnt already exist
-test_pattern_header_filepath.mkdir(parents=True, exist_ok=True)
+test_pattern_header_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 test_patterns_2_h_file( ".data_sram0",
                         (Path(args.model) / Path("test_patterns/test_input_"+str(model_module.TEST_PATTERN_NUM)+".npy")),
