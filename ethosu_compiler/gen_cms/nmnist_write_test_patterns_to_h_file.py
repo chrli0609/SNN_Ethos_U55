@@ -104,14 +104,14 @@ def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, 
     num_samples = 45
     
     # Allow command line arguments to override default paths
-    if len(sys.argv) >= 2:
-        mem_section_name = sys.argv[1]
-    if len(sys.argv) >= 3:
-        input_file_path = sys.argv[2]
-    if len(sys.argv) >= 4:
-        target_file_path = sys.argv[3]
-    if len(sys.argv) >= 5:
-        output_file_path = sys.argv[4]
+    #if len(sys.argv) >= 2:
+        #mem_section_name = sys.argv[1]
+    #if len(sys.argv) >= 3:
+        #input_file_path = sys.argv[2]
+    #if len(sys.argv) >= 4:
+        #target_file_path = sys.argv[3]
+    #if len(sys.argv) >= 5:
+        #output_file_path = sys.argv[4]
     
     try:
         # Load numpy arrays

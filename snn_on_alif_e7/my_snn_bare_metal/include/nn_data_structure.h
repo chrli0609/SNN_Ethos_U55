@@ -74,6 +74,10 @@ typedef struct {
     size_t output_size;
 
 
+    // Num time steps to process each input sample
+    size_t num_time_steps;
+
+
     int8_t* total_tensor_arena;
     NNLayer* first_nnlayer;
     NNLayer* last_nnlayer;
@@ -102,4 +106,4 @@ void NNLayer_Free(NNLayer* layer);
 void NNLayer_DequantizeAndPrint(const NNLayer* layer);
 
 
-NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t out_spk_sum_tensor_idx);
+NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps, size_t out_spk_sum_tensor_idx);

@@ -1,12 +1,23 @@
 
 
 
-def clear_connectivity_file(connectivity_h_filepath):
+def clear_file_and_write_preamble(connectivity_h_filepath, base_name, num_layers, num_time_steps):
     with open(connectivity_h_filepath, 'w') as f:
-        f.write("")
-        f.write("")
-        f.write('#include "../../include/nn_data_structure.h"\n')
-        f.write('#include "model.h"\n\n\n')
+        f.write("#pragma once\n\n")
+
+        f.write('#include "../include/nn_data_structure.h"\n')
+        f.write('#include "../model.h"\n\n\n')
+
+        for layer_num in range(num_layers):
+            f.write("#include \"layers/" + base_name + str(layer_num) + ".h\"\n")
+        f.write("\n\n\n")
+
+
+        f.write("#define MLP_INPUT_LAYER_SIZE\t" + base_name.upper() + str(0) + "_INPUT_LAYER_SIZE\n")
+        f.write("#define MLP_OUTPUT_LAYER_SIZE\t" + base_name.upper() + str(num_layers-1) + "_OUTPUT_LAYER_SIZE\n\n")
+
+        f.write("#define MLP_NUM_LAYERS " + str(num_layers) + "\n")
+        f.write("#define MLP_NUM_TIME_STEPS " + str(num_time_steps) + "\n")
 
 
 def get_func_calls(funcname_first_part, layer_name, content_name, type):

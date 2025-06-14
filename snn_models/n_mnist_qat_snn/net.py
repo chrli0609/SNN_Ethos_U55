@@ -124,15 +124,6 @@ model_dir = Path(args.model)
 model_params_dir = Path(model_module.model_params_dir)
 test_patterns_dir = Path(model_module.test_patterns_dir)
 
-print("model_dir", model_dir)
-print("model_params_dir:", model_params_dir)
-print("test_patterns_dir:", test_patterns_dir)
-test_data_filepath = model_dir / test_patterns_dir / Path("test_input_"+ str(2) + ".npy")
-print("test_data_filepath", test_data_filepath)
-print("test_data_filepath", test_data_filepath.__class__)
-print("test_data_filepath is dir", test_data_filepath.is_dir())
-print("test_data_filepath is file", test_data_filepath.is_file())
-print("test_data_filepath exists", test_data_filepath.exists())
 
 
 
@@ -221,6 +212,8 @@ optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 def main():
     for epoch in range(epochs):
         training_loss, mean_loss = train(net, trainloader, optimizer)
+        print(f"Epoch: {epoch}")
+        print("Loss, Accuracy = ", end='')
         print(test(net, testloader))
 
     # Save the model or the weights as you want. Example for saving the model

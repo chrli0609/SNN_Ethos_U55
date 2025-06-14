@@ -1,0 +1,14 @@
+fc_lif_layer_0_weights_max_val = 1.1609330847859383
+fc_lif_layer_0_weights_min_val = -0.9842693544924259
+fc_lif_layer_1_weights_max_val = 1.3535218797624111
+fc_lif_layer_1_weights_min_val = -1.475560737773776
+fc_lif_layer_2_weights_max_val = 1.3030724935233593
+fc_lif_layer_2_weights_min_val = -1.7736264495179057
+fc_lif_layer_3_weights_max_val = 0.20204094611108303
+fc_lif_layer_3_weights_min_val = -1.779514486901462
+fc_lif_layer_4_weights_max_val = 0.20980777870863676
+fc_lif_layer_4_weights_min_val = -0.22165176621638238
+fc_lif_layer_5_weights_max_val = 0.20542419515550137
+fc_lif_layer_5_weights_min_val = -1.8899025954306126
+fc_lif_layer_6_weights_max_val = 0.2926539711188525
+fc_lif_layer_6_weights_min_val = -0.2858480648137629
