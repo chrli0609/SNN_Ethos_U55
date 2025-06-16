@@ -37,8 +37,6 @@ model_module = importlib.import_module(f"{args.model}.config_file")
 
 # Write connectivity file
 connectivity_filepath = get_connectivity_filepath(model_module.MODEL_NAME, CURR_WORKING_DIR, CURR_WORKING_DIR_TO_MODEL_DIR)
-
-# Create parent dirs if they dont exist already
 connectivity_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -90,8 +88,36 @@ for layer_num in range(model_module.NUM_LAYERS):
         vth_list=vth_list,
 
         cms_name=model_module.LAYER_BASE_NAME+str(layer_num),
-        weights_and_biases_on_sram=model_module.WEIGHTS_AND_BIASES_ON_SRAM_LIST[layer_num],
+        weights_and_biases_on_sram=False,
         is_last_layer=(layer_num == model_module.NUM_LAYERS - 1),
+        NUM_TIME_STEPS=model_module.NUM_TIME_STEPS,
+
+        ### For setting quantization params ### 
+        #IN_SPK_MAX_VAL=model_module.IN_SPK_MAX_VAL,
+        #IN_SPK_MIN_VAL=model_module.IN_SPK_MIN_VAL,
+        #Must be symmetric
+        #WEIGHT_MAX_VAL=model_module.WEIGHT_MAX_VAL,
+        #WEIGHT_MIN_VAL=model_module.WEIGHT_MIN_VAL,
+        #LN_BETA_MAX_VAL=model_module.LN_BETA_MAX_VAL,
+        #LN_BETA_MIN_VAL=model_module.LN_BETA_MIN_VAL,
+        TIME_NOT_UPDATED_MAX_VAL=model_module.TIME_NOT_UPDATED_MAX_VAL,
+        TIME_NOT_UPDATED_MIN_VAL=model_module.TIME_NOT_UPDATED_MIN_VAL,
+        IN_CURR_MAX_VAL=model_module.IN_CURR_MAX_VAL_LIST[layer_num],
+        IN_CURR_MIN_VAL=model_module.IN_CURR_MIN_VAL_LIST[layer_num],
+        V_MEM_MAX_VAL=model_module.V_MEM_MAX_VAL_LIST[layer_num],
+        V_MEM_MIN_VAL=model_module.V_MEM_MIN_VAL_LIST[layer_num],
+        DECAY_ACC_MAX_VAL=model_module.DECAY_ACC_MAX_VAL,
+        DECAY_ACC_MIN_VAL=model_module.DECAY_ACC_MIN_VAL,
+        DECAY_MAX_VAL=model_module.DECAY_MAX_VAL,
+        DECAY_MIN_VAL=model_module.DECAY_MIN_VAL,
+        DECAYED_MEM_MAX_VAL=model_module.DECAYED_MEM_MAX_VAL_LIST[layer_num],
+        DECAYED_MEM_MIN_VAL=model_module.DECAYED_MEM_MIN_VAL_LIST[layer_num],
+        #VTH_MAX_VAL=model_module.VTH_MAX_VAL,
+        #VTH_MIN_VAL=model_module.VTH_MIN_VAL,
+        #V_MEM_SUB_VTH_MAX_VAL=model_module.V_MEM_SUB_VTH_MAX_VAL,
+        #V_MEM_SUB_VTH_MIN_VAL=model_module.V_MEM_SUB_VTH_MIN_VAL,
+        #OUT_SPK_MAX_VAL=model_module.OUT_SPK_MAX_VAL,
+        #OUT_SPK_MIN_VAL=model_module.OUT_SPK_MIN_VAL,
 
         DEBUG_MODE=DEBUG_MODE,
         ACCELERATOR=model_module.ACCELERATOR,

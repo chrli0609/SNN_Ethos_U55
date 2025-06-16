@@ -1,10 +1,12 @@
+import math
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from ethosu.vela.api import *
 
 
 
 
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config_ops import *
 from extra_func import *
@@ -18,7 +20,54 @@ from extra_func import *
 
 def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, 
          weights_volume_ohwi, bias_list, beta_list, vth_list,
-         cms_name, weights_and_biases_on_sram, is_last_layer, DEBUG_MODE, ACCELERATOR, header_out_filepath):
+         cms_name, weights_and_biases_on_sram, is_last_layer, NUM_TIME_STEPS,
+
+
+        #IN_SPK_MAX_VAL,
+        #IN_SPK_MIN_VAL,
+
+
+        #Must be symmetric
+        #WEIGHT_MAX_VAL,
+        #WEIGHT_MIN_VAL,
+
+
+        #LN_BETA_MAX_VAL,
+        #LN_BETA_MIN_VAL,
+
+        TIME_NOT_UPDATED_MAX_VAL,
+        TIME_NOT_UPDATED_MIN_VAL,
+
+        IN_CURR_MAX_VAL,
+        IN_CURR_MIN_VAL,
+
+
+        V_MEM_MAX_VAL,
+        V_MEM_MIN_VAL,
+
+
+        DECAY_ACC_MAX_VAL,
+        DECAY_ACC_MIN_VAL,
+
+        DECAY_MAX_VAL,
+        DECAY_MIN_VAL,
+
+        DECAYED_MEM_MAX_VAL,
+        DECAYED_MEM_MIN_VAL,
+
+
+        #VTH_MAX_VAL,
+        #VTH_MIN_VAL,
+
+        #V_MEM_SUB_VTH_MAX_VAL,
+        #V_MEM_SUB_VTH_MIN_VAL,
+
+        #OUT_SPK_MAX_VAL,
+        #OUT_SPK_MIN_VAL,
+
+         
+         
+         DEBUG_MODE, ACCELERATOR, header_out_filepath):
 
 
 
@@ -37,51 +86,85 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     '''
 
 
+    #TIME_NOT_UPDATED_MAX_VAL = 16
+    #TIME_NOT_UPDATED_MIN_VAL = 0
+
+    #IN_CURR_MAX_VAL = 9
+    #IN_CURR_MIN_VAL = -9
+
+    #V_MEM_MAX_VAL = 9
+    #V_MEM_MIN_VAL = -6
+
+    #DECAY_ACC_MAX_VAL = 0
+    #DECAY_ACC_MIN_VAL = -1
+    #DECAY_MAX_VAL = 0.95
+    #DECAY_MIN_VAL = 0
+
+    #DECAYED_MEM_MAX_VAL = 7
+    #DECAYED_MEM_MIN_VAL = -4
+
+    # Must be  >= 0
+    MIN_DIFF = 0.1
+
+    # Must be same for input and output quantization
     IN_SPK_MAX_VAL = 127
     IN_SPK_MIN_VAL = -128
+    OUT_SPK_MAX_VAL = 127
+    OUT_SPK_MIN_VAL = -128
 
-    #Must be symmetric
-    #WEIGHT_MAX_VAL = 127/100
-    #WEIGHT_MIN_VAL = -128/100
-    WEIGHT_MAX_VAL = 3
-    WEIGHT_MIN_VAL = -3
-
-    LN_BETA_MAX_VAL = 0
-    LN_BETA_MIN_VAL = -0.1
-
-    TIME_NOT_UPDATED_MAX_VAL = 16
-    TIME_NOT_UPDATED_MIN_VAL = 0
-
-    IN_CURR_MAX_VAL = 9
-    IN_CURR_MIN_VAL = -9
-
-    V_MEM_MAX_VAL = 9
-    V_MEM_MIN_VAL = -6
-
-    DECAY_ACC_MAX_VAL = 0
-    DECAY_ACC_MIN_VAL = -1
-    DECAY_MAX_VAL = 0.95
-    DECAY_MIN_VAL = 0
-
-    DECAYED_MEM_MAX_VAL = 7
-    DECAYED_MEM_MIN_VAL = -4
-
-    VTH_MAX_VAL = 1.2
-    VTH_MIN_VAL = 0.8
-
-
-
+    # Only need to differentiate between > 0 and < 0
     V_MEM_SUB_VTH_MAX_VAL = 1
     V_MEM_SUB_VTH_MIN_VAL = -1
 
+    ##Must be symmetric
+    max_weight_val = np.max(weights_volume_ohwi)
+    min_weight_val = np.min(weights_volume_ohwi)
+    # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
+    if abs(min_weight_val) > abs(max_weight_val):
+        largest_weight_abs_val = abs(min_weight_val)
+    else:
+        largest_weight_abs_val = abs(max_weight_val)
 
-    OUT_SPK_MAX_VAL = 127
-    OUT_SPK_MIN_VAL = -128
+    WEIGHT_MAX_VAL = largest_weight_abs_val + MIN_DIFF 
+    WEIGHT_MIN_VAL = -(largest_weight_abs_val + MIN_DIFF)
+
+
+
+
+
+
+    # Take the natural log of each value
+    ln_beta_values = [math.log(v) for v in beta_list]
+    max_ln_beta_value = max(ln_beta_values)
+    min_ln_beta_value =  min(ln_beta_values)
+
+    LN_BETA_MAX_VAL = max_ln_beta_value
+    LN_BETA_MIN_VAL = min_ln_beta_value
+
+    if (max_ln_beta_value == min_ln_beta_value):
+        LN_BETA_MAX_VAL += MIN_DIFF
+        LN_BETA_MIN_VAL -= MIN_DIFF
+    
+
+
+
+
+    max_vth_value = max(vth_list)
+    min_vth_value = min(vth_list)
+    VTH_MAX_VAL = max_vth_value
+    VTH_MIN_VAL = min_vth_value
+
+    if (min_vth_value == max_vth_value):
+        VTH_MAX_VAL += MIN_DIFF
+        VTH_MIN_VAL -= MIN_DIFF
+
+
+
 
 
     if (is_last_layer):
         # MAX VAL == NUM_TIME_STEPS
-        OUT_SPK_SUM_MAX_VAL = 25
+        OUT_SPK_SUM_MAX_VAL = NUM_TIME_STEPS
         OUT_SPK_SUM_MIN_VAL = 0
 
 
