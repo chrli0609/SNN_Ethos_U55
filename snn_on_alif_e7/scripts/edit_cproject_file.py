@@ -33,4 +33,4 @@ config["project"]["add-path"] = filtered_paths
 with open(yaml_path, "w") as f:
     yaml.dump(config, f)
 
-print(f"✅ Updated model path to: {model_path}")
+print(f"Updated model path to: {model_path}")
