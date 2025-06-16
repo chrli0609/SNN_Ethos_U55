@@ -30,6 +30,14 @@ MEM_STORE_LOC_LIST = [
 
 
 
+WEIGHTS_AND_BIASES_ON_SRAM_LIST = [
+    False,
+    False,
+    False,
+    False,
+    False 
+]
+
 '''
 Set Accelerator
 '''
