@@ -25,7 +25,6 @@
 
 
 
-
 NNLayer* FC_LIF_Layer_Init(
 
     // Const Tensors
@@ -102,12 +101,12 @@ int MLP_Inference_test_patterns(
     size_t num_samples,
 
     size_t num_time_steps,
+    int make_printouts,
 
     int8_t* out_spk
 );
 
 int MLP_Free(NN_Model* mlp_model);
-
 
 
 
@@ -125,3 +124,36 @@ Set region for every layer
 
 
 
+NN_Model_CPU* Init_CPU_MLP();
+
+NNLayer_CPU* FC_LIF_Layer_CPU_Init(
+
+    // Const tensors
+    float* weights_arr,
+    float* biases_arr,
+    float* beta_arr,
+    float* vth_arr,
+
+    // Non-const tensors
+    float* in_spk,
+    float* out_spk,
+    float* v_mem,
+    float* time_since_last_update,
+
+    size_t input_size,
+    size_t output_size,
+
+    float* out_spk_sum
+);
+
+int MLP_Inference_CPU_test_patterns(
+    NN_Model_CPU* mlp_model,
+
+    volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][25][784],
+    volatile int8_t test_targets[test_input_0_NUM_SAMPLES],
+
+    size_t num_samples,
+    size_t num_time_steps,
+
+    int make_printouts
+);

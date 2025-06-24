@@ -61,6 +61,9 @@ typedef struct {
 
     float time_of_previous_update;
 
+    size_t input_size;
+    size_t output_size;
+
 
     int8_t* input;
     int8_t* update_nxt;
@@ -76,6 +79,8 @@ typedef struct {
 
     // Num time steps to process each input sample
     size_t num_time_steps;
+
+    size_t num_layers;
 
 
     int8_t* total_tensor_arena;
@@ -107,3 +112,58 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer);
 
 
 NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps, size_t out_spk_sum_tensor_idx);
+
+
+
+
+
+
+
+
+typedef struct {
+
+    // Const tensors
+    float* weights;
+    float* biases;
+    float* vth;
+    float* beta;
+
+    // Non const tensors
+    float* v_mem;
+    float* time_since_last_update;
+
+
+
+    float* input;
+    size_t input_size;
+
+    float* output;
+    size_t output_size;
+    float* out_spk_sum;
+
+    struct NNLayer_CPU* next_layer;
+
+} NNLayer_CPU;
+
+
+
+typedef struct {
+    size_t input_size;
+    size_t output_size;
+
+
+    // Num time steps to process each input sample
+    size_t num_time_steps;
+
+    size_t num_layers;
+
+
+    NNLayer_CPU* first_nnlayer;
+    NNLayer_CPU* last_nnlayer;
+
+    float* input;
+    float* output;
+
+    float* out_spk_sum;
+
+}NN_Model_CPU;

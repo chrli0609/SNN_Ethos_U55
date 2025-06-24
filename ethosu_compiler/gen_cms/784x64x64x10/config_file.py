@@ -21,9 +21,28 @@ INIT_LAYER_SIZES_LIST = [
 ]
 
 MEM_STORE_LOC_LIST = [
-    "model_params_sram1",
-    "model_params_sram1",
-    "model_params_sram1"
+    #"model_params_sram1",
+    #"model_params_sram1",
+    #"model_params_sram1"
+    "model_params_dtcm",
+    "model_params_dtcm",
+    "model_params_dtcm"
+]
+
+WEIGHTS_AND_BIASES_ON_SRAM_LIST = [
+    False,
+    False,
+    False
+    #True,
+    #True,
+    #True
+]
+
+
+LIF_PARAMS_ON_SRAM_LIST = [
+    False,
+    False,
+    False
 ]
 
 
@@ -65,3 +84,14 @@ DECAY_MIN_VAL = 0
 
 DECAYED_MEM_MAX_VAL = 7
 DECAYED_MEM_MIN_VAL = -4
+
+
+
+
+
+IN_CURR_MAX_VAL_LIST = [IN_CURR_MAX_VAL, IN_CURR_MAX_VAL, IN_CURR_MAX_VAL]
+IN_CURR_MIN_VAL_LIST = [IN_CURR_MIN_VAL, IN_CURR_MIN_VAL, IN_CURR_MIN_VAL]
+DECAYED_MEM_MAX_VAL_LIST = [DECAYED_MEM_MAX_VAL, DECAYED_MEM_MAX_VAL, DECAYED_MEM_MAX_VAL]
+DECAYED_MEM_MIN_VAL_LIST = [DECAYED_MEM_MIN_VAL, DECAYED_MEM_MIN_VAL, DECAYED_MEM_MIN_VAL]
+V_MEM_MAX_VAL_LIST = [V_MEM_MAX_VAL, V_MEM_MAX_VAL, V_MEM_MAX_VAL]
+V_MEM_MIN_VAL_LIST = [V_MEM_MIN_VAL, V_MEM_MIN_VAL, V_MEM_MIN_VAL]

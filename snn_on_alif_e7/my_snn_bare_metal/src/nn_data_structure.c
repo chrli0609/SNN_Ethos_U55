@@ -79,9 +79,10 @@ void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t r
 
     void* absolute_ptr = allocator->buffer_head + relative_addr;
 
-    if (absolute_ptr != AlignPointerDown(absolute_ptr, MEM_ALIGNMENT)) {
-        printf("Error: manually set pointer is not 16-bit aligned\n");
-    }
+    // Only an error if its the pointer to the whole tensor, not only pointers within the tensor
+    //if (absolute_ptr != AlignPointerDown(absolute_ptr, MEM_ALIGNMENT)) {
+        ////printf("Error: manually set pointer is not 16-bit aligned\n");
+    //}
 
     return absolute_ptr;
 }
@@ -397,10 +398,13 @@ NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size
 
     // Set nn model output tensor
     NNLayer* nnlayer = first_nnlayer;
+    size_t num_layers = 0;
     while (nnlayer->next_layer != NULL) {
         nnlayer = nnlayer->next_layer;
+        num_layers += 1;
     }
     nn_model->output = nnlayer->output;
+    nn_model->num_layers = num_layers;
 
     // Set last_layer
     nn_model->last_nnlayer = nnlayer;

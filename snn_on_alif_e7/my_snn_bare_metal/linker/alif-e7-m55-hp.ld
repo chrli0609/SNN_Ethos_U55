@@ -140,8 +140,9 @@ SECTIONS
   {
     * (raw_buf)              /* Camera Frame Buffer */
     * (rgb_buf)              /* Bayer to RGB Conversion. */
-    * (model_params_sram1)
+    //* (model_params_sram1)
   } > SRAM1
+
 
   .bss (NOLOAD) : ALIGN(8)
   {

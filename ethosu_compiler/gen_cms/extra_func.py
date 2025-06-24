@@ -8,14 +8,38 @@ from pathlib import Path
 
 
 
-def align_input_output_sizes_to_8(init_input_size, init_output_size, is_first_layer):
+def align_input_output_sizes_to_16(init_input_size, init_output_size, is_first_layer):
+
+    '''
+    Output Feature map constraints:
+        - OFM_BLOCK_WIDTH:
+            - Multiple of MIN_BLOCK_WIDTH
+            - 1 < OFM_BLOCK_WIDTH < 64
+        - OFM_BLOCK_HEIGHT:
+            - Multiple of MIN_BLOCK_HEIGHT
+            - 1 < OFM_BLOCK_HEIGHT < 32
+        - OFM_BLOCK_DEPTH:
+            - Multiple of MIN_BLOCK_DEPTH
+            - 1 < OFM_BLOCK_DEPTH < 128
+            - If OFM_BLOCK_DEPTH not multiple of 16: OFM_DEPTH <= OFM_BLOCK_DEPTH
+
+            
+    For Ethos U55 with configuration: 256:
+        - MIN_BLOCK_WIDTH = 2
+        - MIN_BLOCK_HEIGHT = 2
+        - MIN_BLOCK_DEPTH = 8
+    '''
+
+    
 
     if is_first_layer:
         aligned_input_size = init_input_size
     else:
-        aligned_input_size = next_multiple_of_8(init_input_size)
+        #aligned_input_size = next_multiple_of_8(init_input_size)
+        aligned_input_size = next_multiple(init_input_size, 16)
 
-    aligned_output_size = next_multiple_of_8(init_output_size)
+    #aligned_output_size = next_multiple_of_8(init_output_size)
+    aligned_output_size = next_multiple(init_output_size, 16)
 
     in_padding = aligned_input_size - init_input_size
     out_padding = aligned_output_size - init_output_size
@@ -66,6 +90,9 @@ def get_header_filepath(layer_name, model_name, current_working_directory, curre
     header_out_filepath = current_working_directory / current_to_model_directory / Path(model_name) / Path("layers") / Path(layer_name+ ".h")
     return header_out_filepath
 
+
+def next_multiple(n, m=16):
+    return n + (-n % m)
 
 # For finding the next integer that is divisible by 8, since it is a requirement of the NPU that  the output size of each layer must be divisible by 8
 def next_multiple_of_8(x: int) -> int:
@@ -242,8 +269,21 @@ def get_weights_arr_def_str(base_name):
 def get_lut_arr_def_str(base_name):
     return "\n\n\n\nstatic const int8_t lut_" + base_name + "[] __attribute__((aligned(16))) = \n{\n" 
 
-def get_lif_param_arr_def_str(base_name):
-    return "\n\n\n\nstatic const int8_t lif_param_" + base_name + "[] __attribute__((aligned(16))) = \n{\n" 
+def get_lif_param_arr_def_str(base_name, lif_params_on_sram):
+    ret_str = "\n\n\n\nstatic "
+
+    if (not lif_params_on_sram):
+        ret_str += "const "
+
+    ret_str += "int8_t lif_param_" + base_name + "[] "
+
+    if (lif_params_on_sram):
+        ret_str += "__attribute__((section(\"model_params_sram1\")))"
+
+    ret_str += " __attribute__((aligned(16))) = \n{\n" 
+
+
+    return ret_str
 
 
 
@@ -312,7 +352,7 @@ def parse_formatted_hex(formatted_str):
 
 
 
-def write_cms_to_files(header_filepath, cms_driver_payload_byte_array, register_cms, base_name, sizes_dict, addr_dict, quant_params_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
+def write_cms_to_files(header_filepath, lif_params_on_sram, cms_driver_payload_byte_array, register_cms, base_name, sizes_dict, addr_dict, quant_params_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
     
     formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
     
@@ -368,7 +408,7 @@ def write_cms_to_files(header_filepath, cms_driver_payload_byte_array, register_
         
         # Write LIF Params
         if lif_params_arr_contents_str:
-            f.write(get_lif_param_arr_def_str(base_name) + "\n")
+            f.write(get_lif_param_arr_def_str(base_name, lif_params_on_sram) + "\n")
             f.write(lif_params_arr_contents_str)
             f.write("\n\n};\n\n\n")
 
@@ -442,4 +482,135 @@ def check_weight_and_bias_len_correct(cms_name, addr_dict, weight_byte_arr, bias
         print("exiting...")
         exit()
     
+
+
+
+
+
+def get_arr_string_1D(array_name, array):
+
+    ret_str = "static const float " + array_name + " [" + str(len(array)) + "] = {\n"
+
+    for i in range(len(array)):
+        ret_str += str(array[i]) + ", "
+
+        if i+1 % 4 == 0:
+            ret_str += "\n"
+
+    ret_str += "\n};\n\n\n"
+
+    return ret_str
+
+def get_arr_string_2D(array_name, array, mem_store_loc):
+
+    ret_str = "static const float " + array_name + " [" + str(len(array)*len(array[0])) + "] __attribute__((section(\"" + mem_store_loc +"\"))) = {\n"
+
+    for i in range(len(array)):
+
+
+        for j in range(len(array[i])):
+            ret_str += str(array[i][j]) + ", "
+
+            if i+1 % 4 == 0:
+                ret_str += "\n"
+        
+
+    ret_str += "\n};\n\n\n"
+
+    return ret_str
+
+
+def get_non_const_arr_string1D(array_name, arr_size, mem_store_loc):
+
+    ret_str = "static float " + array_name + "[" + str(arr_size) + "] __attribute__((section(\"" + mem_store_loc +"\")));\n"
+
+    return ret_str
+
+
+def write_to_cpu_file(cpu_filepath, base_name, num_layers, layer_sizes_list, mem_store_loc_list, num_time_steps, weights_arr_list, biases_arr_list, vth_arr_list, beta_arr_list):
+    
+    with open(cpu_filepath, 'w') as f:
+
+
+        f.write("#pragma once\n\n\n\n\n")
+        f.write("#include \"../model.h\"\n\n\n\n")
+
+        f.write("#define CPU_NN_MODEL_NUM_LAYERS " + str(num_layers) + "\n")
+        f.write("#define CPU_NN_MODEL_NUM_TIME_STEPS " + str(num_time_steps) + "\n\n\n\n\n\n")
+
+
+        # Define const arrays
+        for layer_num in range(num_layers):
+            f.write(get_arr_string_2D("weights" + base_name + str(layer_num), weights_arr_list[layer_num], "nn_model"))
+            f.write(get_arr_string_1D("biases" + base_name + str(layer_num), biases_arr_list[layer_num]))
+            f.write(get_arr_string_1D("beta" + base_name + str(layer_num), beta_arr_list[layer_num]))
+            f.write(get_arr_string_1D("vth" + base_name + str(layer_num), vth_arr_list[layer_num]))
+        
+
+        # Define non const arrays
+        for layer_num in range(num_layers):
+            if layer_num == 0:
+                f.write(get_non_const_arr_string1D("in_spk" + base_name + str(layer_num), layer_sizes_list[layer_num], mem_store_loc_list[layer_num]))
+
+            f.write("\n")
+            f.write(get_non_const_arr_string1D("v_mem" + base_name + str(layer_num), layer_sizes_list[layer_num+1], mem_store_loc_list[layer_num]))
+            f.write(get_non_const_arr_string1D("time_since_last_update" + base_name + str(layer_num), layer_sizes_list[layer_num+1], mem_store_loc_list[layer_num]))
+            f.write(get_non_const_arr_string1D("out_spk" + base_name + str(layer_num), layer_sizes_list[layer_num+1], mem_store_loc_list[layer_num]))
+            f.write("\n")
+
+            if layer_num == num_layers-1:
+                f.write(get_non_const_arr_string1D("out_spk_sum" + base_name + str(layer_num), layer_sizes_list[layer_num+1], mem_store_loc_list[layer_num]))
+                f.write("\n\n\n")
+
+                
+
+
+
+
+        # Define the functions initing each layer
+        for layer_num in range(num_layers):
+            layer_name = base_name + str(layer_num)
+            f.write("NNLayer_CPU* Init_cpu" + layer_name + "() {\n")
+            f.write("\tNNLayer_CPU* " + layer_name + " = FC_LIF_Layer_CPU_Init(\n")
+            f.write("\t\tweights"+layer_name + ",\n")
+            f.write("\t\tbiases"+layer_name + ",\n")
+            f.write("\t\tbeta"+layer_name + ",\n")
+            f.write("\t\tvth"+layer_name + ",\n")
+
+            if layer_num == 0:
+                f.write("\t\tin_spk"+layer_name+",\n")
+            else:
+                f.write("\t\tout_spk"+base_name + str(layer_num-1) + ",\n")
+
+            f.write("\t\tout_spk"+layer_name + ",\n")
+            f.write("\t\tv_mem"+layer_name + ",\n")
+            f.write("\t\ttime_since_last_update" + layer_name + ",\n")
+
+            f.write("\t\t"+ str(layer_sizes_list[layer_num]) + ",\n")
+            f.write("\t\t"+ str(layer_sizes_list[layer_num+1]) + ",\n")
+            if layer_num == num_layers-1:
+                f.write("\t\tout_spk_sum"+layer_name + "\n")
+            else:
+                f.write("\t\tNULL\n")
+        
+            f.write("\t);\n")
+
+            f.write("\treturn " + layer_name +";\n")
+
+            f.write("}\n\n")
+
+            
+
+
+
+
+        # Write the array pointing to the init functions for each layer
+        f.write("\n")
+        f.write("NNLayer_CPU* (*init_cpu_layers_func[" + str(num_layers) +"]) (void) = {\n")
+        
+        for layer_num in range(num_layers):
+            f.write("\tInit_cpu" + base_name + str(layer_num) + ",\n")
+        
+        f.write("};")
+
 

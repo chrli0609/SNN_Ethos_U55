@@ -618,7 +618,7 @@ static inline size_t Getfc_lif_layer_4WeightsLen()
 
 
 
-static const int8_t lif_param_fc_lif_layer_4[] __attribute__((aligned(16))) = 
+static const int8_t lif_param_fc_lif_layer_4[]  __attribute__((aligned(16))) = 
 {
 
 

@@ -161,9 +161,12 @@ uint32_t start_vals [4];
 extern double avg_inference_time_start_inference;
 uint32_t inference_speed_measure_start_tick_start_inference = 0;
 
+
+
 //This gets called by ethosu_inference_begin() in ethosu_cpu_cache.c
 void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 {
+
     if (MEASURE_MODE) {
         // Start measuring time
         measure_layer0_start = debug_start_timer();
@@ -199,9 +202,9 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 
 }
 
+
 void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 {
-
 
     // Stop timer
     uint32_t inference_speed_measure_elapsed_ticks = debug_end_timer(inference_speed_measure_start_tick_start_inference);

@@ -1,18 +1,21 @@
 
 
 
-def clear_file_and_write_preamble(connectivity_h_filepath, base_name, num_layers, num_time_steps):
+def clear_file_and_write_preamble(connectivity_h_filepath, model_name, base_name, num_layers, num_time_steps):
     with open(connectivity_h_filepath, 'w') as f:
         f.write("#pragma once\n\n")
 
         f.write('#include "../include/nn_data_structure.h"\n')
         f.write('#include "../model.h"\n\n\n')
+        f.write("#define MODEL_NAME \"" + model_name + "\"\n\n\n")
+        #f.write("const char* MODEL_NAME = \"" + model_name + "\";\n\n\n")
+
 
         for layer_num in range(num_layers):
             f.write("#include \"layers/" + base_name + str(layer_num) + ".h\"\n")
         f.write("\n\n\n")
 
-
+        
         f.write("#define MLP_INPUT_LAYER_SIZE\t" + base_name.upper() + str(0) + "_INPUT_LAYER_SIZE\n")
         f.write("#define MLP_OUTPUT_LAYER_SIZE\t" + base_name.upper() + str(num_layers-1) + "_OUTPUT_LAYER_SIZE\n\n")
 
@@ -49,8 +52,8 @@ def write_tensor_declarations(connectivity_h_filepath, base_name, num_layers, me
 
 
 
-def write_init_func(connectivity_h_filepath, layer_name):
-
+def write_init_func(connectivity_h_filepath, base_name, layer_num):
+    layer_name = base_name + str(layer_num)
 
     with open(connectivity_h_filepath, 'a') as f:
         f.write("NNLayer* Init_" + layer_name + "() {\n\n")
@@ -78,20 +81,15 @@ def write_init_func(connectivity_h_filepath, layer_name):
 
         f.write("\t\t" + layer_name + "_tensor_arena,\n")
 
-        try:
-            layer_num = int(layer_name[-1])
-        except:
-            print("Layer CMS name should end with layer number")
-            exit(1)
 
 
         # If is first layer
         if (layer_num == 0):
             f.write("\t\t" + layer_name + "_in_spk,\n")
         else:
-            f.write("\t\t" + layer_name[:-1] + str(layer_num-1) + "_out_spk,\n")
+            f.write("\t\t" + base_name + str(layer_num-1) + "_out_spk,\n")
 
-        f.write("\t\t" + layer_name + "_out_spk,\n")
+        f.write("\t\t" + base_name + str(layer_num) + "_out_spk,\n")
 
 
         f.write("\t\t" + layer_name.upper() + "_BIAS_ADDR" + ",\n")

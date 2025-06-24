@@ -123,6 +123,7 @@ void ethosu_flush_dcache(uint32_t *p, size_t bytes)
         if (!state->dcache_cleaned) {
             trace("Cleaning data cache\n");
             SCB_CleanDCache();
+            //SCB_CleanDCache_by_Addr(p, bytes);
 
             /** Assert the cache cleaned state and clear the invalidation
              *  state. */
@@ -134,6 +135,10 @@ void ethosu_flush_dcache(uint32_t *p, size_t bytes)
     }
 }
 
+//my debug
+#include "extra_funcs.h"
+
+extern double ait_SCB_CleanInvalidateDCache;
 void ethosu_invalidate_dcache(uint32_t *p, size_t bytes)
 {
     cpu_cache_state* const state = ethosu_get_cpu_cache_state();
@@ -145,7 +150,13 @@ void ethosu_invalidate_dcache(uint32_t *p, size_t bytes)
         if (!state->dcache_invalidated) {
             trace("Invalidating data cache\n");
             /* Not safe to simply invalidate without cleaning unless we know there are no write-back areas in the system */
+
+            //measure
+            uint32_t ait_SCB_CleanInvalidateDCache_start_tick = debug_start_timer();
             SCB_CleanInvalidateDCache();
+            //SCB_InvalidateDCache_by_Addr(p, bytes);
+
+            ait_SCB_CleanInvalidateDCache += debug_end_timer(ait_SCB_CleanInvalidateDCache_start_tick);
 
             /** Assert the cache invalidation state and clear the clean
              *  state. */

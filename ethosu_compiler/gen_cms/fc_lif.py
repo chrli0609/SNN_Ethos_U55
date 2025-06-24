@@ -20,7 +20,7 @@ from extra_func import *
 
 def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, 
          weights_volume_ohwi, bias_list, beta_list, vth_list,
-         cms_name, weights_and_biases_on_sram, is_last_layer, NUM_TIME_STEPS,
+         cms_name, weights_and_biases_on_sram, lif_params_on_sram, is_last_layer, NUM_TIME_STEPS,
 
 
         #IN_SPK_MAX_VAL,
@@ -262,13 +262,13 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
             # SRAM SCRATCH REGION
             TMP1_ADDR           	=	0
-            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            TMP2_ADDR           	=	TMP1_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            V_MEM_ADDR          	=	TMP2_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   next_multiple(OUTPUT_LAYER_SIZE, 16)
             UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
 
-            TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + 16
+            TENSOR_ARENA_SIZE	=	3*OUTPUT_LAYER_SIZE + 16 
 
             OUT_SPK_SUM_ADDR = -1
 
@@ -284,9 +284,9 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             BIAS_ADDR           	=   0 
             WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
             TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
+            TMP2_ADDR           	=	TMP1_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            V_MEM_ADDR          	=	TMP2_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            TIME_NOT_UPDATED_ADDR	=	V_MEM_ADDR              +   next_multiple(OUTPUT_LAYER_SIZE, 16)
             UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
 
@@ -299,10 +299,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         if (not weights_and_biases_on_sram):
             # SRAM SCRATCH REGION
             TMP1_ADDR           	=	0
-            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
+            TMP2_ADDR           	=	TMP1_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            V_MEM_ADDR          	=	TMP2_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   next_multiple(OUTPUT_LAYER_SIZE, 16)
             UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
             TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + 16
@@ -319,13 +319,13 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             BIAS_ADDR           	=   0 
             WEIGHT_ADDR         	=	BIAS_ADDR               +   len(bias_byte_arr_init) # Bias len
             TMP1_ADDR           	=	WEIGHT_ADDR             +   len(weight_byte_arr_init) #weight len
-            TMP2_ADDR           	=	TMP1_ADDR               +   OUTPUT_LAYER_SIZE
-            V_MEM_ADDR          	=	TMP2_ADDR               +   OUTPUT_LAYER_SIZE  
-            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   OUTPUT_LAYER_SIZE
-            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   OUTPUT_LAYER_SIZE
+            TMP2_ADDR           	=	TMP1_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            V_MEM_ADDR          	=	TMP2_ADDR               +   next_multiple(OUTPUT_LAYER_SIZE, 16)  
+            OUT_SPK_SUM_ADDR        =   V_MEM_ADDR              +   next_multiple(OUTPUT_LAYER_SIZE, 16)
+            TIME_NOT_UPDATED_ADDR   =   OUT_SPK_SUM_ADDR        +   next_multiple(OUTPUT_LAYER_SIZE, 16)
             UPDATE_NXT_LAYER_ADDR	=	TIME_NOT_UPDATED_ADDR   +   1
 
-            TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 16
+            TENSOR_ARENA_SIZE	=	4*OUTPUT_LAYER_SIZE + len(bias_byte_arr_init) +len(weight_byte_arr_init) + 1
 
 
 
@@ -336,6 +336,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     DECAYED_MEM_ADDR = TMP1_ADDR
     RESET_ADDR = TMP2_ADDR
 
+    print("IN_CURR_ADDR = TMP2_ADDR:", IN_CURR_ADDR)
     ##############
 
 
@@ -603,6 +604,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
         )
 
+        print("About to enter get block config for CONV2D")
 
         my_op = NpuConv2DOperation()
         my_op.ifm               =   ifm
@@ -610,6 +612,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         my_op.ifm2_scalar       =   None
         my_op.ofm               =   ofm
         block_config = get_block_config(my_op, ACCELERATOR)
+
     
 
         block_traversal = NpuBlockTraversal.DEPTH_FIRST
@@ -1460,7 +1463,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-    def layer_merge_and_write(cms_name, header_out_filepath):
+    def layer_merge_and_write(cms_name, header_out_filepath, lif_params_on_sram):
 
         # Define the individual NPU Operations
         dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut()
@@ -1511,7 +1514,12 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-        write_cms_to_files(header_out_filepath, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+        write_cms_to_files(header_out_filepath, lif_params_on_sram, cms_bytearr, register_cms, cms_name, sizes_dict, addr_dict, quant_param_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
     
 
-    layer_merge_and_write(cms_name, header_out_filepath)
+    layer_merge_and_write(cms_name, header_out_filepath, lif_params_on_sram)
+
+
+
+
+
