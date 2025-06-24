@@ -155,7 +155,7 @@ test_pattern_header_filepath = CURR_WORKING_DIR / CURR_WORKING_DIR_TO_MODEL_DIR 
 # Create dir of doesnt already exist
 test_pattern_header_filepath.parent.mkdir(parents=True, exist_ok=True)
 
-test_patterns_2_h_file( ".data_sram0",
+test_patterns_2_h_file(45,  ".data_sram0",
                         (Path(args.model) / Path("test_patterns/test_input_"+str(model_module.TEST_PATTERN_NUM)+".npy")),
                         (Path(args.model) / Path("test_patterns/test_target_"+str(model_module.TEST_PATTERN_NUM)+".npy")),
                         test_pattern_header_filepath

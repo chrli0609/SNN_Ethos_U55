@@ -67,10 +67,10 @@ def process_weights_and_biases(weights_filepath, biases_filepath, input_layer_si
     weights_volume_ohwi = weights_reshaped
     bias_list = bias_padded
 
-    print("Max weight value:", weights_volume_ohwi.max())
-    print("Min weight value", weights_volume_ohwi.min())
-    print("Max bias value", bias_list.max())
-    print("Min bias value", bias_list.min())
+    #print("Max weight value:", weights_volume_ohwi.max())
+    #print("Min weight value", weights_volume_ohwi.min())
+    #print("Max bias value", bias_list.max())
+    #print("Min bias value", bias_list.min())
 
     return weights_volume_ohwi, bias_list
 
@@ -213,7 +213,7 @@ def check_block_config_legal(block_config, my_op, accelerator):
 
 def get_block_config(my_op, accelerator):
     available_block_configs = npu_find_block_configs(my_op, accelerator)
-    print("available_blk_configs:", available_block_configs)
+    #print("available_blk_configs:", available_block_configs)
     return available_block_configs[-1]
     #return available_block_configs[0]
 

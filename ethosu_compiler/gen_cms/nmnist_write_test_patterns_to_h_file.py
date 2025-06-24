@@ -94,14 +94,14 @@ def numpy_to_c_array_1d(arr, var_name, mem_section_name, num_samples_macro_name,
     
     output_file.write("\n};\n\n")
 
-def test_patterns_2_h_file(mem_section_name, input_file_path, target_file_path, output_file_path):
+def test_patterns_2_h_file(num_samples, mem_section_name, input_file_path, target_file_path, output_file_path):
     # File paths
     #input_file_path = "test_input.npy"
     #target_file_path = "test_target.npy"
     #output_file_path = "test_data.h"
     
     num_samples_macro_name = str(input_file_path.stem) + "_NUM_SAMPLES"
-    num_samples = 45
+    #num_samples = 45
     
     # Allow command line arguments to override default paths
     #if len(sys.argv) >= 2:

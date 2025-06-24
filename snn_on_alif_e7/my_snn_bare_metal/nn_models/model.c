@@ -12,7 +12,7 @@
 
 #include "connectivity.h"
 #include "nn_data_structure.h"
-#include "nn_models/model.h"
+//#include "nn_models/model.h"
 
 
 
@@ -584,7 +584,11 @@ int MLP_Inference_test_patterns(
 
 
             // Set new input
+            //if (num_samples == 1) {
+                //it = 0;
+            //}
             nnlayer->input = test_patterns[it][time_step];
+            //nnlayer->input = test_patterns[0][time_step];
 
 
             size_t layer_number = 0;
@@ -592,7 +596,7 @@ int MLP_Inference_test_patterns(
                 
 
                 // Had at least 1 spike in layer0 --> run next layer
-                //if ( nnlayer == mlp_model->first_nnlayer || ((int8_t)*(nnlayer->update_curr) == 127) ){
+                if ( nnlayer == mlp_model->first_nnlayer || ((int8_t)*(nnlayer->update_curr) == 127) ){
 
                     // measure inference exe time: start tick
                     uint32_t ait_get_time_since_last_update_start_tick = debug_start_timer();
@@ -647,10 +651,10 @@ int MLP_Inference_test_patterns(
                 
 
 
-                //} else if ((int8_t)*(nnlayer->update_curr) == -128) {
-                //    break;
-                //} else { //printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); 
-                //   }
+                } else if ((int8_t)*(nnlayer->update_curr) == -128) {
+                    break;
+                } else { //printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); 
+                   }
 
 
 
@@ -781,7 +785,8 @@ int MLP_Inference_test_patterns(
         printf("model name: %s\n", MODEL_NAME);
         printf("\n\n\n\n\n\n\n\n\n\n\n");
         printf("start printing inference exe time\n");
-        avg_inference_time_per_sample /= (double)test_input_0_NUM_SAMPLES;
+        //avg_inference_time_per_sample /= (double)test_input_0_NUM_SAMPLES;
+        avg_inference_time_per_sample /= (double)num_samples;
         printf("avg_inference_exe_time_per_sample, %f,\n", avg_inference_time_per_sample);
         printf("stop printing inference exe time\n");
 

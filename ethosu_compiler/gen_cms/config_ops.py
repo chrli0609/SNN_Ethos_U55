@@ -269,12 +269,12 @@ def gen_weights_and_biases(
     bias_unquant = np.asarray(bias_list, dtype=np.float32)
     bias_quantized = np.round(bias_unquant / bias_scale).astype(np.int64)
 
-    print("Bias Unquant:", bias_list)
-    print("Bias Quantized:", bias_quantized)
+    #print("Bias Unquant:", bias_list)
+    #print("Bias Quantized:", bias_quantized)
 
-    print("Re mult scale back to unquant: (bias scale:", bias_scale, ")")
-    for i in range(len(bias_quantized)):
-        print(bias_quantized[i]*bias_scale)
+    #print("Re mult scale back to unquant: (bias scale:", bias_scale, ")")
+    #for i in range(len(bias_quantized)):
+        #print(bias_quantized[i]*bias_scale)
     
 
 

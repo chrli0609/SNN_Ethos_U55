@@ -223,7 +223,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     WEIGHT_SCALE, WEIGHT_ZERO_POINT = symmetric_zero_point_quant(WEIGHT_MAX_VAL, WEIGHT_MIN_VAL)
     BIAS_SCALE, BIAS_ZERO_POINT = IN_SPK_SCALE*WEIGHT_SCALE, 0
     # Bias at most 40 bit value
-    print("BIAS:\n\tMax val:", 2**39 / BIAS_SCALE, "\n\tMin val:", -2**39 / BIAS_SCALE)
+    #print("BIAS:\n\tMax val:", 2**39 / BIAS_SCALE, "\n\tMin val:", -2**39 / BIAS_SCALE)
 
     # Output Feature Map
     UPDATE_NXT_LAYER_SCALE, UPDATE_NXT_LAYER_ZERO_POINT = zero_point_quant(UPDATE_NXT_LAYER_MAX_VAL, UPDATE_NXT_LAYER_MIN_VAL)
@@ -336,7 +336,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     DECAYED_MEM_ADDR = TMP1_ADDR
     RESET_ADDR = TMP2_ADDR
 
-    print("IN_CURR_ADDR = TMP2_ADDR:", IN_CURR_ADDR)
     ##############
 
 
@@ -604,7 +603,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
             stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
         )
 
-        print("About to enter get block config for CONV2D")
 
         my_op = NpuConv2DOperation()
         my_op.ifm               =   ifm
