@@ -167,7 +167,9 @@ class UARTCurrentMonitor:
 
 
 
-                    if "avg_inference_time_per_sample" in line:
+                    #if "avg_inference_time_per_sample" in line:
+                    #if "avg_inference_exe_time_per_sample" in line:
+                    if "avg_inference_time_per_forward_pass" in line:
                         print("About to do avg_inference time stuff", re.search(r"\d+\.\d+", line))
                         self.inference_exe_time.append(re.search(r"\d+\.\d+", line).group(0))
                     
@@ -462,6 +464,7 @@ def main():
     monitor.out_filename = "inference_and_current.csv"
     monitor.write_results_to_csv()
     if not success:
+        monitor.write_results_to_csv()
         sys.exit(1)
 
 if __name__ == "__main__":

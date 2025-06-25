@@ -4,6 +4,9 @@
 #include "../model.h"
 
 
+#define MODEL_NAME "784x64x64x10"
+
+
 #include "layers/fc_lif_layer_0.h"
 #include "layers/fc_lif_layer_1.h"
 #include "layers/fc_lif_layer_2.h"

@@ -27,11 +27,14 @@ extern int CHECK_INPUT_OUTPUT;
 
 
 extern int CACHE_ENABLED;
+extern int LAYER_WISE_UPDATE_ENABLED;
 
 int global_it;
 
 // How often we update (in micro sec)
-#define UPDATE_PERIOD 10000 //10 ms
+//#define UPDATE_PERIOD 10000 //10 ms
+//#define UPDATE_PERIOD 1000 //10 ms
+#define UPDATE_PERIOD 6000 //6 ms
 //#define UPDATE_PERIOD 1000 //1 ms
 
 
@@ -462,8 +465,9 @@ int global_it;
 
 
 // measure inference exe time
-extern double avg_inference_time_per_sample;
 extern double ait_mlp_run_layer;
+
+
 
 
 extern double ait_reset_model_for_new_sample;
@@ -519,12 +523,17 @@ int MLP_Inference_test_patterns(
     // For benchmarking inference speed
     double average_inference_time = 0;
 
+    double exclude_sleep_time = 0;
+    double avg_inference_time_per_sample = 0;
+    double avg_inference_time_per_forward_pass = 0;
+
 
 
     // Percentage of time we spike
     size_t at_least_one_out_spk[MLP_NUM_LAYERS] = { 0 };
     size_t num_spikes_we_had[MLP_NUM_LAYERS] = { 0 };
     size_t total_num_spikes[MLP_NUM_LAYERS] = { 0 };
+
 
 
 
@@ -578,6 +587,8 @@ int MLP_Inference_test_patterns(
                 //printf("time step: %d\n", time_step);
             //}
 
+            uint32_t avg_inference_time_per_forward_pass_start_tick = debug_start_timer();
+
 
             // Set First Layer as current layer
             NNLayer* nnlayer = mlp_model->first_nnlayer;
@@ -596,7 +607,7 @@ int MLP_Inference_test_patterns(
                 
 
                 // Had at least 1 spike in layer0 --> run next layer
-                if ( nnlayer == mlp_model->first_nnlayer || ((int8_t)*(nnlayer->update_curr) == 127) ){
+                if ( nnlayer == mlp_model->first_nnlayer || ((int8_t)*(nnlayer->update_curr) == 127 || !LAYER_WISE_UPDATE_ENABLED) ){
 
                     // measure inference exe time: start tick
                     uint32_t ait_get_time_since_last_update_start_tick = debug_start_timer();
@@ -654,7 +665,7 @@ int MLP_Inference_test_patterns(
                 } else if ((int8_t)*(nnlayer->update_curr) == -128) {
                     break;
                 } else { //printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); 
-                   }
+                }
 
 
 
@@ -667,6 +678,22 @@ int MLP_Inference_test_patterns(
 
 
             }
+
+
+            avg_inference_time_per_forward_pass += debug_end_timer(avg_inference_time_per_forward_pass_start_tick);
+
+
+
+
+            uint32_t exclude_sleep_time_start_tick = debug_start_timer();
+            // Delay before starting next inference cycle (time step)
+            uint32_t elapsed_us = debug_end_timer(inference_speed_measure_each_sample_start_tick);
+            int32_t remaining_us = (int32_t)UPDATE_PERIOD - (int32_t)elapsed_us; 
+            if (remaining_us > 0) { 
+                delay(remaining_us);
+                //printf("Slept for %d\n", remaining_us);
+            }
+            exclude_sleep_time += debug_end_timer(exclude_sleep_time_start_tick);
 
             
         
@@ -705,13 +732,6 @@ int MLP_Inference_test_patterns(
 
 
 
-        // Delay before starting next layer
-        uint32_t elapsed_us = debug_end_timer(inference_speed_measure_each_sample_start_tick);
-        int32_t remaining_us = (int32_t)UPDATE_PERIOD - (int32_t)elapsed_us; 
-        if (remaining_us > 0) { 
-            delay(remaining_us);
-            //printf("Slept for %f\n", remaining_time);
-        }
         //else { printf("Warning: computation time > update_period --> computation will lag behind\n"); }
 
         ////debug
@@ -785,9 +805,11 @@ int MLP_Inference_test_patterns(
         printf("model name: %s\n", MODEL_NAME);
         printf("\n\n\n\n\n\n\n\n\n\n\n");
         printf("start printing inference exe time\n");
+        avg_inference_time_per_forward_pass /= ((double)num_samples * (double)num_time_steps);
         //avg_inference_time_per_sample /= (double)test_input_0_NUM_SAMPLES;
-        avg_inference_time_per_sample /= (double)num_samples;
-        printf("avg_inference_exe_time_per_sample, %f,\n", avg_inference_time_per_sample);
+        double tmp = (avg_inference_time_per_sample - exclude_sleep_time) / (double)num_samples;
+        printf("avg_inference_time_per_forward_pass, %f,\n", avg_inference_time_per_forward_pass);
+        printf("avg_inference_exe_time_per_sample, %f,\n", tmp);
         printf("stop printing inference exe time\n");
 
     }

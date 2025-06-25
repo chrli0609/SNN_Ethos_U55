@@ -1,7 +1,7 @@
 
 param (
     [string]$model,
-    [int]$modifyPercent = 80,
+    [int]$modifyPercent = 75,
     [string]$PythonScriptDir = "..\ethosu_compiler\gen_cms\",
     [string]$PythonScriptFilename = "main_repeat_weights.py",
     [string]$SecondaryScriptFilename = "build_n_run.ps1"
@@ -20,7 +20,7 @@ $originalPath = Get-Location
 
 
 
-for ($i = 6; $i -lt 101; $i++) {
+for ($i = 5; $i -lt 101; $i++) {
 
 Set-Location -Path $PythonScriptDir
 try {
