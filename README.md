@@ -1,3 +1,5 @@
+
+```mermaid
 flowchart TB
   subgraph Application
     A1[reset_model_for_new_sample()]
@@ -49,4 +51,4 @@ flowchart TB
   C12 --> C13
   %% Loop back
   C13 --> A_loop
-
+```
