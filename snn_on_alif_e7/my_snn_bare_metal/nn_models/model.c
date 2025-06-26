@@ -34,8 +34,9 @@ int global_it;
 // How often we update (in micro sec)
 //#define UPDATE_PERIOD 10000 //10 ms
 //#define UPDATE_PERIOD 1000 //10 ms
-//#define UPDATE_PERIOD 6000 //6 ms
-#define UPDATE_PERIOD 60000 //60 ms
+#define UPDATE_PERIOD 6000 //6 ms
+//#define UPDATE_PERIOD 60000 //60 ms
+//#define UPDATE_PERIOD 600000 //600 ms
 //#define UPDATE_PERIOD 1000 //1 ms
 
 
