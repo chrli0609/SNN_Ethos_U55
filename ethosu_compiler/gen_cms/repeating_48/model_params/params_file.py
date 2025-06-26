@@ -1,0 +1,10 @@
+fc_lif_layer_0_weights_max_val = 0.5646165334619582
+fc_lif_layer_0_weights_min_val = -0.75627535674721
+fc_lif_layer_1_weights_max_val = 1.1915117567405105
+fc_lif_layer_1_weights_min_val = -2.1473398692905903
+fc_lif_layer_2_weights_max_val = 0.8108289912343025
+fc_lif_layer_2_weights_min_val = -3.24331596493721
+fc_lif_layer_3_weights_max_val = 1.0145550146698952
+fc_lif_layer_3_weights_min_val = -2.5786606622859836
+fc_lif_layer_4_weights_max_val = 0.7092026062309742
+fc_lif_layer_4_weights_min_val = -2.907730685546994
