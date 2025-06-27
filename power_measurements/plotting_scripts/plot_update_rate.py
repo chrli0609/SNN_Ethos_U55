@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 csv_filepath = Path('../csv_results/repeating_models_update_expected_num_layers_to_compute.csv')
 df = pd.read_csv(csv_filepath, sep=',')  # or use comma if comma-separated
 
-print(df.columns)
-print("df", df)
 # Extract columns
 x = df['Num hidden layers']
 y1 = df['Layer Wise Update Enabled']

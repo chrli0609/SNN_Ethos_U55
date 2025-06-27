@@ -210,3 +210,4 @@ for layer_num in range(model_module.NUM_LAYERS):
 
 write_to_cpu_file(cpu_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.INIT_LAYER_SIZES_LIST, model_module.MEM_STORE_LOC_LIST, model_module.NUM_TIME_STEPS ,weights_arr_list, biases_arr_list, vth_arr_list, beta_arr_list)
 '''
+

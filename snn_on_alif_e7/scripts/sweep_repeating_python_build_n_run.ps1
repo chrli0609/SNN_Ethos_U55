@@ -20,7 +20,10 @@ $originalPath = Get-Location
 
 
 
-for ($i = 5; $i -lt 101; $i++) {
+#for ($i = 5; $i -lt 101; $i++) {
+#for ($i = 51; $i -lt 101; $i++) {
+#for ($i = 5; $i -lt 51; $i++) {
+for ($i = 18; $i -lt 26; $i++) {
 
 Set-Location -Path $PythonScriptDir
 try {
