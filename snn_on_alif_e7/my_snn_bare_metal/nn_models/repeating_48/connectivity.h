@@ -4,7 +4,7 @@
 #include "../model.h"
 
 
-#define MODEL_NAME "784x48^25x10"
+#define MODEL_NAME "784x48^50x10"
 
 
 #include "layers/fc_lif_layer_0.h"
@@ -33,13 +33,38 @@
 #include "layers/fc_lif_layer_23.h"
 #include "layers/fc_lif_layer_24.h"
 #include "layers/fc_lif_layer_25.h"
+#include "layers/fc_lif_layer_26.h"
+#include "layers/fc_lif_layer_27.h"
+#include "layers/fc_lif_layer_28.h"
+#include "layers/fc_lif_layer_29.h"
+#include "layers/fc_lif_layer_30.h"
+#include "layers/fc_lif_layer_31.h"
+#include "layers/fc_lif_layer_32.h"
+#include "layers/fc_lif_layer_33.h"
+#include "layers/fc_lif_layer_34.h"
+#include "layers/fc_lif_layer_35.h"
+#include "layers/fc_lif_layer_36.h"
+#include "layers/fc_lif_layer_37.h"
+#include "layers/fc_lif_layer_38.h"
+#include "layers/fc_lif_layer_39.h"
+#include "layers/fc_lif_layer_40.h"
+#include "layers/fc_lif_layer_41.h"
+#include "layers/fc_lif_layer_42.h"
+#include "layers/fc_lif_layer_43.h"
+#include "layers/fc_lif_layer_44.h"
+#include "layers/fc_lif_layer_45.h"
+#include "layers/fc_lif_layer_46.h"
+#include "layers/fc_lif_layer_47.h"
+#include "layers/fc_lif_layer_48.h"
+#include "layers/fc_lif_layer_49.h"
+#include "layers/fc_lif_layer_50.h"
 
 
 
 #define MLP_INPUT_LAYER_SIZE	FC_LIF_LAYER_0_INPUT_LAYER_SIZE
-#define MLP_OUTPUT_LAYER_SIZE	FC_LIF_LAYER_25_OUTPUT_LAYER_SIZE
+#define MLP_OUTPUT_LAYER_SIZE	FC_LIF_LAYER_50_OUTPUT_LAYER_SIZE
 
-#define MLP_NUM_LAYERS 26
+#define MLP_NUM_LAYERS 51
 #define MLP_NUM_TIME_STEPS 25
 
 static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
@@ -120,6 +145,81 @@ static int8_t fc_lif_layer_24_out_spk[FC_LIF_LAYER_24_OUTPUT_LAYER_SIZE] __attri
 
 static int8_t fc_lif_layer_25_tensor_arena[FC_LIF_LAYER_25_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
 static int8_t fc_lif_layer_25_out_spk[FC_LIF_LAYER_25_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_26_tensor_arena[FC_LIF_LAYER_26_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_26_out_spk[FC_LIF_LAYER_26_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_27_tensor_arena[FC_LIF_LAYER_27_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_27_out_spk[FC_LIF_LAYER_27_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_28_tensor_arena[FC_LIF_LAYER_28_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_28_out_spk[FC_LIF_LAYER_28_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_29_tensor_arena[FC_LIF_LAYER_29_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_29_out_spk[FC_LIF_LAYER_29_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_30_tensor_arena[FC_LIF_LAYER_30_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_30_out_spk[FC_LIF_LAYER_30_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_31_tensor_arena[FC_LIF_LAYER_31_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_31_out_spk[FC_LIF_LAYER_31_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_32_tensor_arena[FC_LIF_LAYER_32_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_32_out_spk[FC_LIF_LAYER_32_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_33_tensor_arena[FC_LIF_LAYER_33_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_33_out_spk[FC_LIF_LAYER_33_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_34_tensor_arena[FC_LIF_LAYER_34_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_34_out_spk[FC_LIF_LAYER_34_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_35_tensor_arena[FC_LIF_LAYER_35_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_35_out_spk[FC_LIF_LAYER_35_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_36_tensor_arena[FC_LIF_LAYER_36_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_36_out_spk[FC_LIF_LAYER_36_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_37_tensor_arena[FC_LIF_LAYER_37_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_37_out_spk[FC_LIF_LAYER_37_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_38_tensor_arena[FC_LIF_LAYER_38_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_38_out_spk[FC_LIF_LAYER_38_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_39_tensor_arena[FC_LIF_LAYER_39_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_39_out_spk[FC_LIF_LAYER_39_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_40_tensor_arena[FC_LIF_LAYER_40_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_40_out_spk[FC_LIF_LAYER_40_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_41_tensor_arena[FC_LIF_LAYER_41_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_41_out_spk[FC_LIF_LAYER_41_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_42_tensor_arena[FC_LIF_LAYER_42_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_42_out_spk[FC_LIF_LAYER_42_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_43_tensor_arena[FC_LIF_LAYER_43_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_43_out_spk[FC_LIF_LAYER_43_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_44_tensor_arena[FC_LIF_LAYER_44_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_44_out_spk[FC_LIF_LAYER_44_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_45_tensor_arena[FC_LIF_LAYER_45_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_45_out_spk[FC_LIF_LAYER_45_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_46_tensor_arena[FC_LIF_LAYER_46_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_46_out_spk[FC_LIF_LAYER_46_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_47_tensor_arena[FC_LIF_LAYER_47_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_47_out_spk[FC_LIF_LAYER_47_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_48_tensor_arena[FC_LIF_LAYER_48_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_48_out_spk[FC_LIF_LAYER_48_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_49_tensor_arena[FC_LIF_LAYER_49_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_49_out_spk[FC_LIF_LAYER_49_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static int8_t fc_lif_layer_50_tensor_arena[FC_LIF_LAYER_50_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+static int8_t fc_lif_layer_50_out_spk[FC_LIF_LAYER_50_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
 
 
 NNLayer* Init_fc_lif_layer_0() {
@@ -1188,6 +1288,1031 @@ NNLayer* Init_fc_lif_layer_25() {
 }
 
 
+NNLayer* Init_fc_lif_layer_26() {
+
+	NNLayer* fc_lif_layer_26 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_26CMSPointer(),
+		Getfc_lif_layer_26CMSLen(),
+		Getfc_lif_layer_26WeightsPointer(),
+		Getfc_lif_layer_26WeightsLen(),
+		Getfc_lif_layer_26LIFParamPointer(),
+		Getfc_lif_layer_26LIFParamLen(),
+		Getfc_lif_layer_26LUTPointer(),
+		Getfc_lif_layer_26LUTLen(),
+		FC_LIF_LAYER_26_IS_LAST_LAYER,
+		FC_LIF_LAYER_26_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_26_OUT_SPK_SCALE,
+		FC_LIF_LAYER_26_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_26_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_26_TENSOR_ARENA_SIZE,
+		fc_lif_layer_26_tensor_arena,
+		fc_lif_layer_25_out_spk,
+		fc_lif_layer_26_out_spk,
+		FC_LIF_LAYER_26_BIAS_ADDR,
+		FC_LIF_LAYER_26_WEIGHT_ADDR,
+		FC_LIF_LAYER_26_V_MEM_ADDR,
+		FC_LIF_LAYER_26_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_26_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_26_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_26_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_26_BIAS_LEN,
+		FC_LIF_LAYER_26_WEIGHT_LEN,
+		FC_LIF_LAYER_26_IN_SPK_SCALE,
+		FC_LIF_LAYER_26_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_26_V_MEM_SCALE,
+		FC_LIF_LAYER_26_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_26_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_26_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_26_OUT_SPK_SCALE,
+		FC_LIF_LAYER_26_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_26;
+}
+
+
+NNLayer* Init_fc_lif_layer_27() {
+
+	NNLayer* fc_lif_layer_27 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_27CMSPointer(),
+		Getfc_lif_layer_27CMSLen(),
+		Getfc_lif_layer_27WeightsPointer(),
+		Getfc_lif_layer_27WeightsLen(),
+		Getfc_lif_layer_27LIFParamPointer(),
+		Getfc_lif_layer_27LIFParamLen(),
+		Getfc_lif_layer_27LUTPointer(),
+		Getfc_lif_layer_27LUTLen(),
+		FC_LIF_LAYER_27_IS_LAST_LAYER,
+		FC_LIF_LAYER_27_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_27_OUT_SPK_SCALE,
+		FC_LIF_LAYER_27_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_27_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_27_TENSOR_ARENA_SIZE,
+		fc_lif_layer_27_tensor_arena,
+		fc_lif_layer_26_out_spk,
+		fc_lif_layer_27_out_spk,
+		FC_LIF_LAYER_27_BIAS_ADDR,
+		FC_LIF_LAYER_27_WEIGHT_ADDR,
+		FC_LIF_LAYER_27_V_MEM_ADDR,
+		FC_LIF_LAYER_27_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_27_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_27_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_27_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_27_BIAS_LEN,
+		FC_LIF_LAYER_27_WEIGHT_LEN,
+		FC_LIF_LAYER_27_IN_SPK_SCALE,
+		FC_LIF_LAYER_27_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_27_V_MEM_SCALE,
+		FC_LIF_LAYER_27_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_27_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_27_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_27_OUT_SPK_SCALE,
+		FC_LIF_LAYER_27_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_27;
+}
+
+
+NNLayer* Init_fc_lif_layer_28() {
+
+	NNLayer* fc_lif_layer_28 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_28CMSPointer(),
+		Getfc_lif_layer_28CMSLen(),
+		Getfc_lif_layer_28WeightsPointer(),
+		Getfc_lif_layer_28WeightsLen(),
+		Getfc_lif_layer_28LIFParamPointer(),
+		Getfc_lif_layer_28LIFParamLen(),
+		Getfc_lif_layer_28LUTPointer(),
+		Getfc_lif_layer_28LUTLen(),
+		FC_LIF_LAYER_28_IS_LAST_LAYER,
+		FC_LIF_LAYER_28_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_28_OUT_SPK_SCALE,
+		FC_LIF_LAYER_28_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_28_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_28_TENSOR_ARENA_SIZE,
+		fc_lif_layer_28_tensor_arena,
+		fc_lif_layer_27_out_spk,
+		fc_lif_layer_28_out_spk,
+		FC_LIF_LAYER_28_BIAS_ADDR,
+		FC_LIF_LAYER_28_WEIGHT_ADDR,
+		FC_LIF_LAYER_28_V_MEM_ADDR,
+		FC_LIF_LAYER_28_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_28_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_28_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_28_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_28_BIAS_LEN,
+		FC_LIF_LAYER_28_WEIGHT_LEN,
+		FC_LIF_LAYER_28_IN_SPK_SCALE,
+		FC_LIF_LAYER_28_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_28_V_MEM_SCALE,
+		FC_LIF_LAYER_28_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_28_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_28_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_28_OUT_SPK_SCALE,
+		FC_LIF_LAYER_28_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_28;
+}
+
+
+NNLayer* Init_fc_lif_layer_29() {
+
+	NNLayer* fc_lif_layer_29 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_29CMSPointer(),
+		Getfc_lif_layer_29CMSLen(),
+		Getfc_lif_layer_29WeightsPointer(),
+		Getfc_lif_layer_29WeightsLen(),
+		Getfc_lif_layer_29LIFParamPointer(),
+		Getfc_lif_layer_29LIFParamLen(),
+		Getfc_lif_layer_29LUTPointer(),
+		Getfc_lif_layer_29LUTLen(),
+		FC_LIF_LAYER_29_IS_LAST_LAYER,
+		FC_LIF_LAYER_29_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_29_OUT_SPK_SCALE,
+		FC_LIF_LAYER_29_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_29_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_29_TENSOR_ARENA_SIZE,
+		fc_lif_layer_29_tensor_arena,
+		fc_lif_layer_28_out_spk,
+		fc_lif_layer_29_out_spk,
+		FC_LIF_LAYER_29_BIAS_ADDR,
+		FC_LIF_LAYER_29_WEIGHT_ADDR,
+		FC_LIF_LAYER_29_V_MEM_ADDR,
+		FC_LIF_LAYER_29_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_29_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_29_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_29_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_29_BIAS_LEN,
+		FC_LIF_LAYER_29_WEIGHT_LEN,
+		FC_LIF_LAYER_29_IN_SPK_SCALE,
+		FC_LIF_LAYER_29_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_29_V_MEM_SCALE,
+		FC_LIF_LAYER_29_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_29_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_29_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_29_OUT_SPK_SCALE,
+		FC_LIF_LAYER_29_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_29;
+}
+
+
+NNLayer* Init_fc_lif_layer_30() {
+
+	NNLayer* fc_lif_layer_30 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_30CMSPointer(),
+		Getfc_lif_layer_30CMSLen(),
+		Getfc_lif_layer_30WeightsPointer(),
+		Getfc_lif_layer_30WeightsLen(),
+		Getfc_lif_layer_30LIFParamPointer(),
+		Getfc_lif_layer_30LIFParamLen(),
+		Getfc_lif_layer_30LUTPointer(),
+		Getfc_lif_layer_30LUTLen(),
+		FC_LIF_LAYER_30_IS_LAST_LAYER,
+		FC_LIF_LAYER_30_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_30_OUT_SPK_SCALE,
+		FC_LIF_LAYER_30_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_30_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_30_TENSOR_ARENA_SIZE,
+		fc_lif_layer_30_tensor_arena,
+		fc_lif_layer_29_out_spk,
+		fc_lif_layer_30_out_spk,
+		FC_LIF_LAYER_30_BIAS_ADDR,
+		FC_LIF_LAYER_30_WEIGHT_ADDR,
+		FC_LIF_LAYER_30_V_MEM_ADDR,
+		FC_LIF_LAYER_30_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_30_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_30_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_30_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_30_BIAS_LEN,
+		FC_LIF_LAYER_30_WEIGHT_LEN,
+		FC_LIF_LAYER_30_IN_SPK_SCALE,
+		FC_LIF_LAYER_30_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_30_V_MEM_SCALE,
+		FC_LIF_LAYER_30_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_30_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_30_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_30_OUT_SPK_SCALE,
+		FC_LIF_LAYER_30_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_30;
+}
+
+
+NNLayer* Init_fc_lif_layer_31() {
+
+	NNLayer* fc_lif_layer_31 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_31CMSPointer(),
+		Getfc_lif_layer_31CMSLen(),
+		Getfc_lif_layer_31WeightsPointer(),
+		Getfc_lif_layer_31WeightsLen(),
+		Getfc_lif_layer_31LIFParamPointer(),
+		Getfc_lif_layer_31LIFParamLen(),
+		Getfc_lif_layer_31LUTPointer(),
+		Getfc_lif_layer_31LUTLen(),
+		FC_LIF_LAYER_31_IS_LAST_LAYER,
+		FC_LIF_LAYER_31_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_31_OUT_SPK_SCALE,
+		FC_LIF_LAYER_31_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_31_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_31_TENSOR_ARENA_SIZE,
+		fc_lif_layer_31_tensor_arena,
+		fc_lif_layer_30_out_spk,
+		fc_lif_layer_31_out_spk,
+		FC_LIF_LAYER_31_BIAS_ADDR,
+		FC_LIF_LAYER_31_WEIGHT_ADDR,
+		FC_LIF_LAYER_31_V_MEM_ADDR,
+		FC_LIF_LAYER_31_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_31_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_31_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_31_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_31_BIAS_LEN,
+		FC_LIF_LAYER_31_WEIGHT_LEN,
+		FC_LIF_LAYER_31_IN_SPK_SCALE,
+		FC_LIF_LAYER_31_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_31_V_MEM_SCALE,
+		FC_LIF_LAYER_31_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_31_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_31_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_31_OUT_SPK_SCALE,
+		FC_LIF_LAYER_31_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_31;
+}
+
+
+NNLayer* Init_fc_lif_layer_32() {
+
+	NNLayer* fc_lif_layer_32 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_32CMSPointer(),
+		Getfc_lif_layer_32CMSLen(),
+		Getfc_lif_layer_32WeightsPointer(),
+		Getfc_lif_layer_32WeightsLen(),
+		Getfc_lif_layer_32LIFParamPointer(),
+		Getfc_lif_layer_32LIFParamLen(),
+		Getfc_lif_layer_32LUTPointer(),
+		Getfc_lif_layer_32LUTLen(),
+		FC_LIF_LAYER_32_IS_LAST_LAYER,
+		FC_LIF_LAYER_32_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_32_OUT_SPK_SCALE,
+		FC_LIF_LAYER_32_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_32_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_32_TENSOR_ARENA_SIZE,
+		fc_lif_layer_32_tensor_arena,
+		fc_lif_layer_31_out_spk,
+		fc_lif_layer_32_out_spk,
+		FC_LIF_LAYER_32_BIAS_ADDR,
+		FC_LIF_LAYER_32_WEIGHT_ADDR,
+		FC_LIF_LAYER_32_V_MEM_ADDR,
+		FC_LIF_LAYER_32_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_32_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_32_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_32_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_32_BIAS_LEN,
+		FC_LIF_LAYER_32_WEIGHT_LEN,
+		FC_LIF_LAYER_32_IN_SPK_SCALE,
+		FC_LIF_LAYER_32_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_32_V_MEM_SCALE,
+		FC_LIF_LAYER_32_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_32_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_32_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_32_OUT_SPK_SCALE,
+		FC_LIF_LAYER_32_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_32;
+}
+
+
+NNLayer* Init_fc_lif_layer_33() {
+
+	NNLayer* fc_lif_layer_33 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_33CMSPointer(),
+		Getfc_lif_layer_33CMSLen(),
+		Getfc_lif_layer_33WeightsPointer(),
+		Getfc_lif_layer_33WeightsLen(),
+		Getfc_lif_layer_33LIFParamPointer(),
+		Getfc_lif_layer_33LIFParamLen(),
+		Getfc_lif_layer_33LUTPointer(),
+		Getfc_lif_layer_33LUTLen(),
+		FC_LIF_LAYER_33_IS_LAST_LAYER,
+		FC_LIF_LAYER_33_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_33_OUT_SPK_SCALE,
+		FC_LIF_LAYER_33_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_33_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_33_TENSOR_ARENA_SIZE,
+		fc_lif_layer_33_tensor_arena,
+		fc_lif_layer_32_out_spk,
+		fc_lif_layer_33_out_spk,
+		FC_LIF_LAYER_33_BIAS_ADDR,
+		FC_LIF_LAYER_33_WEIGHT_ADDR,
+		FC_LIF_LAYER_33_V_MEM_ADDR,
+		FC_LIF_LAYER_33_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_33_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_33_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_33_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_33_BIAS_LEN,
+		FC_LIF_LAYER_33_WEIGHT_LEN,
+		FC_LIF_LAYER_33_IN_SPK_SCALE,
+		FC_LIF_LAYER_33_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_33_V_MEM_SCALE,
+		FC_LIF_LAYER_33_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_33_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_33_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_33_OUT_SPK_SCALE,
+		FC_LIF_LAYER_33_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_33;
+}
+
+
+NNLayer* Init_fc_lif_layer_34() {
+
+	NNLayer* fc_lif_layer_34 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_34CMSPointer(),
+		Getfc_lif_layer_34CMSLen(),
+		Getfc_lif_layer_34WeightsPointer(),
+		Getfc_lif_layer_34WeightsLen(),
+		Getfc_lif_layer_34LIFParamPointer(),
+		Getfc_lif_layer_34LIFParamLen(),
+		Getfc_lif_layer_34LUTPointer(),
+		Getfc_lif_layer_34LUTLen(),
+		FC_LIF_LAYER_34_IS_LAST_LAYER,
+		FC_LIF_LAYER_34_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_34_OUT_SPK_SCALE,
+		FC_LIF_LAYER_34_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_34_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_34_TENSOR_ARENA_SIZE,
+		fc_lif_layer_34_tensor_arena,
+		fc_lif_layer_33_out_spk,
+		fc_lif_layer_34_out_spk,
+		FC_LIF_LAYER_34_BIAS_ADDR,
+		FC_LIF_LAYER_34_WEIGHT_ADDR,
+		FC_LIF_LAYER_34_V_MEM_ADDR,
+		FC_LIF_LAYER_34_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_34_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_34_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_34_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_34_BIAS_LEN,
+		FC_LIF_LAYER_34_WEIGHT_LEN,
+		FC_LIF_LAYER_34_IN_SPK_SCALE,
+		FC_LIF_LAYER_34_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_34_V_MEM_SCALE,
+		FC_LIF_LAYER_34_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_34_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_34_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_34_OUT_SPK_SCALE,
+		FC_LIF_LAYER_34_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_34;
+}
+
+
+NNLayer* Init_fc_lif_layer_35() {
+
+	NNLayer* fc_lif_layer_35 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_35CMSPointer(),
+		Getfc_lif_layer_35CMSLen(),
+		Getfc_lif_layer_35WeightsPointer(),
+		Getfc_lif_layer_35WeightsLen(),
+		Getfc_lif_layer_35LIFParamPointer(),
+		Getfc_lif_layer_35LIFParamLen(),
+		Getfc_lif_layer_35LUTPointer(),
+		Getfc_lif_layer_35LUTLen(),
+		FC_LIF_LAYER_35_IS_LAST_LAYER,
+		FC_LIF_LAYER_35_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_35_OUT_SPK_SCALE,
+		FC_LIF_LAYER_35_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_35_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_35_TENSOR_ARENA_SIZE,
+		fc_lif_layer_35_tensor_arena,
+		fc_lif_layer_34_out_spk,
+		fc_lif_layer_35_out_spk,
+		FC_LIF_LAYER_35_BIAS_ADDR,
+		FC_LIF_LAYER_35_WEIGHT_ADDR,
+		FC_LIF_LAYER_35_V_MEM_ADDR,
+		FC_LIF_LAYER_35_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_35_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_35_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_35_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_35_BIAS_LEN,
+		FC_LIF_LAYER_35_WEIGHT_LEN,
+		FC_LIF_LAYER_35_IN_SPK_SCALE,
+		FC_LIF_LAYER_35_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_35_V_MEM_SCALE,
+		FC_LIF_LAYER_35_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_35_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_35_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_35_OUT_SPK_SCALE,
+		FC_LIF_LAYER_35_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_35;
+}
+
+
+NNLayer* Init_fc_lif_layer_36() {
+
+	NNLayer* fc_lif_layer_36 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_36CMSPointer(),
+		Getfc_lif_layer_36CMSLen(),
+		Getfc_lif_layer_36WeightsPointer(),
+		Getfc_lif_layer_36WeightsLen(),
+		Getfc_lif_layer_36LIFParamPointer(),
+		Getfc_lif_layer_36LIFParamLen(),
+		Getfc_lif_layer_36LUTPointer(),
+		Getfc_lif_layer_36LUTLen(),
+		FC_LIF_LAYER_36_IS_LAST_LAYER,
+		FC_LIF_LAYER_36_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_36_OUT_SPK_SCALE,
+		FC_LIF_LAYER_36_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_36_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_36_TENSOR_ARENA_SIZE,
+		fc_lif_layer_36_tensor_arena,
+		fc_lif_layer_35_out_spk,
+		fc_lif_layer_36_out_spk,
+		FC_LIF_LAYER_36_BIAS_ADDR,
+		FC_LIF_LAYER_36_WEIGHT_ADDR,
+		FC_LIF_LAYER_36_V_MEM_ADDR,
+		FC_LIF_LAYER_36_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_36_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_36_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_36_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_36_BIAS_LEN,
+		FC_LIF_LAYER_36_WEIGHT_LEN,
+		FC_LIF_LAYER_36_IN_SPK_SCALE,
+		FC_LIF_LAYER_36_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_36_V_MEM_SCALE,
+		FC_LIF_LAYER_36_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_36_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_36_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_36_OUT_SPK_SCALE,
+		FC_LIF_LAYER_36_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_36;
+}
+
+
+NNLayer* Init_fc_lif_layer_37() {
+
+	NNLayer* fc_lif_layer_37 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_37CMSPointer(),
+		Getfc_lif_layer_37CMSLen(),
+		Getfc_lif_layer_37WeightsPointer(),
+		Getfc_lif_layer_37WeightsLen(),
+		Getfc_lif_layer_37LIFParamPointer(),
+		Getfc_lif_layer_37LIFParamLen(),
+		Getfc_lif_layer_37LUTPointer(),
+		Getfc_lif_layer_37LUTLen(),
+		FC_LIF_LAYER_37_IS_LAST_LAYER,
+		FC_LIF_LAYER_37_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_37_OUT_SPK_SCALE,
+		FC_LIF_LAYER_37_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_37_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_37_TENSOR_ARENA_SIZE,
+		fc_lif_layer_37_tensor_arena,
+		fc_lif_layer_36_out_spk,
+		fc_lif_layer_37_out_spk,
+		FC_LIF_LAYER_37_BIAS_ADDR,
+		FC_LIF_LAYER_37_WEIGHT_ADDR,
+		FC_LIF_LAYER_37_V_MEM_ADDR,
+		FC_LIF_LAYER_37_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_37_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_37_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_37_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_37_BIAS_LEN,
+		FC_LIF_LAYER_37_WEIGHT_LEN,
+		FC_LIF_LAYER_37_IN_SPK_SCALE,
+		FC_LIF_LAYER_37_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_37_V_MEM_SCALE,
+		FC_LIF_LAYER_37_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_37_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_37_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_37_OUT_SPK_SCALE,
+		FC_LIF_LAYER_37_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_37;
+}
+
+
+NNLayer* Init_fc_lif_layer_38() {
+
+	NNLayer* fc_lif_layer_38 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_38CMSPointer(),
+		Getfc_lif_layer_38CMSLen(),
+		Getfc_lif_layer_38WeightsPointer(),
+		Getfc_lif_layer_38WeightsLen(),
+		Getfc_lif_layer_38LIFParamPointer(),
+		Getfc_lif_layer_38LIFParamLen(),
+		Getfc_lif_layer_38LUTPointer(),
+		Getfc_lif_layer_38LUTLen(),
+		FC_LIF_LAYER_38_IS_LAST_LAYER,
+		FC_LIF_LAYER_38_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_38_OUT_SPK_SCALE,
+		FC_LIF_LAYER_38_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_38_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_38_TENSOR_ARENA_SIZE,
+		fc_lif_layer_38_tensor_arena,
+		fc_lif_layer_37_out_spk,
+		fc_lif_layer_38_out_spk,
+		FC_LIF_LAYER_38_BIAS_ADDR,
+		FC_LIF_LAYER_38_WEIGHT_ADDR,
+		FC_LIF_LAYER_38_V_MEM_ADDR,
+		FC_LIF_LAYER_38_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_38_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_38_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_38_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_38_BIAS_LEN,
+		FC_LIF_LAYER_38_WEIGHT_LEN,
+		FC_LIF_LAYER_38_IN_SPK_SCALE,
+		FC_LIF_LAYER_38_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_38_V_MEM_SCALE,
+		FC_LIF_LAYER_38_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_38_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_38_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_38_OUT_SPK_SCALE,
+		FC_LIF_LAYER_38_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_38;
+}
+
+
+NNLayer* Init_fc_lif_layer_39() {
+
+	NNLayer* fc_lif_layer_39 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_39CMSPointer(),
+		Getfc_lif_layer_39CMSLen(),
+		Getfc_lif_layer_39WeightsPointer(),
+		Getfc_lif_layer_39WeightsLen(),
+		Getfc_lif_layer_39LIFParamPointer(),
+		Getfc_lif_layer_39LIFParamLen(),
+		Getfc_lif_layer_39LUTPointer(),
+		Getfc_lif_layer_39LUTLen(),
+		FC_LIF_LAYER_39_IS_LAST_LAYER,
+		FC_LIF_LAYER_39_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_39_OUT_SPK_SCALE,
+		FC_LIF_LAYER_39_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_39_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_39_TENSOR_ARENA_SIZE,
+		fc_lif_layer_39_tensor_arena,
+		fc_lif_layer_38_out_spk,
+		fc_lif_layer_39_out_spk,
+		FC_LIF_LAYER_39_BIAS_ADDR,
+		FC_LIF_LAYER_39_WEIGHT_ADDR,
+		FC_LIF_LAYER_39_V_MEM_ADDR,
+		FC_LIF_LAYER_39_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_39_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_39_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_39_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_39_BIAS_LEN,
+		FC_LIF_LAYER_39_WEIGHT_LEN,
+		FC_LIF_LAYER_39_IN_SPK_SCALE,
+		FC_LIF_LAYER_39_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_39_V_MEM_SCALE,
+		FC_LIF_LAYER_39_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_39_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_39_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_39_OUT_SPK_SCALE,
+		FC_LIF_LAYER_39_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_39;
+}
+
+
+NNLayer* Init_fc_lif_layer_40() {
+
+	NNLayer* fc_lif_layer_40 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_40CMSPointer(),
+		Getfc_lif_layer_40CMSLen(),
+		Getfc_lif_layer_40WeightsPointer(),
+		Getfc_lif_layer_40WeightsLen(),
+		Getfc_lif_layer_40LIFParamPointer(),
+		Getfc_lif_layer_40LIFParamLen(),
+		Getfc_lif_layer_40LUTPointer(),
+		Getfc_lif_layer_40LUTLen(),
+		FC_LIF_LAYER_40_IS_LAST_LAYER,
+		FC_LIF_LAYER_40_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_40_OUT_SPK_SCALE,
+		FC_LIF_LAYER_40_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_40_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_40_TENSOR_ARENA_SIZE,
+		fc_lif_layer_40_tensor_arena,
+		fc_lif_layer_39_out_spk,
+		fc_lif_layer_40_out_spk,
+		FC_LIF_LAYER_40_BIAS_ADDR,
+		FC_LIF_LAYER_40_WEIGHT_ADDR,
+		FC_LIF_LAYER_40_V_MEM_ADDR,
+		FC_LIF_LAYER_40_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_40_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_40_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_40_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_40_BIAS_LEN,
+		FC_LIF_LAYER_40_WEIGHT_LEN,
+		FC_LIF_LAYER_40_IN_SPK_SCALE,
+		FC_LIF_LAYER_40_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_40_V_MEM_SCALE,
+		FC_LIF_LAYER_40_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_40_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_40_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_40_OUT_SPK_SCALE,
+		FC_LIF_LAYER_40_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_40;
+}
+
+
+NNLayer* Init_fc_lif_layer_41() {
+
+	NNLayer* fc_lif_layer_41 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_41CMSPointer(),
+		Getfc_lif_layer_41CMSLen(),
+		Getfc_lif_layer_41WeightsPointer(),
+		Getfc_lif_layer_41WeightsLen(),
+		Getfc_lif_layer_41LIFParamPointer(),
+		Getfc_lif_layer_41LIFParamLen(),
+		Getfc_lif_layer_41LUTPointer(),
+		Getfc_lif_layer_41LUTLen(),
+		FC_LIF_LAYER_41_IS_LAST_LAYER,
+		FC_LIF_LAYER_41_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_41_OUT_SPK_SCALE,
+		FC_LIF_LAYER_41_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_41_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_41_TENSOR_ARENA_SIZE,
+		fc_lif_layer_41_tensor_arena,
+		fc_lif_layer_40_out_spk,
+		fc_lif_layer_41_out_spk,
+		FC_LIF_LAYER_41_BIAS_ADDR,
+		FC_LIF_LAYER_41_WEIGHT_ADDR,
+		FC_LIF_LAYER_41_V_MEM_ADDR,
+		FC_LIF_LAYER_41_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_41_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_41_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_41_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_41_BIAS_LEN,
+		FC_LIF_LAYER_41_WEIGHT_LEN,
+		FC_LIF_LAYER_41_IN_SPK_SCALE,
+		FC_LIF_LAYER_41_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_41_V_MEM_SCALE,
+		FC_LIF_LAYER_41_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_41_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_41_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_41_OUT_SPK_SCALE,
+		FC_LIF_LAYER_41_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_41;
+}
+
+
+NNLayer* Init_fc_lif_layer_42() {
+
+	NNLayer* fc_lif_layer_42 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_42CMSPointer(),
+		Getfc_lif_layer_42CMSLen(),
+		Getfc_lif_layer_42WeightsPointer(),
+		Getfc_lif_layer_42WeightsLen(),
+		Getfc_lif_layer_42LIFParamPointer(),
+		Getfc_lif_layer_42LIFParamLen(),
+		Getfc_lif_layer_42LUTPointer(),
+		Getfc_lif_layer_42LUTLen(),
+		FC_LIF_LAYER_42_IS_LAST_LAYER,
+		FC_LIF_LAYER_42_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_42_OUT_SPK_SCALE,
+		FC_LIF_LAYER_42_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_42_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_42_TENSOR_ARENA_SIZE,
+		fc_lif_layer_42_tensor_arena,
+		fc_lif_layer_41_out_spk,
+		fc_lif_layer_42_out_spk,
+		FC_LIF_LAYER_42_BIAS_ADDR,
+		FC_LIF_LAYER_42_WEIGHT_ADDR,
+		FC_LIF_LAYER_42_V_MEM_ADDR,
+		FC_LIF_LAYER_42_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_42_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_42_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_42_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_42_BIAS_LEN,
+		FC_LIF_LAYER_42_WEIGHT_LEN,
+		FC_LIF_LAYER_42_IN_SPK_SCALE,
+		FC_LIF_LAYER_42_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_42_V_MEM_SCALE,
+		FC_LIF_LAYER_42_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_42_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_42_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_42_OUT_SPK_SCALE,
+		FC_LIF_LAYER_42_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_42;
+}
+
+
+NNLayer* Init_fc_lif_layer_43() {
+
+	NNLayer* fc_lif_layer_43 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_43CMSPointer(),
+		Getfc_lif_layer_43CMSLen(),
+		Getfc_lif_layer_43WeightsPointer(),
+		Getfc_lif_layer_43WeightsLen(),
+		Getfc_lif_layer_43LIFParamPointer(),
+		Getfc_lif_layer_43LIFParamLen(),
+		Getfc_lif_layer_43LUTPointer(),
+		Getfc_lif_layer_43LUTLen(),
+		FC_LIF_LAYER_43_IS_LAST_LAYER,
+		FC_LIF_LAYER_43_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_43_OUT_SPK_SCALE,
+		FC_LIF_LAYER_43_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_43_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_43_TENSOR_ARENA_SIZE,
+		fc_lif_layer_43_tensor_arena,
+		fc_lif_layer_42_out_spk,
+		fc_lif_layer_43_out_spk,
+		FC_LIF_LAYER_43_BIAS_ADDR,
+		FC_LIF_LAYER_43_WEIGHT_ADDR,
+		FC_LIF_LAYER_43_V_MEM_ADDR,
+		FC_LIF_LAYER_43_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_43_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_43_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_43_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_43_BIAS_LEN,
+		FC_LIF_LAYER_43_WEIGHT_LEN,
+		FC_LIF_LAYER_43_IN_SPK_SCALE,
+		FC_LIF_LAYER_43_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_43_V_MEM_SCALE,
+		FC_LIF_LAYER_43_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_43_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_43_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_43_OUT_SPK_SCALE,
+		FC_LIF_LAYER_43_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_43;
+}
+
+
+NNLayer* Init_fc_lif_layer_44() {
+
+	NNLayer* fc_lif_layer_44 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_44CMSPointer(),
+		Getfc_lif_layer_44CMSLen(),
+		Getfc_lif_layer_44WeightsPointer(),
+		Getfc_lif_layer_44WeightsLen(),
+		Getfc_lif_layer_44LIFParamPointer(),
+		Getfc_lif_layer_44LIFParamLen(),
+		Getfc_lif_layer_44LUTPointer(),
+		Getfc_lif_layer_44LUTLen(),
+		FC_LIF_LAYER_44_IS_LAST_LAYER,
+		FC_LIF_LAYER_44_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_44_OUT_SPK_SCALE,
+		FC_LIF_LAYER_44_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_44_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_44_TENSOR_ARENA_SIZE,
+		fc_lif_layer_44_tensor_arena,
+		fc_lif_layer_43_out_spk,
+		fc_lif_layer_44_out_spk,
+		FC_LIF_LAYER_44_BIAS_ADDR,
+		FC_LIF_LAYER_44_WEIGHT_ADDR,
+		FC_LIF_LAYER_44_V_MEM_ADDR,
+		FC_LIF_LAYER_44_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_44_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_44_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_44_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_44_BIAS_LEN,
+		FC_LIF_LAYER_44_WEIGHT_LEN,
+		FC_LIF_LAYER_44_IN_SPK_SCALE,
+		FC_LIF_LAYER_44_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_44_V_MEM_SCALE,
+		FC_LIF_LAYER_44_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_44_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_44_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_44_OUT_SPK_SCALE,
+		FC_LIF_LAYER_44_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_44;
+}
+
+
+NNLayer* Init_fc_lif_layer_45() {
+
+	NNLayer* fc_lif_layer_45 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_45CMSPointer(),
+		Getfc_lif_layer_45CMSLen(),
+		Getfc_lif_layer_45WeightsPointer(),
+		Getfc_lif_layer_45WeightsLen(),
+		Getfc_lif_layer_45LIFParamPointer(),
+		Getfc_lif_layer_45LIFParamLen(),
+		Getfc_lif_layer_45LUTPointer(),
+		Getfc_lif_layer_45LUTLen(),
+		FC_LIF_LAYER_45_IS_LAST_LAYER,
+		FC_LIF_LAYER_45_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_45_OUT_SPK_SCALE,
+		FC_LIF_LAYER_45_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_45_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_45_TENSOR_ARENA_SIZE,
+		fc_lif_layer_45_tensor_arena,
+		fc_lif_layer_44_out_spk,
+		fc_lif_layer_45_out_spk,
+		FC_LIF_LAYER_45_BIAS_ADDR,
+		FC_LIF_LAYER_45_WEIGHT_ADDR,
+		FC_LIF_LAYER_45_V_MEM_ADDR,
+		FC_LIF_LAYER_45_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_45_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_45_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_45_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_45_BIAS_LEN,
+		FC_LIF_LAYER_45_WEIGHT_LEN,
+		FC_LIF_LAYER_45_IN_SPK_SCALE,
+		FC_LIF_LAYER_45_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_45_V_MEM_SCALE,
+		FC_LIF_LAYER_45_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_45_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_45_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_45_OUT_SPK_SCALE,
+		FC_LIF_LAYER_45_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_45;
+}
+
+
+NNLayer* Init_fc_lif_layer_46() {
+
+	NNLayer* fc_lif_layer_46 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_46CMSPointer(),
+		Getfc_lif_layer_46CMSLen(),
+		Getfc_lif_layer_46WeightsPointer(),
+		Getfc_lif_layer_46WeightsLen(),
+		Getfc_lif_layer_46LIFParamPointer(),
+		Getfc_lif_layer_46LIFParamLen(),
+		Getfc_lif_layer_46LUTPointer(),
+		Getfc_lif_layer_46LUTLen(),
+		FC_LIF_LAYER_46_IS_LAST_LAYER,
+		FC_LIF_LAYER_46_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_46_OUT_SPK_SCALE,
+		FC_LIF_LAYER_46_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_46_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_46_TENSOR_ARENA_SIZE,
+		fc_lif_layer_46_tensor_arena,
+		fc_lif_layer_45_out_spk,
+		fc_lif_layer_46_out_spk,
+		FC_LIF_LAYER_46_BIAS_ADDR,
+		FC_LIF_LAYER_46_WEIGHT_ADDR,
+		FC_LIF_LAYER_46_V_MEM_ADDR,
+		FC_LIF_LAYER_46_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_46_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_46_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_46_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_46_BIAS_LEN,
+		FC_LIF_LAYER_46_WEIGHT_LEN,
+		FC_LIF_LAYER_46_IN_SPK_SCALE,
+		FC_LIF_LAYER_46_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_46_V_MEM_SCALE,
+		FC_LIF_LAYER_46_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_46_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_46_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_46_OUT_SPK_SCALE,
+		FC_LIF_LAYER_46_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_46;
+}
+
+
+NNLayer* Init_fc_lif_layer_47() {
+
+	NNLayer* fc_lif_layer_47 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_47CMSPointer(),
+		Getfc_lif_layer_47CMSLen(),
+		Getfc_lif_layer_47WeightsPointer(),
+		Getfc_lif_layer_47WeightsLen(),
+		Getfc_lif_layer_47LIFParamPointer(),
+		Getfc_lif_layer_47LIFParamLen(),
+		Getfc_lif_layer_47LUTPointer(),
+		Getfc_lif_layer_47LUTLen(),
+		FC_LIF_LAYER_47_IS_LAST_LAYER,
+		FC_LIF_LAYER_47_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_47_OUT_SPK_SCALE,
+		FC_LIF_LAYER_47_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_47_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_47_TENSOR_ARENA_SIZE,
+		fc_lif_layer_47_tensor_arena,
+		fc_lif_layer_46_out_spk,
+		fc_lif_layer_47_out_spk,
+		FC_LIF_LAYER_47_BIAS_ADDR,
+		FC_LIF_LAYER_47_WEIGHT_ADDR,
+		FC_LIF_LAYER_47_V_MEM_ADDR,
+		FC_LIF_LAYER_47_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_47_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_47_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_47_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_47_BIAS_LEN,
+		FC_LIF_LAYER_47_WEIGHT_LEN,
+		FC_LIF_LAYER_47_IN_SPK_SCALE,
+		FC_LIF_LAYER_47_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_47_V_MEM_SCALE,
+		FC_LIF_LAYER_47_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_47_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_47_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_47_OUT_SPK_SCALE,
+		FC_LIF_LAYER_47_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_47;
+}
+
+
+NNLayer* Init_fc_lif_layer_48() {
+
+	NNLayer* fc_lif_layer_48 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_48CMSPointer(),
+		Getfc_lif_layer_48CMSLen(),
+		Getfc_lif_layer_48WeightsPointer(),
+		Getfc_lif_layer_48WeightsLen(),
+		Getfc_lif_layer_48LIFParamPointer(),
+		Getfc_lif_layer_48LIFParamLen(),
+		Getfc_lif_layer_48LUTPointer(),
+		Getfc_lif_layer_48LUTLen(),
+		FC_LIF_LAYER_48_IS_LAST_LAYER,
+		FC_LIF_LAYER_48_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_48_OUT_SPK_SCALE,
+		FC_LIF_LAYER_48_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_48_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_48_TENSOR_ARENA_SIZE,
+		fc_lif_layer_48_tensor_arena,
+		fc_lif_layer_47_out_spk,
+		fc_lif_layer_48_out_spk,
+		FC_LIF_LAYER_48_BIAS_ADDR,
+		FC_LIF_LAYER_48_WEIGHT_ADDR,
+		FC_LIF_LAYER_48_V_MEM_ADDR,
+		FC_LIF_LAYER_48_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_48_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_48_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_48_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_48_BIAS_LEN,
+		FC_LIF_LAYER_48_WEIGHT_LEN,
+		FC_LIF_LAYER_48_IN_SPK_SCALE,
+		FC_LIF_LAYER_48_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_48_V_MEM_SCALE,
+		FC_LIF_LAYER_48_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_48_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_48_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_48_OUT_SPK_SCALE,
+		FC_LIF_LAYER_48_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_48;
+}
+
+
+NNLayer* Init_fc_lif_layer_49() {
+
+	NNLayer* fc_lif_layer_49 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_49CMSPointer(),
+		Getfc_lif_layer_49CMSLen(),
+		Getfc_lif_layer_49WeightsPointer(),
+		Getfc_lif_layer_49WeightsLen(),
+		Getfc_lif_layer_49LIFParamPointer(),
+		Getfc_lif_layer_49LIFParamLen(),
+		Getfc_lif_layer_49LUTPointer(),
+		Getfc_lif_layer_49LUTLen(),
+		FC_LIF_LAYER_49_IS_LAST_LAYER,
+		FC_LIF_LAYER_49_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_49_OUT_SPK_SCALE,
+		FC_LIF_LAYER_49_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_49_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_49_TENSOR_ARENA_SIZE,
+		fc_lif_layer_49_tensor_arena,
+		fc_lif_layer_48_out_spk,
+		fc_lif_layer_49_out_spk,
+		FC_LIF_LAYER_49_BIAS_ADDR,
+		FC_LIF_LAYER_49_WEIGHT_ADDR,
+		FC_LIF_LAYER_49_V_MEM_ADDR,
+		FC_LIF_LAYER_49_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_49_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_49_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_49_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_49_BIAS_LEN,
+		FC_LIF_LAYER_49_WEIGHT_LEN,
+		FC_LIF_LAYER_49_IN_SPK_SCALE,
+		FC_LIF_LAYER_49_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_49_V_MEM_SCALE,
+		FC_LIF_LAYER_49_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_49_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_49_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_49_OUT_SPK_SCALE,
+		FC_LIF_LAYER_49_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_49;
+}
+
+
+NNLayer* Init_fc_lif_layer_50() {
+
+	NNLayer* fc_lif_layer_50 = FC_LIF_Layer_Init(
+		Getfc_lif_layer_50CMSPointer(),
+		Getfc_lif_layer_50CMSLen(),
+		Getfc_lif_layer_50WeightsPointer(),
+		Getfc_lif_layer_50WeightsLen(),
+		Getfc_lif_layer_50LIFParamPointer(),
+		Getfc_lif_layer_50LIFParamLen(),
+		Getfc_lif_layer_50LUTPointer(),
+		Getfc_lif_layer_50LUTLen(),
+		FC_LIF_LAYER_50_IS_LAST_LAYER,
+		FC_LIF_LAYER_50_OUT_SPK_SUM_ADDR,
+		FC_LIF_LAYER_50_OUT_SPK_SCALE,
+		FC_LIF_LAYER_50_OUT_SPK_SUM_ZERO_POINT,
+		FC_LIF_LAYER_50_MAX_NUM_TENSORS_TO_TRACK,
+		FC_LIF_LAYER_50_TENSOR_ARENA_SIZE,
+		fc_lif_layer_50_tensor_arena,
+		fc_lif_layer_49_out_spk,
+		fc_lif_layer_50_out_spk,
+		FC_LIF_LAYER_50_BIAS_ADDR,
+		FC_LIF_LAYER_50_WEIGHT_ADDR,
+		FC_LIF_LAYER_50_V_MEM_ADDR,
+		FC_LIF_LAYER_50_TIME_NOT_UPDATED_ADDR,
+		FC_LIF_LAYER_50_UPDATE_NXT_LAYER_ADDR,
+		FC_LIF_LAYER_50_INPUT_LAYER_SIZE,
+		FC_LIF_LAYER_50_OUTPUT_LAYER_SIZE,
+		FC_LIF_LAYER_50_BIAS_LEN,
+		FC_LIF_LAYER_50_WEIGHT_LEN,
+		FC_LIF_LAYER_50_IN_SPK_SCALE,
+		FC_LIF_LAYER_50_IN_SPK_ZERO_POINT,
+		FC_LIF_LAYER_50_V_MEM_SCALE,
+		FC_LIF_LAYER_50_V_MEM_ZERO_POINT,
+		FC_LIF_LAYER_50_TIME_NOT_UPDATED_SCALE,
+		FC_LIF_LAYER_50_TIME_NOT_UPDATED_ZERO_POINT,
+		FC_LIF_LAYER_50_OUT_SPK_SCALE,
+		FC_LIF_LAYER_50_OUT_SPK_ZERO_POINT
+	);	 return fc_lif_layer_50;
+}
+
+
 
 NNLayer* (*init_layers_func[MLP_NUM_LAYERS]) (void) = {
 	Init_fc_lif_layer_0,
@@ -1216,4 +2341,29 @@ NNLayer* (*init_layers_func[MLP_NUM_LAYERS]) (void) = {
 	Init_fc_lif_layer_23,
 	Init_fc_lif_layer_24,
 	Init_fc_lif_layer_25,
+	Init_fc_lif_layer_26,
+	Init_fc_lif_layer_27,
+	Init_fc_lif_layer_28,
+	Init_fc_lif_layer_29,
+	Init_fc_lif_layer_30,
+	Init_fc_lif_layer_31,
+	Init_fc_lif_layer_32,
+	Init_fc_lif_layer_33,
+	Init_fc_lif_layer_34,
+	Init_fc_lif_layer_35,
+	Init_fc_lif_layer_36,
+	Init_fc_lif_layer_37,
+	Init_fc_lif_layer_38,
+	Init_fc_lif_layer_39,
+	Init_fc_lif_layer_40,
+	Init_fc_lif_layer_41,
+	Init_fc_lif_layer_42,
+	Init_fc_lif_layer_43,
+	Init_fc_lif_layer_44,
+	Init_fc_lif_layer_45,
+	Init_fc_lif_layer_46,
+	Init_fc_lif_layer_47,
+	Init_fc_lif_layer_48,
+	Init_fc_lif_layer_49,
+	Init_fc_lif_layer_50,
 };

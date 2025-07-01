@@ -26,7 +26,7 @@ size_hid_layers = [16, 16, 16, 16, 16, 16, 16, 16]
 quant_aware = True
 spike_factor = 1e-5
 mean_weight_factor = 1e3
-epochs = 20
+epochs = 60
 n_time_bins = 25
 
 # Where to store stuff

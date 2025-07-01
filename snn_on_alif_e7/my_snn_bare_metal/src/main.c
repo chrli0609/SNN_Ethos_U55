@@ -21,19 +21,10 @@
 #include "global_map.h"
 #include "include/extra_funcs.h"
 
-//#include "cmsis_gcc.h"
-//#include "nn_models/spk_mnist_mlp/test_patterns/pattern_0.h"
 #include "nn_data_structure.h"
 #include "pm.h" //SystemCoreClock
 
 
-// Include NN Model Here (Only one should be used at a time, dont forget to also change the compiled model.c file)
-//#include "nn_models/single_tensor_dtcm_mlp/model.h"
-//#include "nn_models/multi_tensor_sram_mlp/model.h"
-//#include "nn_models/spk_mnist_mlp/model.h"
-//#include "nn_models/spk_mnist_784x32x10/model.h"
-//#include "nn_models/nmnist_784x64x64x10/model.h"
-//#include "nn_models/nmnist_784x32x32x32x10/model.h"
 
 #include "nn_models/model.h"
 
@@ -327,8 +318,5 @@ int main() {
     MLP_Free(mlp_model);
 
 }
-
-
-
 
 

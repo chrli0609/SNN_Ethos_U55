@@ -62,7 +62,16 @@ snn.load_state_dict(torch.load(model_dir / Path("model_state_dict.pkl")))
 net = Model(snn=snn, decoder=decode)
 net.eval()
 
-#print("model", net)
+print("model", net)
+
+
+
+
+
+
+    
+
+
 
 
 def test(net, test_data, test_target):
@@ -124,6 +133,22 @@ def test(net, test_data, test_target):
     return test_loss, accuracy
 
 
+
+
+
+
+
+
+def make_csv_rows(dicts, keys):
+    rows = []
+    rows.append(keys)
+    for item in dicts:
+        rows.append([item[key] for key in keys])
+    return rows
+
+
+
+
 ## Do testing
 
 test_data = np.load(model_dir / test_patterns_dir / Path("test_input_0.npy"))
@@ -134,3 +159,48 @@ target_data = np.load(model_dir / test_patterns_dir / Path("test_target_0.npy"))
 test_loss, test_accuracy = test(net, test_data, target_data)
 print("test_loss:", test_loss)
 print("test_accuracy:", test_accuracy)
+
+
+stats = []
+for idx in range(net.snn.num_hidden+1):
+    stats.append({
+            'min': net.snn.state_mins[idx].item() if net.snn.state_mins[idx] is not None else None,
+            'max': net.snn.state_maxs[idx].item() if net.snn.state_maxs[idx] is not None else None
+    })
+
+    print("max val", net.snn.state_maxs[idx].item())
+    print("min val", net.snn.state_mins[idx].item())
+    
+    print(f"Layer 0,{net.snn.state_maxs[idx].item()},{net.snn.state_mins[idx].item()}")
+
+
+
+
+
+
+import csv, sys
+
+rows = make_csv_rows(stats, ('max', 'min'))
+
+w = csv.writer(sys.stdout, csv.excel_tab)
+w.writerows(rows)
+
+
+
+
+
+for i in range(2):
+    for j in range(len(stats)):
+        if i == 0:
+            if j == 0:
+                print("max")
+
+            print(stats[j]['max'])
+
+
+        elif i == 1:
+            if j == 0:
+                print("min")
+
+            print(stats[j]['min'])
+

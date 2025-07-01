@@ -25,7 +25,7 @@ size_hid_layers = [64, 64]
 quant_aware = True
 spike_factor = 1e-5
 mean_weight_factor = 1e3
-epochs = 20
+epochs = 10
 n_time_bins = 25
 
 
@@ -59,6 +59,36 @@ class Net(torch.nn.Module):
             self.dequant = DeQuantStub()
 
 
+        # Initialize min/max tracking for each state
+        self.state_mins = [None for _ in range(num_hidden+1)]
+        self.state_maxs = [None for _ in range(num_hidden+1)]
+        self.tracking_enabled = True  # Flag to enable/disable tracking
+
+
+    def _update_state_minmax(self, idx, state_tensor):
+        """Update min/max tracking for a specific state index"""
+        if not self.tracking_enabled or state_tensor is None:
+            return
+
+        
+        # Get current min/max values from the state tensor
+        current_min = torch.min(state_tensor)
+        current_max = torch.max(state_tensor)
+        
+        # Update global min
+        if self.state_mins[idx] is None:
+            self.state_mins[idx] = current_min.detach()
+        else:
+            self.state_mins[idx] = torch.min(self.state_mins[idx], current_min.detach())
+        
+        # Update global max
+        if self.state_maxs[idx] is None:
+            self.state_maxs[idx] = current_max.detach()
+        else:
+            self.state_maxs[idx] = torch.max(self.state_maxs[idx], current_max.detach())
+
+
+
     def forward(self, inp):
         states = [None for _ in range(self.num_hidden+1)]
         out_spikes = []
@@ -71,6 +101,13 @@ class Net(torch.nn.Module):
             for idx, layer in enumerate(self.linear_layers):
                 x = layer(x)
                 x, states[idx] = self.temp_layers[idx](x, states[idx])
+
+
+
+                # Track min/max values for the current state
+                self._update_state_minmax(idx, states[idx].v)
+
+
                 layer_spikes.append(x.flatten())
             out_spikes.append(x)
         

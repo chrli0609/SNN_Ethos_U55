@@ -81,7 +81,18 @@ snn.eval()
 snn_quant = torch.quantization.convert(snn, inplace=False)
 
 net = Model(snn=snn_quant, decoder=decode)
+#net = Model(snn=snn, decoder=decode)
 net.eval()
+
+
+
+from get_quant_params import *
+# After training your QAT model
+quant_params = extract_from_converted_quantized_model(net)
+print_quantization_parameters(quant_params)
+
+# Save to file for later use
+save_quantization_parameters(quant_params, 'snn_quantization_params.json')
 
 
 print("model", net)
@@ -90,6 +101,7 @@ params_filepath = model_dir / model_params_dir / Path("params_file.py")
 
 # Save weights and biases of each fully connected (fc) layer
 for idx, layer in enumerate(snn_quant.linear_layers):
+#for idx, layer in enumerate(snn.linear_layers):
 
     print(layer.weight().__class__)
     print(layer.weight().dtype)

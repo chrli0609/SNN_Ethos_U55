@@ -33,11 +33,17 @@ int global_it;
 
 // How often we update (in micro sec)
 //#define UPDATE_PERIOD 10000 //10 ms
-//#define UPDATE_PERIOD 1000 //10 ms
+//#define UPDATE_PERIOD 1000 //1 ms
+
+//#define UPDATE_PERIOD 4000 //4 ms
+//#define UPDATE_PERIOD 0 //0 ms
+//#define UPDATE_PERIOD 3000 //3 ms
+
+//#define UPDATE_PERIOD 600 //0.6 ms
 #define UPDATE_PERIOD 6000 //6 ms
 //#define UPDATE_PERIOD 60000 //60 ms
 //#define UPDATE_PERIOD 600000 //600 ms
-//#define UPDATE_PERIOD 1000 //1 ms
+//#define UPDATE_PERIOD 0 //0
 
 
 
@@ -528,6 +534,7 @@ int MLP_Inference_test_patterns(
     double exclude_sleep_time = 0;
     double avg_inference_time_per_sample = 0;
     double avg_inference_time_per_forward_pass = 0;
+    int32_t max_inference_time_per_forward_pass = -UPDATE_PERIOD;
 
 
 
@@ -682,18 +689,21 @@ int MLP_Inference_test_patterns(
             }
 
 
-            avg_inference_time_per_forward_pass += debug_end_timer(avg_inference_time_per_forward_pass_start_tick);
+            uint32_t inference_time_this_forward_pass = debug_end_timer(avg_inference_time_per_forward_pass_start_tick);
 
+            if ((int32_t)inference_time_this_forward_pass > max_inference_time_per_forward_pass) {
+                max_inference_time_per_forward_pass = (int32_t)inference_time_this_forward_pass;
+            }
+            avg_inference_time_per_forward_pass += (double)inference_time_this_forward_pass;
 
 
 
             uint32_t exclude_sleep_time_start_tick = debug_start_timer();
             // Delay before starting next inference cycle (time step)
-            uint32_t elapsed_us = debug_end_timer(inference_speed_measure_each_sample_start_tick);
-            int32_t remaining_us = (int32_t)UPDATE_PERIOD - (int32_t)elapsed_us; 
+            uint32_t elapsed_us = debug_end_timer(avg_inference_time_per_forward_pass_start_tick);
+            int32_t remaining_us = (int32_t)UPDATE_PERIOD - (uint32_t)elapsed_us; 
             if (remaining_us > 0) { 
                 delay(remaining_us);
-                //printf("Slept for %d\n", remaining_us);
             }
             exclude_sleep_time += debug_end_timer(exclude_sleep_time_start_tick);
 
@@ -775,6 +785,8 @@ int MLP_Inference_test_patterns(
         printf("The total accuracy over %d input patterns is, %f,\n", num_samples, accuracy);
         //printf("Num samples with zero output spikes across all time steps, %d,\n", number_of_no_spk);
 
+
+        printf("Max inference forward pass time is: %d\n", max_inference_time_per_forward_pass);
 
 
         // Print average layer outspk
@@ -1655,3 +1667,5 @@ int MLP_Free(NN_Model* mlp_model) {
         
 
 //}
+
+

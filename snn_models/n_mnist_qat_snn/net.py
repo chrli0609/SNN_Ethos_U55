@@ -210,16 +210,37 @@ optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
 
 def main():
+
+    training_loss_rec = []
+    testing_loss_rec = []
     for epoch in range(epochs):
         training_loss, mean_loss = train(net, trainloader, optimizer)
+        testing_loss, testing_acc = test(net, testloader)
+
+
         print(f"Epoch: {epoch}")
-        print("Loss, Accuracy = ", end='')
-        print(test(net, testloader))
+        print("Loss =", testing_loss, ",\tAccuracy =", testing_acc)
+
+
+        training_loss_rec.append(training_loss)
+        testing_loss_rec.append(testing_loss)
 
     # Save the model or the weights as you want. Example for saving the model
     #torch.save(net.snn, 'model.pkl')
 
     torch.save(net.snn.state_dict(), model_dir / Path('model_state_dict.pkl'))
+
+
+    
+    # Save training and testing loss
+    x = np.arange(epochs)
+    #plt.figure()
+    plt.plot(x, training_loss_rec, label="training loss")
+    plt.plot(x, testing_loss_rec, label="testing loss")
+    plt.legend()
+    plt.title("Training and testing loss over epochs")
+
+    plt.savefig(model_dir / Path("loss.png"))
 
 
 if __name__ == '__main__':

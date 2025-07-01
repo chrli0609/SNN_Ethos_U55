@@ -24,7 +24,7 @@ size_hid_layers = [32, 32, 32, 32, 32, 32]
 quant_aware = True
 spike_factor = 1e-5
 mean_weight_factor = 1e3
-epochs = 20
+epochs = 50
 n_time_bins = 25
 
 
