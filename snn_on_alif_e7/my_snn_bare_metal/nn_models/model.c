@@ -40,12 +40,13 @@ int global_it;
 //#define UPDATE_PERIOD 3000 //3 ms
 
 //#define UPDATE_PERIOD 600 //0.6 ms
-#define UPDATE_PERIOD 6000 //6 ms
+//#define UPDATE_PERIOD 6000 //6 ms
 //#define UPDATE_PERIOD 60000 //60 ms
 //#define UPDATE_PERIOD 600000 //600 ms
 //#define UPDATE_PERIOD 0 //0
 
 
+#define UPDATE_PERIOD 6 //6 ms
 
 
 
@@ -468,6 +469,69 @@ void print_dequant_int8(int8_t* arr, size_t arr_len, const char* arr_name, float
 
 
 
+
+
+
+
+
+
+/////////////////////////////////////////////////////////
+
+//#include "ensemble_power.h"
+//#include "ensemble_soc.h"
+//#include "core_cm55.h"
+
+//// Use whichever 32/16-bit low-power timer your SDK provides
+//#define LP_TIMER             (LP_TIMER0)
+//#define LP_TIMER_IRQ         (LP_TIMER0_IRQn)
+//#define LP_TIMER_IRQ_HANDLER LP_TIMER0_IRQHandler
+
+//volatile bool timer_elapsed = false;
+
+//void LP_TIMER_IRQ_HANDLER(void) {
+    //// Clear interrupt and signal wakeup
+    //LP_TIMER->INT_CLEAR = 1;
+    //timer_elapsed = true;
+//}
+
+//void sleep_us(uint32_t microseconds) {
+    //// 1. Setup the low-power timer
+    //timer_elapsed = false;
+    //LP_TIMER->LOAD = microseconds * (SystemCoreClock / 1000000);
+    //LP_TIMER->CTRL = TIMER_CTRL_ENABLE_Msk | TIMER_CTRL_ONESHOT_Msk | TIMER_CTRL_CLK_SRC_LP_Msk;
+
+    //// 2. Enable the timer interrupt
+    //NVIC_EnableIRQ(LP_TIMER_IRQ);
+
+    //// 3. Ensure SRAM retention in PD6
+    //PD6_CTRL->DYNAMIC_OFF = 1;
+    //PD6_CTRL->SRAM0_RET = 1;
+    //PD6_CTRL->SRAM1_RET = 1;
+
+    //// Gate unused clocks/peripherals
+    //pm_clock_gate_enable(PD6_PERIPH_DMA, false);
+    //pm_clock_gate_enable(PD6_PERIPH_TIMER, false);
+
+    //__DSB(); __ISB();
+    //__WFI();  // Enter deep sleep, CPU gated
+
+    //// After wakeup:
+    //NVIC_DisableIRQ(LP_TIMER_IRQ);
+//}
+
+
+
+////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
 // For debugging
 int global_it;
 
@@ -597,6 +661,7 @@ int MLP_Inference_test_patterns(
             //}
 
             uint32_t avg_inference_time_per_forward_pass_start_tick = debug_start_timer();
+            //uint32_t avg_inference_time_per_forward_pass_start_tick = start_timer();
 
 
             // Set First Layer as current layer
@@ -607,8 +672,8 @@ int MLP_Inference_test_patterns(
             //if (num_samples == 1) {
                 //it = 0;
             //}
-            nnlayer->input = test_patterns[it][time_step];
-            //nnlayer->input = test_patterns[0][time_step];
+            //nnlayer->input = test_patterns[it][time_step];
+            nnlayer->input = test_patterns[0][time_step];
 
 
             size_t layer_number = 0;
@@ -690,6 +755,7 @@ int MLP_Inference_test_patterns(
 
 
             uint32_t inference_time_this_forward_pass = debug_end_timer(avg_inference_time_per_forward_pass_start_tick);
+            //uint32_t inference_time_this_forward_pass = end_timer(avg_inference_time_per_forward_pass_start_tick);
 
             if ((int32_t)inference_time_this_forward_pass > max_inference_time_per_forward_pass) {
                 max_inference_time_per_forward_pass = (int32_t)inference_time_this_forward_pass;

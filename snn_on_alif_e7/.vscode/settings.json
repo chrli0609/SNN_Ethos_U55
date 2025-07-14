@@ -1,6 +1,6 @@
 {
     "clangd.arguments": [
-        "--compile-commands-dir=c:\\Users\\chris\\skolsaker\\ak5\\mex\\project\\SNN_Ethos_U55\\snn_on_alif_e7\\out\\my_snn_bare_metal\\Alif-E7-M55-HP\\debug"
+        "--compile-commands-dir=c:\\Users\\chris\\skolsaker\\ak5\\mex\\project\\SNN_Ethos_U55\\snn_on_alif_e7\\out\\my_snn_bare_metal\\Alif-E7-M55-HE\\debug"
     ],
     "cmsis-csolution.actions": [
         {

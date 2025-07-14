@@ -59,20 +59,20 @@ solution:
           - -include "RTE_Components.h"
 
   target-types:
-    - type: Alif-E7-M55-HP
-      device: AE722F80F55D5LS:M55_HP
-      define:
-        - ETHOSU55
-        - COPY_VECTORS
-        - NPU_QCONFIG: 1
-        - NPU_REGIONCFG_0: 1
-        - NPU_REGIONCFG_1: 0
-        - NPU_REGIONCFG_2: 1
-        - AXI_LIMIT0_MEM_TYPE: 3
-        - AXI_LIMIT1_MEM_TYPE: 3
-        - AXI_LIMIT2_MEM_TYPE: 3
-        - AXI_LIMIT3_MEM_TYPE: 3
-        - USART_DRV_NUM: 2
+    #- type: Alif-E7-M55-HP
+      #device: AE722F80F55D5LS:M55_HP
+      #define:
+        #- ETHOSU55
+        #- COPY_VECTORS
+        #- NPU_QCONFIG: 1
+        #- NPU_REGIONCFG_0: 1
+        #- NPU_REGIONCFG_1: 0
+        #- NPU_REGIONCFG_2: 1
+        #- AXI_LIMIT0_MEM_TYPE: 3
+        #- AXI_LIMIT1_MEM_TYPE: 3
+        #- AXI_LIMIT2_MEM_TYPE: 3
+        #- AXI_LIMIT3_MEM_TYPE: 3
+        #- USART_DRV_NUM: 2
 
     - type: Alif-E7-M55-HE
       device: AE722F80F55D5LS:M55_HE
@@ -92,4 +92,5 @@ solution:
   projects:
     - project: ./my_snn_bare_metal/my_snn_bare_metal.cproject.yml
       for-context:
-        - +Alif-E7-M55-HP
+        #- +Alif-E7-M55-HP
+        - +Alif-E7-M55-HE

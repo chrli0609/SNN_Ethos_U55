@@ -14,7 +14,8 @@ project:
     - file: src/nn_data_structure.c
     - file: nn_models/model.c
       for-context:
-      - +Alif-E7-M55-HP
+      #- +Alif-E7-M55-HP
+      - +Alif-E7-M55-HE
 
 
   add-path:
@@ -25,10 +26,14 @@ project:
   - ../libs/board/
   - ../libs/common_app_utils/logging
   - ../libs/common_app_utils/fault_handler
-  - nn_models/repeating_48/
+  - nn_models/784x56x56x56x10/
+
   linker:
-  - script: linker/alif-e7-m55-hp.ld
-    for-context: +Alif-E7-M55-HP
+  #- script: linker/alif-e7-m55-hp.ld
+    #for-context: +Alif-E7-M55-HP
+    #for-compiler: GCC
+  - script: linker/alif-e7-m55-he.ld
+    for-context: +Alif-E7-M55-HE
     for-compiler: GCC
 
 
@@ -37,4 +42,5 @@ project:
   - layer: 
       ../device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
     for-context:
-    - +Alif-E7-M55-HP
+    #- +Alif-E7-M55-HP
+    - +Alif-E7-M55-HE

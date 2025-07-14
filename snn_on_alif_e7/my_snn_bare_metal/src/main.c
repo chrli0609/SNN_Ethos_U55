@@ -38,7 +38,7 @@ const int GET_SPK_GRAPH = 0;
 
 
 const int CACHE_ENABLED = 0;
-const int LAYER_WISE_UPDATE_ENABLED = 0;
+const int LAYER_WISE_UPDATE_ENABLED = 1;
 
 
 int dcache_flushed = 0;
@@ -114,7 +114,8 @@ int main() {
 
 
     //Measurement unit: 1 microsecond
-    SysTick_Config(SystemCoreClock/1000000);
+    //SysTick_Config(SystemCoreClock/1000000);
+    SysTick_Config(SystemCoreClock/1000); //1 ms
 
 
 
@@ -294,7 +295,7 @@ int main() {
 
 
     // Enter WFE for 10 secs
-    delay(10000000);
+    delay(10000);
 
 
 
@@ -318,5 +319,25 @@ int main() {
     MLP_Free(mlp_model);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

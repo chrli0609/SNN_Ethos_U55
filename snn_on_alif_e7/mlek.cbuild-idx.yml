@@ -9,14 +9,16 @@ build-idx:
         - clayer: common/common.clayer.yml
         - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
   cbuilds:
-    - cbuild: my_snn_bare_metal/my_snn_bare_metal.debug+Alif-E7-M55-HP.cbuild.yml
+    - cbuild: my_snn_bare_metal/my_snn_bare_metal.debug+Alif-E7-M55-HE.cbuild.yml
       project: my_snn_bare_metal
-      configuration: .debug+Alif-E7-M55-HP
+      configuration: .debug+Alif-E7-M55-HE
       clayers:
         - clayer: common/common.clayer.yml
         - clayer: device/alif-ensemble-custom/alif-ensemble-E7-device-custom.clayer.yml
       messages:
+        warnings:
+          - target-type '+Alif-E7-M55-HP' does not exist in solution
         info:
           - mlek.cbuild-set.yml - file is already up-to-date
           - mlek.cbuild-pack.yml - file is already up-to-date
-          - my_snn_bare_metal.debug+Alif-E7-M55-HP.cbuild.yml - file generated successfully
+          - my_snn_bare_metal.debug+Alif-E7-M55-HE.cbuild.yml - file generated successfully
