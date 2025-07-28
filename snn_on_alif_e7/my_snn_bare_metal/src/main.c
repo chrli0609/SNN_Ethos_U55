@@ -38,7 +38,7 @@ const int GET_SPK_GRAPH = 0;
 
 
 const int CACHE_ENABLED = 0;
-const int LAYER_WISE_UPDATE_ENABLED = 0;
+const int LAYER_WISE_UPDATE_ENABLED = 1;
 
 
 int dcache_flushed = 0;

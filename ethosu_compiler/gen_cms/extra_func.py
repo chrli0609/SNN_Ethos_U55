@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 
-def align_input_output_sizes_to_16(init_input_size, init_output_size, is_first_layer):
+def align_input_output_sizes_to_8(init_input_size, init_output_size, is_first_layer):
 
     '''
     Output Feature map constraints:
@@ -36,10 +36,10 @@ def align_input_output_sizes_to_16(init_input_size, init_output_size, is_first_l
         aligned_input_size = init_input_size
     else:
         #aligned_input_size = next_multiple_of_8(init_input_size)
-        aligned_input_size = next_multiple(init_input_size, 16)
+        aligned_input_size = next_multiple(init_input_size, 8)
 
     #aligned_output_size = next_multiple_of_8(init_output_size)
-    aligned_output_size = next_multiple(init_output_size, 16)
+    aligned_output_size = next_multiple(init_output_size, 8)
 
     in_padding = aligned_input_size - init_input_size
     out_padding = aligned_output_size - init_output_size

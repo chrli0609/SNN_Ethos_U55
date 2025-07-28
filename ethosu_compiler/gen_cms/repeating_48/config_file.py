@@ -2,11 +2,9 @@ from ethosu.vela.api import NpuAccelerator
 
 
 
-#MODEL_NAME = "784x48x48x48x48x10"
 LAYER_BASE_NAME = "fc_lif_layer_"
 
 NUM_TIME_STEPS = 25
-#NUM_LAYERS = 5
 
 ALL_BETA_VALUE = 0.95
 ALL_VTH_VALUE = 1
@@ -40,7 +38,6 @@ TEST_PATTERN_NUM = 0
 '''
 For setting quantization params
 '''
-
 
 
 TIME_NOT_UPDATED_MAX_VAL = 16

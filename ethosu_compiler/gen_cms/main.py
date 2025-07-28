@@ -5,7 +5,7 @@ import argparse
 
 
 from fc_lif import gen_fc_lif
-from extra_func import get_header_filepath, get_connectivity_filepath, process_weights_and_biases, align_input_output_sizes_to_16
+from extra_func import get_header_filepath, get_connectivity_filepath, process_weights_and_biases, align_input_output_sizes_to_8
 from write_connectivity_h_file import clear_file_and_write_preamble, write_tensor_declarations, write_init_func, write_init_func_array
 
 
@@ -54,7 +54,7 @@ for layer_num in range(model_module.NUM_LAYERS):
     else:
         is_first_layer = False
 
-    aligned_input_size, aligned_output_size, in_padding, out_padding = align_input_output_sizes_to_16(model_module.INIT_LAYER_SIZES_LIST[layer_num], model_module.INIT_LAYER_SIZES_LIST[layer_num+1], is_first_layer)
+    aligned_input_size, aligned_output_size, in_padding, out_padding = align_input_output_sizes_to_8(model_module.INIT_LAYER_SIZES_LIST[layer_num], model_module.INIT_LAYER_SIZES_LIST[layer_num+1], is_first_layer)
 
 
     weights_volume_ohwi, bias_list = process_weights_and_biases(Path(args.model) / Path("model_params") / Path(layer_name + "_weights.npy"),
@@ -164,50 +164,4 @@ test_patterns_2_h_file(45,  ".data_sram0",
 
 
 
-from extra_func import write_to_cpu_file
-
-cpu_filepath  = CURR_WORKING_DIR / CURR_WORKING_DIR_TO_MODEL_DIR / Path(model_module.MODEL_NAME) / Path("cpu_model.h")
-cpu_filepath.parent.mkdir(parents=True, exist_ok=True)
-
-
-# For Running SNN on CPU!!!
-'''
-import numpy as np
-weights_arr_list = []
-biases_arr_list = []
-vth_arr_list = []
-beta_arr_list = []
-for layer_num in range(model_module.NUM_LAYERS):
-    
-    layer_name = f"{model_module.LAYER_BASE_NAME}{layer_num}"
-
-    weights_filepath = Path(args.model) / Path("model_params") / Path(layer_name + "_weights.npy")
-    biases_filepath = Path(args.model) / Path("model_params") / Path(layer_name + "_biases.npy")
-
-    weights_arr = np.load(weights_filepath)
-    biases_arr = np.load(biases_filepath)
-
-
-    weights_arr_list.append(weights_arr)
-    biases_arr_list.append(biases_arr)
-
-    
-    ##### Set LIF Param values #######
-
-    # Generate Beta values
-    beta_list = []
-    for j in range(model_module.INIT_LAYER_SIZES_LIST[layer_num+1]):
-        beta_list.append(model_module.ALL_BETA_VALUE)
-
-    # Generate Vth values
-    vth_list = []
-    for k in range(model_module.INIT_LAYER_SIZES_LIST[layer_num+1]):
-        vth_list.append(model_module.ALL_VTH_VALUE)
-
-    beta_arr_list.append(beta_list)
-    vth_arr_list.append(vth_list)
-
-
-write_to_cpu_file(cpu_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.INIT_LAYER_SIZES_LIST, model_module.MEM_STORE_LOC_LIST, model_module.NUM_TIME_STEPS ,weights_arr_list, biases_arr_list, vth_arr_list, beta_arr_list)
-'''
 
