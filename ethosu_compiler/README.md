@@ -5,5 +5,6 @@
 
 The output size of each layer must be a multiple of MIN_BLOCK_DEPTH, which is 8 for ethos u55 with configuration 256
 
-The start address for each tensor must be 16-byte aligned, since the addresses of the tensors are placed after each other,
-if the output size is a multiple of 8 (and not 16), then the addresses for each tensor will be padded to the next multiple of 16
+The start address for each tensor/feature map must be 16-byte aligned if it uses NHCWB16 layout format
+
+If the tensor/featuremap size is a multiple of 8 (but not 16), then the addresses for each NHCWB16 tensor/feature map will be padded to the next multiple of 16
