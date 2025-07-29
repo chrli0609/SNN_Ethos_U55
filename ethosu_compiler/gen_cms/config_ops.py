@@ -494,6 +494,8 @@ def fixed_to_float(int_part, shift):
     return int_part * (2 ** (-shift))
 
 
+
+
 def create_feature_map(height: int, width: int, depth: int, 
                       region, 
                       layout,  # Pass NpuLayout.NHWC or similar

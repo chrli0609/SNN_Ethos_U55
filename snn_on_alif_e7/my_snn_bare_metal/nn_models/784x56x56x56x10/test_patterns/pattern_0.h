@@ -1,7 +1,7 @@
 /*
  * Generated C header file from NumPy arrays
- * 784x56x56x56x10/test_patterns/test_input_0.npy shape: (45, 25, 784)
- * 784x56x56x56x10/test_patterns/test_target_0.npy shape: (45,)
+ * 784x56x56x56x10\test_patterns\test_input_0.npy shape: (45, 25, 784)
+ * 784x56x56x56x10\test_patterns\test_target_0.npy shape: (45,)
  */
 
 #ifndef TEST_DATA_H

@@ -17,17 +17,16 @@
 
 // Input/output addresses (Relative Addressing)
 
-#define FC_LIF_LAYER_0_IN_SPK_ADDR 0
 #define FC_LIF_LAYER_0_BIAS_ADDR 0
 #define FC_LIF_LAYER_0_WEIGHT_ADDR 560
-#define FC_LIF_LAYER_0_LN_BETA_ADDR 0
-#define FC_LIF_LAYER_0_VTH_ADDR 56
+#define FC_LIF_LAYER_0_TMP1_ADDR 0
+#define FC_LIF_LAYER_0_TMP2_ADDR 64
 #define FC_LIF_LAYER_0_V_MEM_ADDR 128
 #define FC_LIF_LAYER_0_TIME_NOT_UPDATED_ADDR 184
-#define FC_LIF_LAYER_0_IN_CURR_ADDR 64
-#define FC_LIF_LAYER_0_DECAY_ADDR 0
-#define FC_LIF_LAYER_0_DECAYED_MEM_ADDR 0
 #define FC_LIF_LAYER_0_UPDATE_NXT_LAYER_ADDR 185
+#define FC_LIF_LAYER_0_LN_BETA_ADDR 0
+#define FC_LIF_LAYER_0_VTH_ADDR 56
+#define FC_LIF_LAYER_0_IN_SPK_ADDR 0
 #define FC_LIF_LAYER_0_OUT_SPK_ADDR 0
 #define FC_LIF_LAYER_0_OUT_SPK_SUM_ADDR -1
 
@@ -80,7 +79,7 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x05, 0x00, 0x00, 0x00,
 0x05, 0x00, 0x00, 0x00,
 0x05, 0x00, 0x00, 0x00,
-0x02, 0x00, 0x48, 0x01,
+0x02, 0x00, 0x3c, 0x01,
 0x30, 0x01, 0x04, 0x00,
 0x30, 0x40, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -91,7 +90,7 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x00, 0x01, 0x00, 0x00,
 0x10, 0x00, 0x00, 0x00,
 0x24, 0x40, 0x25, 0x00,
-0x9a, 0x33, 0xcd, 0x66,
+0x80, 0x33, 0xcd, 0x66,
 0x0f, 0x01, 0x03, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -205,7 +204,7 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x2f, 0x01, 0x03, 0x00,
 0x02, 0x00, 0x00, 0x00,
 0x24, 0x40, 0x26, 0x00,
-0x25, 0xf6, 0x3b, 0x53,
+0x00, 0xf6, 0x3b, 0x53,
 0x0f, 0x01, 0x01, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
@@ -250,7 +249,14 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x05, 0x01, 0x41, 0x01,
 0x10, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
+0x16, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x15, 0x40, 0x00, 0x00,
+0x38, 0x00, 0x00, 0x00,
+0x14, 0x40, 0x00, 0x00,
+0x38, 0x00, 0x00, 0x00,
 0x18, 0x01, 0xe6, 0xff,
+0x14, 0x01, 0x01, 0x01,
 0x80, 0x40, 0x00, 0x00,
 0x40, 0x00, 0x00, 0x00,
 0x89, 0x01, 0x00, 0x00,
@@ -263,23 +269,22 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x10, 0x00, 0x00, 0x00,
 0x25, 0x40, 0x12, 0x00,
 0xd4, 0x06, 0x3a, 0x6d,
-0x24, 0x40, 0x2f, 0x00,
-0x00, 0x00, 0x00, 0x78,
+0x24, 0x40, 0x36, 0x00,
+0x78, 0x78, 0x78, 0x78,
 0x00, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
+0x06, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x05, 0x40, 0x00, 0x00,
+0x38, 0x00, 0x00, 0x00,
+0x04, 0x40, 0x00, 0x00,
+0x38, 0x00, 0x00, 0x00,
 0x09, 0x01, 0xe6, 0xff,
-0x05, 0x01, 0x41, 0x02,
+0x05, 0x01, 0x01, 0x02,
 0x1f, 0x01, 0x06, 0x00,
 0x10, 0x40, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
-0x16, 0x40, 0x00, 0x00,
-0x01, 0x00, 0x00, 0x00,
-0x15, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
-0x14, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
 0x18, 0x01, 0x00, 0x00,
-0x14, 0x01, 0x01, 0x01,
 0x25, 0x01, 0x11, 0x00,
 0x8f, 0x01, 0x03, 0x00,
 0x80, 0x40, 0x00, 0x00,
@@ -295,15 +300,9 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x11, 0x00, 0x00, 0x00,
 0x06, 0x00, 0x02, 0x00,
 0x24, 0x40, 0x21, 0x00,
-0xd1, 0x45, 0x17, 0x5d,
+0x80, 0x45, 0x17, 0x5d,
 0x0f, 0x01, 0x03, 0x00,
 0x00, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
-0x06, 0x40, 0x00, 0x00,
-0x01, 0x00, 0x00, 0x00,
-0x05, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
-0x04, 0x40, 0x00, 0x00,
 0x38, 0x00, 0x00, 0x00,
 0x09, 0x01, 0x05, 0xfb,
 0x05, 0x01, 0x01, 0x00,
@@ -331,14 +330,8 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x0f, 0x01, 0x01, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
-0x06, 0x40, 0x00, 0x00,
-0x10, 0x00, 0x00, 0x00,
-0x05, 0x40, 0x00, 0x00,
-0x40, 0x00, 0x00, 0x00,
-0x04, 0x40, 0x00, 0x00,
-0x10, 0x00, 0x00, 0x00,
 0x09, 0x01, 0xe6, 0xff,
-0x05, 0x01, 0x41, 0x02,
+0x05, 0x01, 0x01, 0x02,
 0x10, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
 0x16, 0x40, 0x00, 0x00,
@@ -364,12 +357,6 @@ static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
 0x0f, 0x01, 0x06, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
-0x06, 0x40, 0x00, 0x00,
-0x01, 0x00, 0x00, 0x00,
-0x05, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
-0x04, 0x40, 0x00, 0x00,
-0x38, 0x00, 0x00, 0x00,
 0x09, 0x01, 0x00, 0x00,
 0x05, 0x01, 0x01, 0x00,
 0x10, 0x40, 0x00, 0x00,
@@ -9663,7 +9650,7 @@ Register Command Stream:
 | NPU_SET_DMA0_DST          | 0         | 0x0000b800 (47104)      |
 | NPU_SET_DMA0_LEN          | 0         | 0x00000100 (256)        |
 | NPU_OP_DMA_START          | 0         | -                       |
-| NPU_SET_OFM_SCALE         | 37        | 0x66cd339a (1724724122) |
+| NPU_SET_OFM_SCALE         | 37        | 0x66cd3380 (1724724096) |
 | NPU_SET_IFM_REGION        | 3         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
 | NPU_SET_IFM_BASE1         | 0         | 0x00000000 (0)          |
@@ -9748,7 +9735,7 @@ Register Command Stream:
 | NPU_SET_AB_START          | 30        | -                       |
 | NPU_SET_BLOCKDEP          | 3         | -                       |
 | NPU_OP_CONV               | 0         | -                       |
-| NPU_SET_OFM_SCALE         | 38        | 0x533bf625 (1396438565) |
+| NPU_SET_OFM_SCALE         | 38        | 0x533bf600 (1396438528) |
 | NPU_SET_IFM_REGION        | 1         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000080 (128)        |
 | NPU_SET_IFM_DEPTH_M1      | 55        | -                       |
@@ -9777,7 +9764,11 @@ Register Command Stream:
 | NPU_SET_IFM_ZERO_POINT    | 65501     | -                       |
 | NPU_SET_IFM_PRECISION     | 321       | -                       |
 | NPU_SET_OFM_BASE0         | 0         | 0x00000080 (128)        |
+| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_OFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
+| NPU_SET_OFM_STRIDE_X      | 0         | 0x00000038 (56)         |
 | NPU_SET_OFM_ZERO_POINT    | 65510     | -                       |
+| NPU_SET_OFM_PRECISION     | 257       | -                       |
 | NPU_SET_IFM2_BASE0        | 0         | 0x00000040 (64)         |
 | NPU_SET_IFM2_ZERO_POINT   | 0         | -                       |
 | NPU_SET_BLOCKDEP          | 0         | -                       |
@@ -9786,17 +9777,16 @@ Register Command Stream:
 | NPU_SET_DMA0_DST          | 0         | 0x0000b900 (47360)      |
 | NPU_OP_DMA_START          | 0         | -                       |
 | NPU_SET_OPA_SCALE         | 18        | 0x6d3a06d4 (1832519380) |
-| NPU_SET_OFM_SCALE         | 47        | 0x78000000 (2013265920) |
+| NPU_SET_OFM_SCALE         | 54        | 0x78787878 (2021161080) |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000080 (128)        |
+| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
+| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000038 (56)         |
 | NPU_SET_IFM_ZERO_POINT    | 65510     | -                       |
-| NPU_SET_IFM_PRECISION     | 577       | -                       |
+| NPU_SET_IFM_PRECISION     | 513       | -                       |
 | NPU_SET_OFM_REGION        | 6         | -                       |
 | NPU_SET_OFM_BASE0         | 0         | 0x00000000 (0)          |
-| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000001 (1)          |
-| NPU_SET_OFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
-| NPU_SET_OFM_STRIDE_X      | 0         | 0x00000038 (56)         |
 | NPU_SET_OFM_ZERO_POINT    | 0         | -                       |
-| NPU_SET_OFM_PRECISION     | 257       | -                       |
 | NPU_SET_ACTIVATION        | 17        | -                       |
 | NPU_SET_IFM2_REGION       | 3         | -                       |
 | NPU_SET_IFM2_BASE0        | 0         | 0x00000038 (56)         |
@@ -9807,12 +9797,9 @@ Register Command Stream:
 | NPU_SET_IFM_PRECISION     | 1         | -                       |
 | NPU_OP_DMA_WAIT           | 0         | -                       |
 | NPU_OP_ELEMENTWISE        | 2         | -                       |
-| NPU_SET_OFM_SCALE         | 33        | 0x5d1745d1 (1561806289) |
+| NPU_SET_OFM_SCALE         | 33        | 0x5d174580 (1561806208) |
 | NPU_SET_IFM_REGION        | 3         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000038 (56)         |
-| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000001 (1)          |
-| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
-| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000038 (56)         |
 | NPU_SET_IFM_ZERO_POINT    | 64261     | -                       |
 | NPU_SET_IFM_PRECISION     | 1         | -                       |
 | NPU_SET_OFM_REGION        | 1         | -                       |
@@ -9831,11 +9818,8 @@ Register Command Stream:
 | NPU_SET_OFM_SCALE         | 49        | 0x40000000 (1073741824) |
 | NPU_SET_IFM_REGION        | 1         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000080 (128)        |
-| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000010 (16)         |
-| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000040 (64)         |
-| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000010 (16)         |
 | NPU_SET_IFM_ZERO_POINT    | 65510     | -                       |
-| NPU_SET_IFM_PRECISION     | 577       | -                       |
+| NPU_SET_IFM_PRECISION     | 513       | -                       |
 | NPU_SET_OFM_BASE0         | 0         | 0x00000080 (128)        |
 | NPU_SET_OFM_STRIDE_C      | 0         | 0x00000001 (1)          |
 | NPU_SET_OFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
@@ -9852,9 +9836,6 @@ Register Command Stream:
 | NPU_OP_ELEMENTWISE        | 2         | -                       |
 | NPU_SET_IFM_REGION        | 6         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
-| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000001 (1)          |
-| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000038 (56)         |
-| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000038 (56)         |
 | NPU_SET_IFM_ZERO_POINT    | 0         | -                       |
 | NPU_SET_IFM_PRECISION     | 1         | -                       |
 | NPU_SET_OFM_BASE0         | 0         | 0x000000b9 (185)        |
