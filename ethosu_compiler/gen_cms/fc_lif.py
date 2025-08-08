@@ -35,15 +35,11 @@ class MemoryAllocator:
 
     def __init__(self,  input_size:     int, 
                         output_size:    int,
-                        biases_len:     int,
-                        weights_len:    int,
                         regions:        Dict[str, Region]
                 ):
         
         self.input_size = input_size
         self.output_size = output_size
-        self.biases_len = biases_len
-        self.weights_len = weights_len
 
         # Check that there are no invalid region numbers
         for key, value in regions.items():
@@ -150,6 +146,7 @@ def create_feature_map_v2(mem_alloc: MemoryAllocator,
 
 def get_elementwise_op(op_type, ifm, ifm2, ofm,
                     accelerator,
+                    ifm2_scalar=None,
                     activation_op=NpuActivationOp.NONE_OR_RELU,
                     activation_max_val=None,
                     activation_min_val=None,
@@ -176,8 +173,19 @@ def get_elementwise_op(op_type, ifm, ifm2, ofm,
 
     #NpuBlockOperation
     ew_op.ifm = ifm
-    ew_op.ifm2 = ifm2
-    ew_op.ifm2_scalar = None   #set if ifm2 is a scalar
+
+    # If it is scalar instead of tensor, then set the quantization to scale=1, zp=0
+    if ifm2_scalar == None:
+        ew_op.ifm2 = ifm2
+        ew_op.ifm2_scalar = None
+    elif ifm2 == None:
+        ew_op.ifm2_scalar = ifm2_scalar   #set if ifm2 is a scalar
+
+        ifm2_fm = NpuFeatureMap()
+        ifm2_fm.quantization = NpuQuantization(1,0)
+        ew_op.ifm2 = ifm2_fm
+        
+
     ew_op.ofm = ofm
     ew_op.kernel = None
     ew_op.weights = []
@@ -198,6 +206,346 @@ def get_elementwise_op(op_type, ifm, ifm2, ofm,
     #check_block_config_legal(block_config, ew_op, ACCELERATOR)
 
     return ew_op
+
+
+
+
+
+
+
+def get_elementwise_op_with_lut(op_type, ifm, ifm2, pre_lut_ofm, post_lut_ofm, 
+                                mem_alloc,
+                                lut_index,
+                                lut_function,
+                                lut_region_name,
+                                accelerator, debug_mode=False,
+
+
+                                activation_max_val=None,
+                                activation_min_val=None,
+                                reversed_operands=False,
+                                rescale=None,
+                                fused_quantize=False,
+                                rounding_mode=NpuRoundingMode.TFL,
+                                ifm_upscale=NpuResamplingMode.NONE,
+                                accumulator=NpuAccumulatorType.Default
+                                
+                                ):
+
+
+
+    #DMA for LUT
+
+
+
+    # Handle LUT generation and DMA
+
+    dma_lut_op, lut_values = create_lut_and_dma(approximated_func=lut_function, lut_index=lut_index, lut_region=mem_alloc.regions[lut_region_name].number, data_type=pre_lut_ofm.data_type, 
+                    scale_pre_lut=pre_lut_ofm.quantization.scale_f32, zero_point_pre_lut=pre_lut_ofm.quantization.zero_point,
+                    scale_post_lut=post_lut_ofm.quantization.scale_f32, zero_point_post_lut=post_lut_ofm.quantization.zero_point,
+                    accelerator=accelerator,
+                    debug_mode=debug_mode
+    )
+
+    activation = create_activation(
+        activation_op=NpuActivationOp.TABLE_LOOKUP,
+        min_val=activation_max_val,
+        max_val=activation_min_val,
+        lookup_table_index=lut_index
+    )
+
+
+    ew_lut_op = NpuElementWiseOperation(op_type)
+    
+    #elementwise operation
+    ew_lut_op.reversed_operands = reversed_operands
+    ew_lut_op.rescale = rescale
+
+    #NpuBlockOperation
+    ew_lut_op.ifm = ifm
+    ew_lut_op.ifm2 = ifm2
+    ew_lut_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    ew_lut_op.ofm = pre_lut_ofm
+    ew_lut_op.kernel = None
+    ew_lut_op.weights = []
+    ew_lut_op.biases = []
+    ew_lut_op.padding = None
+    ew_lut_op.activation = activation
+    
+    block_config = get_block_config(ew_lut_op, accelerator)
+    ew_lut_op.block_config = block_config
+    ew_lut_op.rounding_mode = rounding_mode
+    ew_lut_op.fused_quantize = fused_quantize
+    ew_lut_op.ifm_upscale = ifm_upscale
+    ew_lut_op.accumulator_type = accumulator
+
+    #check_block_config_legal(block_config, ew_lut_op, ACCELERATOR)
+
+    return dma_lut_op, ew_lut_op, lut_values, lut_index
+
+
+
+def get_pooling_op(op_type,
+                   ifm: NpuFeatureMap, ofm: NpuFeatureMap,
+                   kernel_size: Tuple[int, int],
+                   accelerator,
+                   kernel_stride: Tuple[int, int] = (1,1),
+                   kernel_dilation: Tuple[int, int] = (1,1),
+                   padding: NpuPadding = NpuPadding(0,0,0,0),
+
+                   activation_op=NpuActivationOp.NONE_OR_RELU,
+                   activation_max_val=None,
+                   activation_min_val=None,
+
+                   rescale=None,
+                   rounding_mode=NpuRoundingMode.TFL,
+                   fused_quantize=False,
+                   ifm_upscale=NpuResamplingMode.NONE,
+                   accumulator=NpuAccumulatorType.Default
+                   ):
+
+
+    #ifm = create_feature_map(
+        #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        #region=OUTPUT_REGION,
+        #layout=NpuLayout.NHWC,
+        #data_type=NpuDataType.INT8, fm_elem_size=1,
+        #fm_addr=OUT_SPK_ADDR,
+        #scale=OUT_SPK_SCALE, zero_point=OUT_SPK_ZERO_POINT,
+        #name="out_spk"
+    #)
+
+    #ofm = create_feature_map(
+        #height=1, width=1, depth=1,
+        #region=SRAM_SCRATCH_REGION,
+        #layout=NpuLayout.NHWC,
+        #data_type=NpuDataType.INT8, fm_elem_size=1,
+        #fm_addr=UPDATE_NXT_LAYER_ADDR,
+        #scale=UPDATE_NXT_LAYER_SCALE,
+        #zero_point=UPDATE_NXT_LAYER_ZERO_POINT,
+        #name="update_nxt_layer"
+    #)
+
+
+    kernel = NpuKernel(
+        w=kernel_size[0], h=kernel_size[1], stride_x=kernel_stride[0], stride_y=kernel_stride[1],
+        dilation_x=kernel_dilation[0], dilation_y=kernel_dilation[1]
+    )
+
+
+    #block_config = NpuShape3D(2, 2, 8)
+
+
+    activation = create_activation(
+        activation_op=activation_op,
+        min_val=activation_max_val,
+        max_val=activation_min_val
+    )
+
+    pooling_op = NpuPoolingOperation(op_type)
+    
+    #Pooling operation
+    pooling_op.rescale = rescale
+
+    #NpuBlockOperation
+    pooling_op.ifm = ifm
+    pooling_op.ifm2 = None
+    pooling_op.ifm2_scalar = None   #set if ifm2 is a scalar
+    pooling_op.ofm = ofm
+    pooling_op.kernel = kernel
+    pooling_op.weights = []
+    pooling_op.biases = []
+    pooling_op.padding = padding
+    pooling_op.activation = activation
+
+    block_config = get_block_config(pooling_op, accelerator)
+    pooling_op.block_config = block_config
+    pooling_op.rounding_mode = rounding_mode
+    pooling_op.fused_quantize = fused_quantize
+    pooling_op.ifm_upscale = ifm_upscale
+    pooling_op.accumulator_type = accumulator
+
+    #check_block_config_legal(block_config, pooling_op, ACCELERATOR)
+
+    return pooling_op
+
+
+
+
+
+def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list, 
+                           mem_alloc,
+                           weight_region_name, weight_fm_name,
+                           bias_region_name, bias_fm_name,
+                           accelerator, debug_mode=False,
+
+                            activation_op=NpuActivationOp.NONE_OR_RELU,
+                            activation_max_val=None,
+                            activation_min_val=None,
+                            fused_quantize=False,
+                            rounding_mode=NpuRoundingMode.TFL,
+                            ifm_upscale=NpuResamplingMode.NONE,
+                            accumulator=NpuAccumulatorType.Int32
+                           ):
+
+
+    # Kernel (1 x 1 x Input Channels) for fully connected
+    kernel = NpuKernel(
+        w=1, h=1, 
+        stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
+    )
+
+
+    my_op = NpuConv2DOperation()
+    my_op.ifm               =   ifm
+    my_op.ifm2              =   None
+    my_op.ifm2_scalar       =   None
+    my_op.ofm               =   ofm
+    block_config = get_block_config(my_op, accelerator)
+
+    
+
+    block_traversal = NpuBlockTraversal.DEPTH_FIRST
+
+
+    # Define Weights
+    if ifm.data_type == NpuDataType.INT8:
+        weight_ifm_bitdepth = 8 #int8
+    elif ifm.data_type == NpuDataType.INT16:
+        weight_ifm_bitdepth = 16 #int16
+
+
+
+
+    # Set Weights Quantization params, it must be symmetric quantization 
+    max_weight_val = np.max(weights_volume_ohwi)
+    min_weight_val = np.min(weights_volume_ohwi)
+    # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
+    if abs(min_weight_val) > abs(max_weight_val):
+        largest_weight_abs_val = abs(min_weight_val)
+    else:
+        largest_weight_abs_val = abs(max_weight_val)
+    weight_scale, weight_zero_point = symmetric_zero_point_quant(largest_weight_abs_val, -largest_weight_abs_val)
+
+
+    weight_byte_arr, bias_byte_arr = gen_weights_and_biases(accelerator=accelerator,
+                        weights_volume_ohwi=weights_volume_ohwi,
+                            dilation_xy=(1,1),
+                            ifm_bitdepth=weight_ifm_bitdepth,
+                            ofm_block_depth=block_config[2],
+                            op_type=NpuOperationType.Conv2D,
+                            block_traversal=block_traversal,
+
+                            #ONLY FOR 1 DIM FMs!!!!
+                            bias_list=bias_list,
+
+                            ifm_scale=ifm.quantization.scale_f32,
+                            weight_scale=weight_scale,
+                            weight_zero_point=weight_zero_point,
+                            ofm_scale=ofm.quantization.scale_f32,
+
+
+                            is_debug_mode=debug_mode
+    )
+
+    weight_n_bias_len = len(bias_byte_arr) + len(weight_byte_arr)
+    if debug_mode:
+        print("weight_n_bias_len", weight_n_bias_len)
+        print("\tbias_len:", len(bias_byte_arr))
+        print("\tweight_len", len(weight_byte_arr))
+
+        
+
+    ## Make sure that init is the same as current weights
+    #if (weight_byte_arr != weight_byte_arr_init):
+        #print("Error: weight_byte_arr != weight_byte_arr_init")
+        #exit()
+    #if (bias_byte_arr != bias_byte_arr_init):
+        #print("Error: bias_byte_arr != bias_byte_arr_init")
+        #exit()
+
+    
+
+        
+
+
+    #BIAS_ADDR = WEIGHT_N_BIAS_ADDR
+    #WEIGHT_ADDR = BIAS_ADDR + len(bias_byte_arr)
+    
+    
+    #if (weights_and_biases_on_sram):
+        #WEIGHT_N_BIAS_ADDR = BIAS_ADDR #Bias before weights
+
+        ##DMA    
+        #dma_src = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=weight_n_bias_len)
+        #dma_dst = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
+        #dma_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
+
+
+        #weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
+        #biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
+        
+    #else:
+
+    dma_op = None
+
+    weights = NpuAddressRange(region=mem_alloc.regions[weight_region_name].number,
+                              address=mem_alloc.regions[weight_region_name].memory_map[weight_fm_name],
+                              length=len(weight_byte_arr))
+    biases = NpuAddressRange(region=mem_alloc.regions[bias_region_name].number,
+                             address=mem_alloc.regions[bias_region_name].memory_map[bias_fm_name],
+                             length=len(bias_byte_arr))
+
+
+
+
+    
+
+    padding = NpuPadding(top=0, left=0, bottom=0, right=0)
+
+
+
+    
+
+
+    activation = create_activation(
+        activation_op=activation_op,
+        min_val=activation_max_val,
+        max_val=activation_min_val,
+    )
+
+    
+
+
+
+
+
+    my_op.kernel            =   kernel
+    my_op.weights           =   [weights]
+    my_op.biases            =   [biases]
+    my_op.padding           =   padding
+    my_op.activation        =   activation
+
+    my_op.block_config      =   block_config
+    my_op.rounding_mode     =   rounding_mode
+    my_op.fused_quantize    =   fused_quantize
+    my_op.ifm_upscale       =   ifm_upscale
+    my_op.accumulator_type  =   accumulator
+    my_op.block_traversal   =   block_traversal
+
+
+    #check_block_config_legal(block_config, my_op, ACCELERATOR)
+
+
+
+
+
+    return my_op, weight_byte_arr, bias_byte_arr, 
+
+
+
+
+
 
 
 
@@ -430,7 +778,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     Quantize and Decrypt Weight, bias and Time constant (beta), and Vth
     '''
     # Generate Weights and Bias list
-    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, WEIGHT_SCALE, WEIGHT_ZERO_POINT, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
+    weight_byte_arr_init, bias_byte_arr_init = get_int8_fc_weights_and_biases(weights_volume_ohwi, bias_list, INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE, IN_SPK_SCALE, IN_CURR_SCALE, ACCELERATOR, DEBUG_MODE)
 
 
     # Generate LIF Params Quant List
@@ -449,8 +797,6 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     mem_alloc = MemoryAllocator(INPUT_LAYER_SIZE,
                                 OUTPUT_LAYER_SIZE,
-                                len(bias_byte_arr_init),
-                                len(weight_byte_arr_init),
                                 {
                                 "WEIGHTS_AND_BIASES_REGION" : Region(0),
                                 "SRAM_SCRATCH_REGION" : Region(1),
@@ -532,10 +878,10 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     ##############
     # Assign Tmp tensors here!
-    DECAY_ADDR = TMP1_ADDR
-    IN_CURR_ADDR = TMP2_ADDR
-    DECAYED_MEM_ADDR = TMP1_ADDR
-    RESET_ADDR = TMP2_ADDR
+    #DECAY_ADDR = TMP1_ADDR
+    #IN_CURR_ADDR = TMP2_ADDR
+    #DECAYED_MEM_ADDR = TMP1_ADDR
+    #RESET_ADDR = TMP2_ADDR
 
     ##############
 
@@ -545,8 +891,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     mem_alloc.alloc("PARAMS_REGION", "LN_BETA", OUTPUT_LAYER_SIZE)
     mem_alloc.alloc("PARAMS_REGION", "VTH", OUTPUT_LAYER_SIZE)
 
-    LN_BETA_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["LN_BETA"]
-    VTH_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["VTH"]
+    #LN_BETA_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["LN_BETA"]
+    #VTH_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["VTH"]
 
     #LN_BETA_ADDR = 0
     #VTH_ADDR = LN_BETA_ADDR + OUTPUT_LAYER_SIZE
@@ -561,12 +907,12 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     # Assign Memory segment for region 5
     mem_alloc.alloc("INPUT_REGION", "IN_SPK", INPUT_LAYER_SIZE)
-    IN_SPK_ADDR = mem_alloc.regions["INPUT_REGION"].memory_map["IN_SPK"]
+    #IN_SPK_ADDR = mem_alloc.regions["INPUT_REGION"].memory_map["IN_SPK"]
     #IN_SPK_ADDR = 0
 
     # Assign Memory segment for region 6
     mem_alloc.alloc("OUTPUT_REGION", "OUT_SPK", OUTPUT_LAYER_SIZE)
-    OUT_SPK_ADDR = mem_alloc.regions["OUTPUT_REGION"].memory_map["OUT_SPK"]
+    #OUT_SPK_ADDR = mem_alloc.regions["OUTPUT_REGION"].memory_map["OUT_SPK"]
     #OUT_SPK_ADDR = 0
 
 
@@ -685,6 +1031,16 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
     )
 
 
+    v_mem_sub_vth_fm = create_feature_map_v2(mem_alloc,
+        height=1, width=1, depth=OUTPUT_LAYER_SIZE,
+        region_name="OUTPUT_REGION",
+        tensor_name="OUT_SPK",
+        layout=NpuLayout.NHWC,
+        data_type=NpuDataType.INT8,
+        max_fm_value=V_MEM_SUB_VTH_MAX_VAL,
+        min_fm_value=V_MEM_SUB_VTH_MIN_VAL,
+        is_symmetric_quant=False
+    )
 
 
     out_spk_fm = create_feature_map_v2(mem_alloc,
@@ -723,7 +1079,8 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         min_fm_value=UPDATE_NXT_LAYER_MIN_VAL,
         is_symmetric_quant=False
     )
-        
+    
+
 
     if is_last_layer:
         out_spk_sum_fm = create_feature_map_v2(mem_alloc,
@@ -812,947 +1169,54 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-
-
-    def def_decay_lut(ifm, ifm2, ofm):
-
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        #DMA for LUT
-
-
-
-        # Handle LUT generation and DMA
-        decay_lut_index = DECAY_LUT_INDEX
-
-        import math
-        dma_lut_op, decay_lut_values = create_lut_and_dma(approximated_func=math.exp, lut_index=decay_lut_index, lut_region=LUT_REGION, data_type=ofm.data_type, 
-                        scale_pre_lut=ofm.quantization.scale_f32, zero_point_pre_lut=ofm.quantization.zero_point,
-                        scale_post_lut=DECAY_SCALE, zero_point_post_lut=DECAY_ZERO_POINT,
-                        accelerator=ACCELERATOR,
-                        debug_mode=DEBUG_MODE
-        )
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.TABLE_LOOKUP,
-            min_val=None,
-            max_val=None,
-            lookup_table_index=decay_lut_index
-        )
-
-
-        exp_mul_lnb_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
-    
-        #elementwise operation
-        exp_mul_lnb_time_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        exp_mul_lnb_time_op.rescale = None
-
-        #NpuBlockOperation
-        exp_mul_lnb_time_op.ifm = ifm
-        exp_mul_lnb_time_op.ifm2 = ifm2
-        exp_mul_lnb_time_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        exp_mul_lnb_time_op.ofm = ofm
-        exp_mul_lnb_time_op.kernel = None
-        exp_mul_lnb_time_op.weights = []
-        exp_mul_lnb_time_op.biases = []
-        exp_mul_lnb_time_op.padding = None
-        exp_mul_lnb_time_op.activation = activation
-    
-        block_config = get_block_config(exp_mul_lnb_time_op, ACCELERATOR)
-        exp_mul_lnb_time_op.block_config = block_config
-        exp_mul_lnb_time_op.rounding_mode = NpuRoundingMode.TFL
-        exp_mul_lnb_time_op.fused_quantize = False
-        exp_mul_lnb_time_op.ifm_upscale = NpuResamplingMode.NONE
-        exp_mul_lnb_time_op.accumulator_type = NpuAccumulatorType.Default
-
-        #check_block_config_legal(block_config, exp_mul_lnb_time_op, ACCELERATOR)
-
-        return dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index
-
-
-    def def_fullyconnected(ifm, ofm, weights_volume_ohwi, bias_list):
-
-
-
-
-        #ifm = create_feature_map(
-        #height=1, width=1, depth=INPUT_LAYER_SIZE,
-        #region=INPUT_REGION,
-        #layout=NpuLayout.NHWC,
-        #data_type=NpuDataType.INT8,
-        #fm_elem_size=1,
-        #fm_addr=IN_SPK_ADDR,
-        #scale = IN_SPK_SCALE,
-        #zero_point = IN_SPK_ZERO_POINT,
-        #name="in_spk"
-        #)
-
-
-
-        ifm2 = None
-
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=IN_CURR_ADDR,
-            #scale = IN_CURR_SCALE,
-            #zero_point = IN_CURR_ZERO_POINT,
-            #name="in_curr"
-        #)
-
-
-
-        # Kernel
-        kernel = NpuKernel(
-            w=1, h=1, 
-            stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
-        )
-
-
-        my_op = NpuConv2DOperation()
-        my_op.ifm               =   ifm
-        my_op.ifm2              =   ifm2
-        my_op.ifm2_scalar       =   None
-        my_op.ofm               =   ofm
-        block_config = get_block_config(my_op, ACCELERATOR)
-
-    
-
-        block_traversal = NpuBlockTraversal.DEPTH_FIRST
-
-
-        # Define Weights
-        if ifm.data_type == NpuDataType.INT8:
-            weight_ifm_bitdepth = 8 #int8
-        elif ifm.data_type == NpuDataType.INT16:
-            weight_ifm_bitdepth = 16 #int16
-
-
-
-
-
-
-        weight_byte_arr, bias_byte_arr = gen_weights_and_biases(accelerator=ACCELERATOR,
-                            weights_volume_ohwi=weights_volume_ohwi,
-                                dilation_xy=(1,1),
-                                ifm_bitdepth=weight_ifm_bitdepth,
-                                ofm_block_depth=block_config[2],
-                                op_type=NpuOperationType.Conv2D,
-                                block_traversal=block_traversal,
-
-                                #ONLY FOR 1 DIM FMs!!!!
-                                bias_list=bias_list,
-
-                                ifm_scale=ifm.quantization.scale_f32,
-                                weight_scale=WEIGHT_SCALE,
-                                weight_zero_point=WEIGHT_ZERO_POINT,
-                                ofm_scale=ofm.quantization.scale_f32,
-
-
-                                is_debug_mode=DEBUG_MODE
-        )
-
-        weight_n_bias_len = len(bias_byte_arr) + len(weight_byte_arr)
-        if DEBUG_MODE:
-            print("weight_n_bias_len", weight_n_bias_len)
-            print("\tbias_len:", len(bias_byte_arr))
-            print("\tweight_len", len(weight_byte_arr))
-
-        
-
-        # Make sure that init is the same as current weights
-        if (weight_byte_arr != weight_byte_arr_init):
-            print("Error: weight_byte_arr != weight_byte_arr_init")
-            exit()
-        if (bias_byte_arr != bias_byte_arr_init):
-            print("Error: bias_byte_arr != bias_byte_arr_init")
-            exit()
-
-    
-
-        
-
-
-        #BIAS_ADDR = WEIGHT_N_BIAS_ADDR
-        #WEIGHT_ADDR = BIAS_ADDR + len(bias_byte_arr)
-    
-    
-        #if (weights_and_biases_on_sram):
-            #WEIGHT_N_BIAS_ADDR = BIAS_ADDR #Bias before weights
-
-            ##DMA    
-            #dma_src = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=0, length=weight_n_bias_len)
-            #dma_dst = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_N_BIAS_ADDR, length=weight_n_bias_len)
-            #dma_op = NpuDmaOperation(src=dma_src, dest=dma_dst)
-
-
-            #weights = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
-            #biases = NpuAddressRange(region=SRAM_SCRATCH_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
-        
-        #else:
-
-        dma_op = None
-
-        weights = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=WEIGHT_ADDR, length=len(weight_byte_arr))
-        biases = NpuAddressRange(region=WEIGHT_AND_BIASES_REGION, address=BIAS_ADDR, length=len(bias_byte_arr))
-
-
-
-
-    
-
-        padding = NpuPadding(top=0, left=0, bottom=0, right=0)
-
-
-
-    
-
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-    
-
-
-        fused_quantize = False
-
-
-
-
-
-        my_op.kernel            =   kernel
-        my_op.weights           =   [weights]
-        my_op.biases            =   [biases]
-        my_op.padding           =   padding
-        my_op.activation        =   activation
-
-        my_op.block_config      =   block_config
-        my_op.rounding_mode     =   NpuRoundingMode.TFL
-        my_op.fused_quantize    =   fused_quantize
-        my_op.ifm_upscale       =   NpuResamplingMode.NONE
-        my_op.accumulator_type  =   NpuAccumulatorType.Int32
-        my_op.block_traversal   =   block_traversal
-
-
-        #check_block_config_legal(block_config, my_op, ACCELERATOR)
-
-
-
-
-
-        return my_op, dma_op, weight_byte_arr, bias_byte_arr, 
-
-
-
-
-
-
-    def def_mul_decay_Vmem(ifm, ifm2, ofm):
-    
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=V_MEM_ADDR,
-            #scale = V_MEM_SCALE,
-            #zero_point = V_MEM_ZERO_POINT,
-            #name="v_mem"
-        #)
-
-        #ifm2 = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=DECAY_ADDR,
-            #scale = DECAY_SCALE,
-            #zero_point = DECAY_ZERO_POINT,
-            #name="decay"
-        #)
-
-
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=DECAYED_MEM_ADDR,
-            #scale = DECAYED_MEM_SCALE,
-            #zero_point = DECAYED_MEM_ZERO_POINT,
-            #name="decayed_mem"
-        #)
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-
-
-
-        mul_decay_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
-    
-        #elementwise operation
-        mul_decay_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        mul_decay_op.rescale = None
-
-        #NpuBlockOperation
-        mul_decay_op.ifm = ifm
-        mul_decay_op.ifm2 = ifm2
-        mul_decay_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        mul_decay_op.ofm = ofm
-        mul_decay_op.kernel = None
-        mul_decay_op.weights = []
-        mul_decay_op.biases = []
-        mul_decay_op.padding = None
-        mul_decay_op.activation = activation
-
-        block_config = get_block_config(mul_decay_op, ACCELERATOR)
-        mul_decay_op.block_config = block_config
-        mul_decay_op.rounding_mode = NpuRoundingMode.TFL
-        mul_decay_op.fused_quantize = False
-        mul_decay_op.ifm_upscale = NpuResamplingMode.NONE
-        mul_decay_op.accumulator_type = NpuAccumulatorType.Default
-
-
-        #check_block_config_legal(block_config, mul_decay_op, ACCELERATOR)
-
-
-
-        return mul_decay_op
-
-
-
-
-    def def_add_decayed_mem_in_curr(ifm, ifm2, ofm):
-        IFM2_IS_FIRST_OPERAND = False
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=DECAYED_MEM_ADDR,
-            #scale = DECAYED_MEM_SCALE,
-            #zero_point = DECAYED_MEM_ZERO_POINT,
-            #name="decayed_mem"
-        #)
-
-        #ifm2 = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=IN_CURR_ADDR,
-            #scale = IN_CURR_SCALE,
-            #zero_point = IN_CURR_ZERO_POINT,
-            #name="in_curr"
-        #)
-
-
-
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=V_MEM_ADDR,
-            #scale=V_MEM_SCALE,
-            #zero_point=V_MEM_ZERO_POINT,
-            #name="updated_mem"
-        #)
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-
-
-
-        add_decayed_mem_in_curr = NpuElementWiseOperation(NpuElementWiseOp.ADD)
-
-        #elementwise operation
-        add_decayed_mem_in_curr.reversed_operands = IFM2_IS_FIRST_OPERAND
-        add_decayed_mem_in_curr.rescale = None
-
-        #NpuBlockOperation
-        add_decayed_mem_in_curr.ifm = ifm
-        add_decayed_mem_in_curr.ifm2 = ifm2
-        add_decayed_mem_in_curr.ifm2_scalar = None   #set if ifm2 is a scalar
-        add_decayed_mem_in_curr.ofm = ofm
-        add_decayed_mem_in_curr.kernel = None
-        add_decayed_mem_in_curr.weights = []
-        add_decayed_mem_in_curr.biases = []
-        add_decayed_mem_in_curr.padding = None
-        add_decayed_mem_in_curr.activation = activation
-
-        block_config = get_block_config(add_decayed_mem_in_curr, ACCELERATOR)
-        add_decayed_mem_in_curr.block_config = block_config
-        add_decayed_mem_in_curr.rounding_mode = NpuRoundingMode.TFL
-        add_decayed_mem_in_curr.fused_quantize = False
-        add_decayed_mem_in_curr.ifm_upscale = NpuResamplingMode.NONE
-        add_decayed_mem_in_curr.accumulator_type = NpuAccumulatorType.Default
-
-
-        #check_block_config_legal(block_config, add_decayed_mem_in_curr, ACCELERATOR)
-
-
-
-        return add_decayed_mem_in_curr
-
-
-
-
-
-    def def_check_spk_sub_v_mem_updated_vth(ifm, ifm2, ofm):
-        IFM2_IS_FIRST_OPERAND = False 
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            ##layout=NpuLayout.NHCWB16,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=V_MEM_ADDR,
-            #scale = V_MEM_SCALE,
-            #zero_point = V_MEM_ZERO_POINT,
-            #name="v_mem_updated"
-        #)
-
-        #ifm2 = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=PARAMS_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=VTH_ADDR,
-            #scale = VTH_SCALE,
-            #zero_point = VTH_ZERO_POINT,
-            #name="vth"
-        #)
-
-
-
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=OUTPUT_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=OUT_SPK_ADDR,
-            #scale=V_MEM_SUB_VTH_SCALE,
-            #zero_point=V_MEM_SUB_VTH_ZERO_POINT,
-            #name="out_spk"
-        #)
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-
-        check_spk_lut_index = CHECK_SPK_LUT_INDEX
-        activation = create_activation(
-            activation_op=NpuActivationOp.TABLE_LOOKUP,
-            min_val=None,
-            max_val=None,
-            lookup_table_index=check_spk_lut_index
-        )
-
-        #activation = create_activation(
-            #activation_op=NpuActivationOp.NONE_OR_RELU,
-            #min_val=None,
-            #max_val=None
-        #)
-
-
-        # Define function that lut will approximate
-        def check_positive(x_real):
-            if x_real > 0:
-                y_real = 1
-            else:
-                y_real = 0
-        
-            return y_real
-
-        # It might be problematic to have the same scaling before and after LUT, currently is working though
-        # if scale = 1, zero_point = 0, and dif = (v_mem - vth), where dif < 1, then it will only spike if dif is rounded to 1 (and not 0)
-        check_spk_lut_dma_op, check_spk_lut_values = create_lut_and_dma(approximated_func=check_positive, lut_index=check_spk_lut_index, lut_region=LUT_REGION, data_type=ofm.data_type, 
-                        scale_pre_lut=V_MEM_SUB_VTH_SCALE, zero_point_pre_lut=V_MEM_SUB_VTH_ZERO_POINT,
-                        scale_post_lut=OUT_SPK_SCALE, zero_point_post_lut=OUT_SPK_ZERO_POINT,
-                        accelerator=ACCELERATOR,
-                        debug_mode=DEBUG_MODE
-        )
-
-
-
-
-        check_spk_sub_v_mem_updated_vth_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
-
-        #elementwise operation
-        check_spk_sub_v_mem_updated_vth_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        check_spk_sub_v_mem_updated_vth_op.rescale = None
-
-        #NpuBlockOperation
-        check_spk_sub_v_mem_updated_vth_op.ifm = ifm
-        check_spk_sub_v_mem_updated_vth_op.ifm2 = ifm2
-        check_spk_sub_v_mem_updated_vth_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        check_spk_sub_v_mem_updated_vth_op.ofm = ofm
-        check_spk_sub_v_mem_updated_vth_op.kernel = None
-        check_spk_sub_v_mem_updated_vth_op.weights = []
-        check_spk_sub_v_mem_updated_vth_op.biases = []
-        check_spk_sub_v_mem_updated_vth_op.padding = None
-        check_spk_sub_v_mem_updated_vth_op.activation = activation
-    
-        block_config = get_block_config(check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
-        check_spk_sub_v_mem_updated_vth_op.block_config = block_config
-        check_spk_sub_v_mem_updated_vth_op.rounding_mode = NpuRoundingMode.TFL
-        check_spk_sub_v_mem_updated_vth_op.fused_quantize = False
-        check_spk_sub_v_mem_updated_vth_op.ifm_upscale = NpuResamplingMode.NONE
-        check_spk_sub_v_mem_updated_vth_op.accumulator_type = NpuAccumulatorType.Int32
-
-
-        #check_block_config_legal(block_config, check_spk_sub_v_mem_updated_vth_op, ACCELERATOR)
-
-
-
-        return check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth_op, check_spk_lut_values, check_spk_lut_index
-
-
-
-    def def_mul_vth_out_spk(ifm, ifm2, ofm):
-
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=PARAMS_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=VTH_ADDR,
-            #scale = VTH_SCALE,
-            #zero_point = VTH_ZERO_POINT,
-            #name="vth"
-        #)
-
-        #ifm2 = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=OUTPUT_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=OUT_SPK_ADDR,
-            #scale = OUT_SPK_SCALE,
-            #zero_point = OUT_SPK_ZERO_POINT,
-            #name="out_spk"
-        #)
-
-
-        ## Same scaling as VTH (since reset is either 0 or 1)
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=RESET_ADDR,
-            #scale = RESET_SCALE,
-            #zero_point = RESET_ZERO_POINT,
-            #name="reset"
-        #)
-
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-
-
-
-        mul_vth_out_spk_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
-    
-        #elementwise operation
-        mul_vth_out_spk_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        mul_vth_out_spk_op.rescale = None
-
-        #NpuBlockOperation
-        mul_vth_out_spk_op.ifm = ifm
-        mul_vth_out_spk_op.ifm2 = ifm2
-        mul_vth_out_spk_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        mul_vth_out_spk_op.ofm = ofm
-        mul_vth_out_spk_op.kernel = None
-        mul_vth_out_spk_op.weights = []
-        mul_vth_out_spk_op.biases = []
-        mul_vth_out_spk_op.padding = None
-        mul_vth_out_spk_op.activation = activation
-
-
-        block_config = get_block_config(mul_vth_out_spk_op, ACCELERATOR)
-        mul_vth_out_spk_op.block_config = block_config
-
-        mul_vth_out_spk_op.rounding_mode = NpuRoundingMode.TFL
-        mul_vth_out_spk_op.fused_quantize = False
-        mul_vth_out_spk_op.ifm_upscale = NpuResamplingMode.NONE
-        mul_vth_out_spk_op.accumulator_type = NpuAccumulatorType.Default
-
-
-        #check_block_config_legal(block_config, mul_vth_out_spk_op, ACCELERATOR)
-
-
-
-        return mul_vth_out_spk_op
-
-    
-
-    def def_sub_mem_updated_reset(ifm, ifm2, ofm):
-
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            ##layout=NpuLayout.NHCWB16,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=V_MEM_ADDR,
-            #scale = V_MEM_SCALE,
-            #zero_point = V_MEM_ZERO_POINT,
-            #name="v_mem"
-        #)
-
-
-        ## Same scaling as VTH (since reset is either 0 or 1)
-        #ifm2 = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHCWB16,
-            ##layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=RESET_ADDR,
-            #scale = RESET_SCALE,
-            #zero_point = RESET_ZERO_POINT,
-            #name="reset"
-        #)
-
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=V_MEM_ADDR,
-            #scale = V_MEM_SCALE,
-            #zero_point = V_MEM_ZERO_POINT,
-            #name="v_mem_post_reset"
-        #)
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-
-
-
-        sub_v_mem_reset_op = NpuElementWiseOperation(NpuElementWiseOp.SUB)
-    
-        #elementwise operation
-        sub_v_mem_reset_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        sub_v_mem_reset_op.rescale = None
-
-        #NpuBlockOperation
-        sub_v_mem_reset_op.ifm = ifm
-        sub_v_mem_reset_op.ifm2 = ifm2
-        sub_v_mem_reset_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        sub_v_mem_reset_op.ofm = ofm
-        sub_v_mem_reset_op.kernel = None
-        sub_v_mem_reset_op.weights = []
-        sub_v_mem_reset_op.biases = []
-        sub_v_mem_reset_op.padding = None
-        sub_v_mem_reset_op.activation = activation
-
-        block_config = get_block_config(sub_v_mem_reset_op, ACCELERATOR)
-        sub_v_mem_reset_op.block_config = block_config
-        sub_v_mem_reset_op.rounding_mode = NpuRoundingMode.TFL
-        sub_v_mem_reset_op.fused_quantize = False
-        sub_v_mem_reset_op.ifm_upscale = NpuResamplingMode.NONE
-        sub_v_mem_reset_op.accumulator_type = NpuAccumulatorType.Default
-
-
-        #check_block_config_legal(block_config, sub_v_mem_reset_op, ACCELERATOR)
-
-
-
-        return sub_v_mem_reset_op
-    
-
-
-    def def_update_nxt_layer_reduce_sum_out_spk(ifm, ofm):
-
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=OUTPUT_LAYER_SIZE,
-            #region=OUTPUT_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8, fm_elem_size=1,
-            #fm_addr=OUT_SPK_ADDR,
-            #scale=OUT_SPK_SCALE, zero_point=OUT_SPK_ZERO_POINT,
-            #name="out_spk"
-        #)
-
-        #ofm = create_feature_map(
-            #height=1, width=1, depth=1,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8, fm_elem_size=1,
-            #fm_addr=UPDATE_NXT_LAYER_ADDR,
-            #scale=UPDATE_NXT_LAYER_SCALE,
-            #zero_point=UPDATE_NXT_LAYER_ZERO_POINT,
-            #name="update_nxt_layer"
-        #)
-
-
-        kernel = NpuKernel(
-            w=1, h=1, stride_x=1, stride_y=1,
-            dilation_x=1, dilation_y=1
-        )
-
-        padding = NpuPadding(top=0, left=0, bottom=0, right=0)
-   
-        #block_config = NpuShape3D(2, 2, 8)
-
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None
-        )
-
-        update_nxt_layer_reduce_sum_op = NpuPoolingOperation(NpuPoolingOp.REDUCE_SUM)
-    
-        #Pooling operation
-        update_nxt_layer_reduce_sum_op.rescale = None
-
-        #NpuBlockOperation
-        update_nxt_layer_reduce_sum_op.ifm = ifm
-        update_nxt_layer_reduce_sum_op.ifm2 = None
-        update_nxt_layer_reduce_sum_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        update_nxt_layer_reduce_sum_op.ofm = ofm
-        update_nxt_layer_reduce_sum_op.kernel = kernel
-        update_nxt_layer_reduce_sum_op.weights = []
-        update_nxt_layer_reduce_sum_op.biases = []
-        update_nxt_layer_reduce_sum_op.padding = padding
-        update_nxt_layer_reduce_sum_op.activation = activation
-
-        block_config = get_block_config(update_nxt_layer_reduce_sum_op, ACCELERATOR)
-        update_nxt_layer_reduce_sum_op.block_config = block_config
-        update_nxt_layer_reduce_sum_op.rounding_mode = NpuRoundingMode.TFL
-        update_nxt_layer_reduce_sum_op.fused_quantize = False
-        update_nxt_layer_reduce_sum_op.ifm_upscale = NpuResamplingMode.NONE
-        update_nxt_layer_reduce_sum_op.accumulator_type = NpuAccumulatorType.Default
-
-        #check_block_config_legal(block_config, update_nxt_layer_reduce_sum_op, ACCELERATOR)
-
-        return update_nxt_layer_reduce_sum_op
-
-
-
-
-    def def_reset_time(ifm, ofm):
-
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        #ifm = create_feature_map(
-            #height=1, width=1, depth=1,
-            #region=SRAM_SCRATCH_REGION,
-            #layout=NpuLayout.NHWC,
-            #data_type=NpuDataType.INT8,
-            #fm_elem_size=1,
-            #fm_addr=TIME_NOT_UPDATED_ADDR,
-            #scale = TIME_NOT_UPDATED_SCALE,
-            #zero_point = TIME_NOT_UPDATED_ZERO_POINT,
-            #name="time_not_updated"
-        #)
-
-        ifm2 = NpuFeatureMap()
-        ifm2.quantization = NpuQuantization(1, 0)
-        ifm2_scalar = 0
-
-
-        #block_config = NpuShape3D(2, 2, 32)
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=0,
-            max_val=0,
-        )
-
-
-
-
-        reset_time_op = NpuElementWiseOperation(NpuElementWiseOp.MUL)
-    
-        #elementwise operation
-        reset_time_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        reset_time_op.rescale = None
-
-        #NpuBlockOperation
-        reset_time_op.ifm = ifm
-        reset_time_op.ifm2 = ifm2
-        reset_time_op.ifm2_scalar = ifm2_scalar   #set if ifm2 is a scalar
-        reset_time_op.ofm = ofm
-        reset_time_op.kernel = None
-        reset_time_op.weights = []
-        reset_time_op.biases = []
-        reset_time_op.padding = None
-        reset_time_op.activation = activation
-
-        block_config = get_block_config(reset_time_op, ACCELERATOR)
-        reset_time_op.block_config = block_config
-        reset_time_op.rounding_mode = NpuRoundingMode.TFL
-        reset_time_op.fused_quantize = True 
-        reset_time_op.ifm_upscale = NpuResamplingMode.NONE
-        reset_time_op.accumulator_type = NpuAccumulatorType.Default
-
-
-        #check_block_config_legal(block_config, reset_time_op, ACCELERATOR)
-
-
-
-        return reset_time_op
-    
-
-
-
-    def def_increment_spk_list(ifm, ifm2, ofm):
-
-        IFM2_IS_FIRST_OPERAND = False
-
-
-        activation = create_activation(
-            activation_op=NpuActivationOp.NONE_OR_RELU,
-            min_val=None,
-            max_val=None,
-        )
-
-
-
-        incr_out_spk_sum_op = NpuElementWiseOperation(NpuElementWiseOp.ADD)
-    
-        #elementwise operation
-        incr_out_spk_sum_op.reversed_operands = IFM2_IS_FIRST_OPERAND
-        incr_out_spk_sum_op.rescale = None
-
-        #NpuBlockOperation
-        incr_out_spk_sum_op.ifm = ifm
-        incr_out_spk_sum_op.ifm2 = ifm2
-        incr_out_spk_sum_op.ifm2_scalar = None   #set if ifm2 is a scalar
-        incr_out_spk_sum_op.ofm = ofm
-        incr_out_spk_sum_op.kernel = None
-        incr_out_spk_sum_op.weights = []
-        incr_out_spk_sum_op.biases = []
-        incr_out_spk_sum_op.padding = None
-        incr_out_spk_sum_op.activation = activation
-
-        block_config = get_block_config(incr_out_spk_sum_op, ACCELERATOR)
-        incr_out_spk_sum_op.block_config = block_config
-        incr_out_spk_sum_op.rounding_mode = NpuRoundingMode.TFL
-        incr_out_spk_sum_op.fused_quantize = False
-        incr_out_spk_sum_op.ifm_upscale = NpuResamplingMode.NONE
-        incr_out_spk_sum_op.accumulator_type = NpuAccumulatorType.Default
-
-
-
-        return incr_out_spk_sum_op
-    
-
-
-
     def layer_merge_and_write(cms_name, header_out_filepath, lif_params_on_sram):
 
         # Define the individual NPU Operations
-        dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = def_decay_lut(ln_beta_fm, time_not_updated_fm, decay_acc_fm)
+        dma_lut_op, exp_mul_lnb_time_op, decay_lut_values, decay_lut_index = get_elementwise_op_with_lut(NpuElementWiseOp.MUL, ln_beta_fm, time_not_updated_fm, decay_acc_fm,
+                                                                                                         decay_fm, 
+                                                                                                         mem_alloc, 
+                                                                                                         DECAY_LUT_INDEX, math.exp, "LUT_REGION",
+                                                                                                         ACCELERATOR)
 
 
-        #mul_decay_op = def_mul_decay_Vmem(v_mem_fm, decay_fm, decayed_mem_fm)
         mul_decay_op = get_elementwise_op(NpuElementWiseOp.MUL, v_mem_fm, decay_fm, decayed_mem_fm, ACCELERATOR)
 
-        #add_decayed_mem_in_curr = def_add_decayed_mem_in_curr(decayed_mem_fm, in_curr_fm, v_mem_fm)
         add_decayed_mem_in_curr = get_elementwise_op(NpuElementWiseOp.ADD, decayed_mem_fm, in_curr_fm, v_mem_fm, ACCELERATOR)
 
-        check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = def_check_spk_sub_v_mem_updated_vth(v_mem_fm, vth_fm, out_spk_fm)
 
-        #reset_mul_vth_out_spk_op = def_mul_vth_out_spk(vth_fm, out_spk_fm, reset_fm)
+        def check_positive(x_real):
+            if x_real > 0: y_real = 1
+            else: y_real = 0
+            return y_real
+
+        check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, check_spk_lut_values, check_spk_lut_index = get_elementwise_op_with_lut(NpuElementWiseOp.SUB, v_mem_fm, vth_fm, v_mem_sub_vth_fm,
+                                                                                                                                       out_spk_fm,
+                                                                                                                                       mem_alloc,
+                                                                                                                                       CHECK_SPK_LUT_INDEX,
+                                                                                                                                       check_positive,
+                                                                                                                                       "LUT_REGION",
+                                                                                                                                       ACCELERATOR)
+
         reset_mul_vth_out_spk_op = get_elementwise_op(NpuElementWiseOp.MUL, vth_fm, out_spk_fm, reset_fm, ACCELERATOR)
 
-        #sub_v_mem_reset_op = def_sub_mem_updated_reset(v_mem_fm, reset_fm, v_mem_fm)
         sub_v_mem_reset_op = get_elementwise_op(NpuElementWiseOp.SUB, v_mem_fm, reset_fm, v_mem_fm, ACCELERATOR)
 
-        update_nxt_layer_reduce_sum_out_spk = def_update_nxt_layer_reduce_sum_out_spk(out_spk_fm, update_nxt_layer_fm)
-        reset_time_op = def_reset_time(time_not_updated_fm, time_not_updated_fm)
+        update_nxt_layer_reduce_sum_out_spk = get_pooling_op(NpuPoolingOp.REDUCE_SUM, out_spk_fm, update_nxt_layer_fm, kernel_size=(1, 1), accelerator=ACCELERATOR)
+
+        reset_time_op = get_elementwise_op(NpuElementWiseOp.MUL, time_not_updated_fm, None, time_not_updated_fm, ACCELERATOR, ifm2_scalar=0)
 
 
 
 
-        #npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, dma_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
-        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op]
 
-        #if (not weights_and_biases_on_sram):
-        fully_connected_op, _ , weight_byte_arr, bias_byte_arr = def_fullyconnected(in_spk_fm, in_curr_fm, weights_volume_ohwi, bias_list)
-        npu_op_list.append(fully_connected_op)
-        #else:
-            #fully_connected_op, dma_op, weight_byte_arr, bias_byte_arr = def_fullyconnected(IN_SPK_ADDR, IN_CURR_ADDR, weights_and_biases_on_sram)
-            #npu_op_list.extend([dma_op, fully_connected_op])
-
+        fully_connected_op, weight_byte_arr, bias_byte_arr = get_fully_connected_op(in_spk_fm, in_curr_fm, weights_volume_ohwi, bias_list, 
+                                                                                    mem_alloc, 
+                                                                                    "WEIGHTS_AND_BIASES_REGION", "WEIGHT",
+                                                                                    "WEIGHTS_AND_BIASES_REGION", "BIAS",
+                                                                                    ACCELERATOR)
         
-        npu_op_list.extend([mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op])
+
+        npu_op_list = [dma_lut_op, exp_mul_lnb_time_op, fully_connected_op, mul_decay_op, add_decayed_mem_in_curr, check_spk_lut_dma_op, check_spk_sub_v_mem_updated_vth, reset_mul_vth_out_spk_op, sub_v_mem_reset_op, update_nxt_layer_reduce_sum_out_spk, reset_time_op]
 
 
 

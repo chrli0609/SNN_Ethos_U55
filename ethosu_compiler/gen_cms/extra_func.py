@@ -105,7 +105,6 @@ def get_int8_fc_weights_and_biases(
         input_size,
         output_size,
 
-        weight_scale, weight_zero_point,
         ifm_scale, ofm_scale,
 
         accelerator,
@@ -166,6 +165,17 @@ def get_int8_fc_weights_and_biases(
         weight_ifm_bitdepth = 8 #int8
     elif ifm.data_type == NpuDataType.INT16:
         weight_ifm_bitdepth = 16 #int16
+
+    from config_ops import symmetric_zero_point_quant
+    # Set Weights Quantization params, it must be symmetric quantization 
+    max_weight_val = np.max(weights_volume_ohwi)
+    min_weight_val = np.min(weights_volume_ohwi)
+    # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
+    if abs(min_weight_val) > abs(max_weight_val):
+        largest_weight_abs_val = abs(min_weight_val)
+    else:
+        largest_weight_abs_val = abs(max_weight_val)
+    weight_scale, weight_zero_point = symmetric_zero_point_quant(largest_weight_abs_val, -largest_weight_abs_val)
 
     
     weight_byte_arr, bias_byte_arr = gen_weights_and_biases(
