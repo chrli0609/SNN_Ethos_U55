@@ -31,11 +31,19 @@ class Region:
     previous_fm: FeatureMap = None # only used when constructing
 
 
+class WeightFeatureMap(NpuFeatureMap):
+    def __init__(self):
+        super(WeightFeatureMap, self).__init__()
+        self.tensor_values = []
+        self.address = None
+
+
+
 class MemoryAllocator:
 
     def __init__(self,  input_size:     int, 
                         output_size:    int,
-                        regions:        Dict[str, Region]
+                        regions:        Dict[str, Region],
                 ):
         
         self.input_size = input_size
@@ -47,6 +55,7 @@ class MemoryAllocator:
                 raise Exception(f"Region '{key}' has out-of-range value: {value.number}, expected value between 0 and 7")
 
         self.regions = regions
+        self.tensors = set()
 
 
     def alloc(self, region_name: str, tensor_name: str, fm_size: int, fm_format: int = NpuLayout.NHWC) -> int:
@@ -84,63 +93,128 @@ class MemoryAllocator:
 
 
 
+
         
         
 
-def create_feature_map_v2(mem_alloc: MemoryAllocator,
-                      height: int, width: int, depth: int,
-                      region_name: str,
-                      tensor_name: str,
-                      layout,  # Pass NpuLayout.NHWC or similar
-                      data_type,  # Pass NpuDataType.INT8 or similar
-                      #fm_elem_size: int,
-                      max_fm_value,
-                      min_fm_value,
-                      is_symmetric_quant
-                    ) -> NpuFeatureMap:
-    """
-    Create an NpuFeatureMap with the given parameters.
-    """
-    fm = NpuFeatureMap()
-    fm.shape = NpuShape3D(height=height, width=width, depth=depth)
+    def create_feature_map_v2(self,
+                        height: int, width: int, depth: int,
+                        region_name: str,
+                        segment_name: str,
+                        layout,  # Pass NpuLayout.NHWC or similar
+                        data_type,  # Pass NpuDataType.INT8 or similar
+                        #fm_elem_size: int,
+                        max_fm_value,
+                        min_fm_value,
+                        is_symmetric_quant,
+                        tensor_name,
+                        ) -> NpuFeatureMap:
+        """
+        Create an NpuFeatureMap with the given parameters.
+        """
+        fm = NpuFeatureMap()
+        fm.shape = NpuShape3D(height=height, width=width, depth=depth)
 
 
-    fm.region = mem_alloc.regions[region_name].number
+        fm.region = self.regions[region_name].number
     
-    if layout is not None:
-        fm.layout = layout
+        if layout is not None:
+            fm.layout = layout
     
-    if data_type is not None:
-        fm.data_type = data_type
+        if data_type is not None:
+            fm.data_type = data_type
     
-    if is_symmetric_quant:
+        if is_symmetric_quant:
+            scale, zero_point = symmetric_zero_point_quant(max_fm_value, min_fm_value)
+        else:
+            scale, zero_point = zero_point_quant(max_fm_value, min_fm_value)
+        #if scale is not None and zero_point is not None:
+        fm.quantization = NpuQuantization(scale_f32=scale, zero_point=zero_point)
+    
+
+        # Stride is purely dependent on FM dimensions
+        #stride_y = fm_elem_size*depth*width
+        #stride_x = fm_elem_size*depth
+        #stride_c = fm_elem_size
+        #if stride_y is not None and stride_x is not None and stride_c is not None:
+            #fm.strides = NpuShape3D(height=stride_y, width=stride_x, depth=stride_c)
+    
+
+        fm_addr = self.regions[region_name].memory_map[segment_name]
+        # Default tile setup for single tile (most common case)
+        fm.tiles = NpuTileBox(
+            height_0=height, 
+            height_1=0, 
+            width_0=width, 
+            addresses=[fm_addr, 0, 0, 0]
+        )
+    
+        fm.name = tensor_name
+
+        self.tensors.add(fm)
+    
+        return fm
+    
+    def create_weight_and_bias_fm(self,
+                                  height: int, width: int, depth: int,
+                                  region_name: str,
+                                  segment_name: str,
+                                  data_type: NpuDataType,
+                                  tensor_values: List[int],
+                                  tensor_name: str) -> WeightFeatureMap:
+        fm = WeightFeatureMap()
+        fm.shape = NpuShape3D(height=height, width=width, depth=depth)
+
+
+        fm.region = self.regions[region_name].number
+    
+    
+        if data_type is not None:
+            fm.data_type = data_type
+    
+        #scale, zero_point = symmetric_zero_point_quant(max_fm_value, min_fm_value)
+        #if scale is not None and zero_point is not None:
+
+        max_weight_val = np.max(tensor_values)
+        min_weight_val = np.min(tensor_values)
+        # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
+        if abs(min_weight_val) > abs(max_weight_val):
+            largest_weight_abs_val = abs(min_weight_val)
+        else:
+            largest_weight_abs_val = abs(max_weight_val)
+
+        max_fm_value = largest_weight_abs_val# + MIN_DIFF 
+        min_fm_value = -(largest_weight_abs_val)# + MIN_DIFF)
         scale, zero_point = symmetric_zero_point_quant(max_fm_value, min_fm_value)
-    else:
-        scale, zero_point = zero_point_quant(max_fm_value, min_fm_value)
-    #if scale is not None and zero_point is not None:
-    fm.quantization = NpuQuantization(scale_f32=scale, zero_point=zero_point)
+        fm.quantization = NpuQuantization(scale_f32=scale, zero_point=zero_point)
     
 
-    # Stride is purely dependent on FM dimensions
-    #stride_y = fm_elem_size*depth*width
-    #stride_x = fm_elem_size*depth
-    #stride_c = fm_elem_size
-    #if stride_y is not None and stride_x is not None and stride_c is not None:
-        #fm.strides = NpuShape3D(height=stride_y, width=stride_x, depth=stride_c)
+        # Stride is purely dependent on FM dimensions
+        #stride_y = fm_elem_size*depth*width
+        #stride_x = fm_elem_size*depth
+        #stride_c = fm_elem_size
+        #if stride_y is not None and stride_x is not None and stride_c is not None:
+            #fm.strides = NpuShape3D(height=stride_y, width=stride_x, depth=stride_c)
     
 
-    fm_addr = mem_alloc.regions[region_name].memory_map[tensor_name]
-    # Default tile setup for single tile (most common case)
-    fm.tiles = NpuTileBox(
-        height_0=height, 
-        height_1=0, 
-        width_0=width, 
-        addresses=[fm_addr, 0, 0, 0]
-    )
+        fm_addr = self.regions[region_name].memory_map[segment_name]
+        fm.address = fm_addr
+        # Default tile setup for single tile (most common case)
+        fm.tiles = NpuTileBox(
+            height_0=height, 
+            height_1=0, 
+            width_0=width, 
+            addresses=[fm_addr, 0, 0, 0]
+        )
     
-    fm.name = tensor_name
+        fm.name = tensor_name
+
+        fm.tensor_values = tensor_values
+
+        self.tensors.add(fm)
     
-    return fm
+        return fm
+
 
 
 
@@ -183,6 +257,7 @@ def get_elementwise_op(op_type, ifm, ifm2, ofm,
 
         ifm2_fm = NpuFeatureMap()
         ifm2_fm.quantization = NpuQuantization(1,0)
+        ifm2_fm.name="None"
         ew_op.ifm2 = ifm2_fm
         
 
@@ -373,10 +448,11 @@ def get_pooling_op(op_type,
 
 
 
-def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list, 
+def get_fully_connected_op(ifm, ofm, #weights_volume_ohwi, bias_list, 
+                           weight_tensor: WeightFeatureMap, bias_tensor: WeightFeatureMap,
                            mem_alloc,
-                           weight_region_name, weight_fm_name,
-                           bias_region_name, bias_fm_name,
+                           #weight_region_name, weight_fm_name,
+                           #bias_region_name, bias_fm_name,
                            accelerator, debug_mode=False,
 
                             activation_op=NpuActivationOp.NONE_OR_RELU,
@@ -418,18 +494,18 @@ def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list,
 
 
     # Set Weights Quantization params, it must be symmetric quantization 
-    max_weight_val = np.max(weights_volume_ohwi)
-    min_weight_val = np.min(weights_volume_ohwi)
-    # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
-    if abs(min_weight_val) > abs(max_weight_val):
-        largest_weight_abs_val = abs(min_weight_val)
-    else:
-        largest_weight_abs_val = abs(max_weight_val)
-    weight_scale, weight_zero_point = symmetric_zero_point_quant(largest_weight_abs_val, -largest_weight_abs_val)
+    #max_weight_val = np.max(weight_tenso)
+    #min_weight_val = np.min(weights_volume_ohwi)
+    ## Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
+    #if abs(min_weight_val) > abs(max_weight_val):
+        #largest_weight_abs_val = abs(min_weight_val)
+    #else:
+        #largest_weight_abs_val = abs(max_weight_val)
+    #weight_scale, weight_zero_point = symmetric_zero_point_quant(largest_weight_abs_val, -largest_weight_abs_val)
 
 
     weight_byte_arr, bias_byte_arr = gen_weights_and_biases(accelerator=accelerator,
-                        weights_volume_ohwi=weights_volume_ohwi,
+                        weights_volume_ohwi=weight_tensor.tensor_values,
                             dilation_xy=(1,1),
                             ifm_bitdepth=weight_ifm_bitdepth,
                             ofm_block_depth=block_config[2],
@@ -437,11 +513,11 @@ def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list,
                             block_traversal=block_traversal,
 
                             #ONLY FOR 1 DIM FMs!!!!
-                            bias_list=bias_list,
+                            bias_list=bias_tensor.tensor_values,
 
                             ifm_scale=ifm.quantization.scale_f32,
-                            weight_scale=weight_scale,
-                            weight_zero_point=weight_zero_point,
+                            weight_scale=weight_tensor.quantization.scale_f32,
+                            weight_zero_point=weight_tensor.quantization.zero_point,
                             ofm_scale=ofm.quantization.scale_f32,
 
 
@@ -489,11 +565,11 @@ def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list,
 
     dma_op = None
 
-    weights = NpuAddressRange(region=mem_alloc.regions[weight_region_name].number,
-                              address=mem_alloc.regions[weight_region_name].memory_map[weight_fm_name],
+    weights = NpuAddressRange(region=weight_tensor.region,
+                              address=weight_tensor.address,
                               length=len(weight_byte_arr))
-    biases = NpuAddressRange(region=mem_alloc.regions[bias_region_name].number,
-                             address=mem_alloc.regions[bias_region_name].memory_map[bias_fm_name],
+    biases = NpuAddressRange(region=bias_tensor.region,
+                             address=bias_tensor.address,
                              length=len(bias_byte_arr))
 
 
@@ -538,6 +614,9 @@ def get_fully_connected_op(ifm, ofm, weights_volume_ohwi, bias_list,
 
 
 
+
+    # Add the tensors to mem_alloc for storage
+    
 
 
     return my_op, weight_byte_arr, bias_byte_arr, 
@@ -874,32 +953,12 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-
-
-    ##############
-    # Assign Tmp tensors here!
-    #DECAY_ADDR = TMP1_ADDR
-    #IN_CURR_ADDR = TMP2_ADDR
-    #DECAYED_MEM_ADDR = TMP1_ADDR
-    #RESET_ADDR = TMP2_ADDR
-
-    ##############
-
-
-
     # Assign Memory segments for region 3
     mem_alloc.alloc("PARAMS_REGION", "LN_BETA", OUTPUT_LAYER_SIZE)
     mem_alloc.alloc("PARAMS_REGION", "VTH", OUTPUT_LAYER_SIZE)
 
-    #LN_BETA_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["LN_BETA"]
-    #VTH_ADDR = mem_alloc.regions["PARAMS_REGION"].memory_map["VTH"]
-
-    #LN_BETA_ADDR = 0
-    #VTH_ADDR = LN_BETA_ADDR + OUTPUT_LAYER_SIZE
-
 
     # Assign Memory segments for region 4
-
     DECAY_LUT_INDEX = 0
     CHECK_SPK_LUT_INDEX = 1
 
@@ -907,13 +966,9 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
     # Assign Memory segment for region 5
     mem_alloc.alloc("INPUT_REGION", "IN_SPK", INPUT_LAYER_SIZE)
-    #IN_SPK_ADDR = mem_alloc.regions["INPUT_REGION"].memory_map["IN_SPK"]
-    #IN_SPK_ADDR = 0
 
     # Assign Memory segment for region 6
     mem_alloc.alloc("OUTPUT_REGION", "OUT_SPK", OUTPUT_LAYER_SIZE)
-    #OUT_SPK_ADDR = mem_alloc.regions["OUTPUT_REGION"].memory_map["OUT_SPK"]
-    #OUT_SPK_ADDR = 0
 
 
 
@@ -923,182 +978,217 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-    ln_beta_fm = create_feature_map_v2(mem_alloc,
+    ln_beta_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="PARAMS_REGION",
-        tensor_name="LN_BETA",
+        segment_name="LN_BETA",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=LN_BETA_MAX_VAL,
         min_fm_value=LN_BETA_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="LN_BETA"
     )
 
 
-    time_not_updated_fm = create_feature_map_v2(mem_alloc,
+    time_not_updated_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=1,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TIME_NOT_UPDATED",
+        segment_name="TIME_NOT_UPDATED",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=TIME_NOT_UPDATED_MAX_VAL,
         min_fm_value=TIME_NOT_UPDATED_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="TIME_NOT_UPDATED"
     )
 
-    decay_acc_fm = create_feature_map_v2(mem_alloc,
+    decay_acc_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TMP1",
+        segment_name="TMP1",
         layout=NpuLayout.NHCWB16,
         data_type=NpuDataType.INT8,
         max_fm_value=DECAY_ACC_MAX_VAL,
         min_fm_value=DECAY_ACC_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="DECAY_ACC"
     )
 
-    in_spk_fm = create_feature_map_v2(mem_alloc,
+    in_spk_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=INPUT_LAYER_SIZE,
         region_name="INPUT_REGION",
-        tensor_name="IN_SPK",
+        segment_name="IN_SPK",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=IN_SPK_MAX_VAL,
         min_fm_value=IN_SPK_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="IN_SPK"
+    )
+    
 
+    weight_tensor = mem_alloc.create_weight_and_bias_fm(
+        height=1, width=1, depth=len(weight_byte_arr_init),
+        region_name="WEIGHTS_AND_BIASES_REGION",
+        segment_name="WEIGHT",
+        data_type=NpuDataType.INT8,
+        tensor_values=weights_volume_ohwi,
+        tensor_name="WEIGHT"
     )
 
+    
+    bias_tensor = mem_alloc.create_weight_and_bias_fm(
+        height=1, width=1, depth=len(bias_byte_arr_init),
+        region_name="WEIGHTS_AND_BIASES_REGION",
+        segment_name="BIAS",
+        data_type=NpuDataType.INT8,
+        tensor_values=bias_list,
+        tensor_name="WEIGHT"
+    )
+        
+        
 
-    in_curr_fm = create_feature_map_v2(mem_alloc,
+
+    in_curr_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TMP2",
+        segment_name="TMP2",
         layout=NpuLayout.NHCWB16,
         data_type=NpuDataType.INT8,
         max_fm_value=IN_CURR_MAX_VAL,
         min_fm_value=IN_CURR_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="IN_CURR"
     )
 
-    v_mem_fm = create_feature_map_v2(mem_alloc,
+    v_mem_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="V_MEM",
+        segment_name="V_MEM",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=V_MEM_MAX_VAL,
         min_fm_value=V_MEM_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="V_MEM"
     )
 
-    decay_fm = create_feature_map_v2(mem_alloc,
+    decay_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TMP1",
+        segment_name="TMP1",
         layout=NpuLayout.NHCWB16,
         #layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=DECAY_MAX_VAL,
         min_fm_value=DECAY_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="DECAY"
     )
 
 
 
-    decayed_mem_fm = create_feature_map_v2(mem_alloc,
+    decayed_mem_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TMP1",
+        segment_name="TMP1",
         layout=NpuLayout.NHCWB16,
         #layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=DECAYED_MEM_MAX_VAL,
         min_fm_value=DECAYED_MEM_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="DECAYED_MEM"
     )
 
 
-    vth_fm = create_feature_map_v2(mem_alloc,
+    vth_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="PARAMS_REGION",
-        tensor_name="VTH",
+        segment_name="VTH",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=VTH_MAX_VAL,
         min_fm_value=VTH_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="VTH"
     )
 
 
-    v_mem_sub_vth_fm = create_feature_map_v2(mem_alloc,
+    v_mem_sub_vth_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="OUTPUT_REGION",
-        tensor_name="OUT_SPK",
+        segment_name="OUT_SPK",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=V_MEM_SUB_VTH_MAX_VAL,
         min_fm_value=V_MEM_SUB_VTH_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="v_mem_sub_vth"
     )
 
 
-    out_spk_fm = create_feature_map_v2(mem_alloc,
+    out_spk_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="OUTPUT_REGION",
-        tensor_name="OUT_SPK",
+        segment_name="OUT_SPK",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=OUT_SPK_MAX_VAL,
         min_fm_value=OUT_SPK_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="OUT_SPK"
     )
 
 
 
-    reset_fm = create_feature_map_v2(mem_alloc,
+    reset_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=OUTPUT_LAYER_SIZE,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="TMP2",
+        segment_name="TMP2",
         layout=NpuLayout.NHCWB16,
         #layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=RESET_MAX_VAL,
         min_fm_value=RESET_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="RESET"
     )
 
 
-    update_nxt_layer_fm = create_feature_map_v2(mem_alloc,
+    update_nxt_layer_fm = mem_alloc.create_feature_map_v2(
         height=1, width=1, depth=1,
         region_name="SRAM_SCRATCH_REGION",
-        tensor_name="UPDATE_NXT_LAYER",
+        segment_name="UPDATE_NXT_LAYER",
         layout=NpuLayout.NHWC,
         data_type=NpuDataType.INT8,
         max_fm_value=UPDATE_NXT_LAYER_MAX_VAL,
         min_fm_value=UPDATE_NXT_LAYER_MIN_VAL,
-        is_symmetric_quant=False
+        is_symmetric_quant=False,
+        tensor_name="UPDATE_NXT_LAYER"
     )
     
 
 
     if is_last_layer:
-        out_spk_sum_fm = create_feature_map_v2(mem_alloc,
+        out_spk_sum_fm = mem_alloc.create_feature_map_v2(
             height=1, width=1, depth=OUTPUT_LAYER_SIZE,
             region_name="SRAM_SCRATCH_REGION",
-            tensor_name="OUT_SPK_SUM",
+            segment_name="OUT_SPK_SUM",
             layout=NpuLayout.NHWC,
             data_type=NpuDataType.INT8,
             max_fm_value=OUT_SPK_SUM_MAX_VAL,
             min_fm_value=OUT_SPK_SUM_MIN_VAL,
-            is_symmetric_quant=False
+            is_symmetric_quant=False,
+            tensor_name="OUT_SPK_SUM"
         )
 
 
 
 
     # Create Dicts for writing to C files
-    def generate_dict_for_writing_defines_to_C_files(cms_name, weight_byte_arr, bias_byte_arr):
+    def generate_dict_for_writing_defines_to_C_files(cms_name, mem_alloc: MemoryAllocator, weight_byte_arr, bias_byte_arr):
 
 
         sizes_dict = {
@@ -1121,42 +1211,18 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
                 addr_dict[cms_name.upper()+"_"+fm_name.upper()+"_ADDR"] = fm_addr
 
 
+        
+        quant_param_dict = {}
+        for fm in mem_alloc.tensors:
+            print(fm.name, fm.region)
+            quant_param_dict[cms_name.upper()+"_"+fm.name.upper()+"_SCALE"] = fm.quantization.scale_f32
+            quant_param_dict[cms_name.upper()+"_"+fm.name.upper()+"_ZERO_POINT"] = fm.quantization.zero_point
 
+        #quant_param_dict[cms_name.upper()+"_BIAS_SCALE"] = BIAS_SCALE
+        #quant_param_dict[cms_name.upper()+"_BIAS_ZERO_POINT"] = BIAS_ZERO_POINT
+        #quant_param_dict[cms_name.upper()+"_WEIGHT_SCALE"] = WEIGHT_SCALE
+        #quant_param_dict[cms_name.upper()+"_WEIGHT_ZERO_POINT"] = WEIGHT_ZERO_POINT
 
-        quant_param_dict = {
-            cms_name.upper()+"_IN_SPK_SCALE" : IN_SPK_SCALE,
-            cms_name.upper()+"_IN_SPK_ZERO_POINT" : IN_SPK_ZERO_POINT,
-
-
-            cms_name.upper()+"_BIAS_SCALE" : BIAS_SCALE,
-            cms_name.upper()+"_BIAS_ZERO_POINT" : BIAS_ZERO_POINT,
-            cms_name.upper()+"_WEIGHT_SCALE" : WEIGHT_SCALE,
-            cms_name.upper()+"_WEIGHT_ZERO_POINT" : WEIGHT_ZERO_POINT,
-
-
-            cms_name.upper()+"_LN_BETA_SCALE" : LN_BETA_SCALE,
-            cms_name.upper()+"_LN_BETA_ZERO_POINT" : LN_BETA_ZERO_POINT,
-            cms_name.upper()+"_VTH_SCALE" : VTH_SCALE,
-            cms_name.upper()+"_VTH_ZERO_POINT" : VTH_ZERO_POINT,
-            cms_name.upper()+"_V_MEM_SCALE" : V_MEM_SCALE,
-            cms_name.upper()+"_V_MEM_ZERO_POINT" : V_MEM_ZERO_POINT,
-            cms_name.upper()+"_TIME_NOT_UPDATED_SCALE" : TIME_NOT_UPDATED_SCALE,
-            cms_name.upper()+"_TIME_NOT_UPDATED_ZERO_POINT" : TIME_NOT_UPDATED_ZERO_POINT,
-
-            cms_name.upper()+"_DECAY_SCALE" : DECAY_SCALE,
-            cms_name.upper()+"_DECAY_ZERO_POINT" : DECAY_ZERO_POINT,
-            cms_name.upper()+"_IN_CURR_SCALE" : IN_CURR_SCALE,
-            cms_name.upper()+"_IN_CURR_ZERO_POINT" : IN_CURR_ZERO_POINT,
-            cms_name.upper()+"_DECAYED_MEM_SCALE" : DECAYED_MEM_SCALE,
-            cms_name.upper()+"_DECAYED_MEM_ZERO_POINT" : DECAYED_MEM_ZERO_POINT,
-
-
-            # Output
-            cms_name.upper()+"_UPDATE_NXT_LAYER_SCALE" : UPDATE_NXT_LAYER_SCALE,
-            cms_name.upper()+"_UPDATE_NXT_LAYER_ZERO_POINT" : UPDATE_NXT_LAYER_ZERO_POINT,
-            cms_name.upper()+"_OUT_SPK_SCALE" : OUT_SPK_SCALE,
-            cms_name.upper()+"_OUT_SPK_ZERO_POINT" : OUT_SPK_ZERO_POINT,
-        }
 
 
         if not is_last_layer:
@@ -1209,10 +1275,12 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
 
 
 
-        fully_connected_op, weight_byte_arr, bias_byte_arr = get_fully_connected_op(in_spk_fm, in_curr_fm, weights_volume_ohwi, bias_list, 
+        fully_connected_op, weight_byte_arr, bias_byte_arr = get_fully_connected_op(in_spk_fm, in_curr_fm, 
+                                                                                    weight_tensor, bias_tensor,
+                                                                                    #weights_volume_ohwi, bias_list, 
                                                                                     mem_alloc, 
-                                                                                    "WEIGHTS_AND_BIASES_REGION", "WEIGHT",
-                                                                                    "WEIGHTS_AND_BIASES_REGION", "BIAS",
+                                                                                    #"WEIGHTS_AND_BIASES_REGION", "WEIGHT",
+                                                                                    #"WEIGHTS_AND_BIASES_REGION", "BIAS",
                                                                                     ACCELERATOR)
         
 
@@ -1237,7 +1305,7 @@ def gen_fc_lif(INPUT_LAYER_SIZE, OUTPUT_LAYER_SIZE,
         cms_bytearr, register_cms = gen_cms(npu_op_list, ACCELERATOR, DEBUG_MODE)
 
         # Generate Dicts for writing to C
-        sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
+        sizes_dict, addr_dict, quant_param_dict = generate_dict_for_writing_defines_to_C_files(cms_name=cms_name, mem_alloc=mem_alloc, weight_byte_arr=weight_byte_arr, bias_byte_arr=bias_byte_arr)
 
 
 
