@@ -17,6 +17,7 @@
 
 // Input/output addresses (Relative Addressing)
 
+#define FC_LIF_LAYER_1_OUT_SPK_SUM_ADDR -1
 #define FC_LIF_LAYER_1_BIAS_ADDR 0
 #define FC_LIF_LAYER_1_WEIGHT_ADDR 560
 #define FC_LIF_LAYER_1_TMP1_ADDR 0
@@ -28,40 +29,37 @@
 #define FC_LIF_LAYER_1_VTH_ADDR 56
 #define FC_LIF_LAYER_1_IN_SPK_ADDR 0
 #define FC_LIF_LAYER_1_OUT_SPK_ADDR 0
-#define FC_LIF_LAYER_1_OUT_SPK_SUM_ADDR -1
+#define FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE -1
+#define FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT -1
 
 //Quantization Params
 
-#define FC_LIF_LAYER_1_IN_SPK_SCALE 1.0
-#define FC_LIF_LAYER_1_IN_SPK_ZERO_POINT 0
-#define FC_LIF_LAYER_1_WEIGHT_SCALE 0.0047613891900754445
-#define FC_LIF_LAYER_1_WEIGHT_ZERO_POINT 0
 #define FC_LIF_LAYER_1_V_MEM_SUB_VTH_SCALE 0.00784313725490196
 #define FC_LIF_LAYER_1_V_MEM_SUB_VTH_ZERO_POINT 0
-#define FC_LIF_LAYER_1_OUT_SPK_SCALE 1.0
-#define FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT 0
+#define FC_LIF_LAYER_1_DECAY_ACC_SCALE 0.00392156862745098
+#define FC_LIF_LAYER_1_DECAY_ACC_ZERO_POINT 127
 #define FC_LIF_LAYER_1_IN_CURR_SCALE 0.07058823529411765
 #define FC_LIF_LAYER_1_IN_CURR_ZERO_POINT 0
-#define FC_LIF_LAYER_1_RESET_SCALE 0.004313725490196079
-#define FC_LIF_LAYER_1_RESET_ZERO_POINT -128
-#define FC_LIF_LAYER_1_V_MEM_SCALE 0.058823529411764705
-#define FC_LIF_LAYER_1_V_MEM_ZERO_POINT -26
 #define FC_LIF_LAYER_1_UPDATE_NXT_LAYER_SCALE 0.00392156862745098
 #define FC_LIF_LAYER_1_UPDATE_NXT_LAYER_ZERO_POINT -128
-#define FC_LIF_LAYER_1_DECAY_SCALE 0.0037254901960784314
-#define FC_LIF_LAYER_1_DECAY_ZERO_POINT -128
 #define FC_LIF_LAYER_1_DECAYED_MEM_SCALE 0.043137254901960784
 #define FC_LIF_LAYER_1_DECAYED_MEM_ZERO_POINT -35
+#define FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE 0.06274509803921569
+#define FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT -128
 #define FC_LIF_LAYER_1_VTH_SCALE 0.0007843137254901964
 #define FC_LIF_LAYER_1_VTH_ZERO_POINT -1275
 #define FC_LIF_LAYER_1_LN_BETA_SCALE 0.0007843137254901962
 #define FC_LIF_LAYER_1_LN_BETA_ZERO_POINT 65
-#define FC_LIF_LAYER_1_TIME_NOT_UPDATED_SCALE 0.06274509803921569
-#define FC_LIF_LAYER_1_TIME_NOT_UPDATED_ZERO_POINT -128
-#define FC_LIF_LAYER_1_DECAY_ACC_SCALE 0.00392156862745098
-#define FC_LIF_LAYER_1_DECAY_ACC_ZERO_POINT 127
-#define FC_LIF_LAYER_1_OUT_SPK_SUM_SCALE 0
-#define FC_LIF_LAYER_1_OUT_SPK_SUM_ZERO_POINT 0
+#define FC_LIF_LAYER_1_DECAY_SCALE 0.0037254901960784314
+#define FC_LIF_LAYER_1_DECAY_ZERO_POINT -128
+#define FC_LIF_LAYER_1_RESET_SCALE 0.004313725490196079
+#define FC_LIF_LAYER_1_RESET_ZERO_POINT -128
+#define FC_LIF_LAYER_1_OUT_SPK_SCALE 1.0
+#define FC_LIF_LAYER_1_OUT_SPK_ZERO_POINT 0
+#define FC_LIF_LAYER_1_V_MEM_SCALE 0.058823529411764705
+#define FC_LIF_LAYER_1_V_MEM_ZERO_POINT -26
+#define FC_LIF_LAYER_1_IN_SPK_SCALE 1.0
+#define FC_LIF_LAYER_1_IN_SPK_ZERO_POINT 0
 
 
 
@@ -94,7 +92,7 @@ static const uint8_t cms_fc_lif_layer_1[] __attribute__((aligned(16))) =
 0x00, 0x01, 0x00, 0x00,
 0x10, 0x00, 0x00, 0x00,
 0x24, 0x40, 0x25, 0x00,
-0x80, 0x33, 0xcd, 0x66,
+0x9a, 0x33, 0xcd, 0x66,
 0x0f, 0x01, 0x03, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00,
@@ -203,7 +201,7 @@ static const uint8_t cms_fc_lif_layer_1[] __attribute__((aligned(16))) =
 0x2f, 0x01, 0x03, 0x00,
 0x02, 0x00, 0x00, 0x00,
 0x24, 0x40, 0x26, 0x00,
-0x00, 0xf6, 0x3b, 0x53,
+0x25, 0xf6, 0x3b, 0x53,
 0x0f, 0x01, 0x01, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x80, 0x00, 0x00, 0x00,
@@ -294,7 +292,7 @@ static const uint8_t cms_fc_lif_layer_1[] __attribute__((aligned(16))) =
 0x11, 0x00, 0x00, 0x00,
 0x06, 0x00, 0x02, 0x00,
 0x24, 0x40, 0x21, 0x00,
-0x80, 0x45, 0x17, 0x5d,
+0xd1, 0x45, 0x17, 0x5d,
 0x0f, 0x01, 0x03, 0x00,
 0x00, 0x40, 0x00, 0x00,
 0x38, 0x00, 0x00, 0x00,
@@ -1419,7 +1417,7 @@ Register Command Stream:
 | NPU_SET_DMA0_DST          | 0         | 0x0000b800 (47104)      |
 | NPU_SET_DMA0_LEN          | 0         | 0x00000100 (256)        |
 | NPU_OP_DMA_START          | 0         | -                       |
-| NPU_SET_OFM_SCALE         | 37        | 0x66cd3380 (1724724096) |
+| NPU_SET_OFM_SCALE         | 37        | 0x66cd339a (1724724122) |
 | NPU_SET_IFM_REGION        | 3         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
 | NPU_SET_IFM_BASE1         | 0         | 0x00000000 (0)          |
@@ -1501,7 +1499,7 @@ Register Command Stream:
 | NPU_SET_AB_START          | 30        | -                       |
 | NPU_SET_BLOCKDEP          | 3         | -                       |
 | NPU_OP_CONV               | 0         | -                       |
-| NPU_SET_OFM_SCALE         | 38        | 0x533bf600 (1396438528) |
+| NPU_SET_OFM_SCALE         | 38        | 0x533bf625 (1396438565) |
 | NPU_SET_IFM_REGION        | 1         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000080 (128)        |
 | NPU_SET_IFM_ZERO_POINT    | 65510     | -                       |
@@ -1560,7 +1558,7 @@ Register Command Stream:
 | NPU_SET_IFM_PRECISION     | 1         | -                       |
 | NPU_OP_DMA_WAIT           | 0         | -                       |
 | NPU_OP_ELEMENTWISE        | 2         | -                       |
-| NPU_SET_OFM_SCALE         | 33        | 0x5d174580 (1561806208) |
+| NPU_SET_OFM_SCALE         | 33        | 0x5d1745d1 (1561806289) |
 | NPU_SET_IFM_REGION        | 3         | -                       |
 | NPU_SET_IFM_BASE0         | 0         | 0x00000038 (56)         |
 | NPU_SET_IFM_ZERO_POINT    | 64261     | -                       |

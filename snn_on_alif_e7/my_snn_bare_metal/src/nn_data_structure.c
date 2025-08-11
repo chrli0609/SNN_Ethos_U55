@@ -176,6 +176,9 @@ NNLayer* NNLayer_Init(int8_t* tensor_arena, size_t tensor_arena_size, size_t num
     }
     
     layer->num_tensors = num_tensors;
+
+
+    for (size_t)
     
     return layer;
 }
