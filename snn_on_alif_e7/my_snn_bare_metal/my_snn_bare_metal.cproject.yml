@@ -25,7 +25,7 @@ project:
   - ../libs/board/
   - ../libs/common_app_utils/logging
   - ../libs/common_app_utils/fault_handler
-  - nn_models/repeating_48/
+  - nn_models/784x56x56x56x10/
   linker:
   - script: linker/alif-e7-m55-hp.ld
     for-context: +Alif-E7-M55-HP

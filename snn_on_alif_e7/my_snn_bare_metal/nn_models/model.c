@@ -678,13 +678,17 @@ int MLP_Inference_test_patterns(
 
 
 
+                printf("layer: %d\n", layer_number);
+                for (size_t i = 0; i < nnlayer->output_size; i++) {
+                    printf("%d ", nnlayer->output[i]);
+                } printf("\n");
+
                 
 
                 // To next layer
                 nnlayer = nnlayer->next_layer;
 
                 layer_number += 1;
-
 
             }
 
