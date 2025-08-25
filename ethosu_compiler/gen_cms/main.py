@@ -6,7 +6,7 @@ import argparse
 
 from fc_lif import gen_fc_lif
 from extra_func import get_header_filepath, get_connectivity_filepath, process_weights_and_biases, align_input_output_sizes_to_8
-from write_connectivity_h_file import clear_file_and_write_preamble, write_tensor_declarations, write_init_func, write_init_func_array
+from write_connectivity_h_file import clear_file_and_write_preamble, write_init_func, write_init_func_array
 
 
 CURR_WORKING_DIR = Path(os.getcwd())
@@ -41,7 +41,7 @@ connectivity_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 
 clear_file_and_write_preamble(connectivity_filepath, args.model, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS)
-write_tensor_declarations(connectivity_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.MEM_STORE_LOC_LIST)
+#write_tensor_declarations(connectivity_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.MEM_STORE_LOC_LIST)
 
 
 for layer_num in range(model_module.NUM_LAYERS):
@@ -91,7 +91,9 @@ for layer_num in range(model_module.NUM_LAYERS):
         beta_list=beta_list,
         vth_list=vth_list,
 
-        cms_name=model_module.LAYER_BASE_NAME+str(layer_num),
+        #cms_name=model_module.LAYER_BASE_NAME+str(layer_num),
+        layer_base_name=model_module.LAYER_BASE_NAME,
+        layer_num=layer_num,
         weights_and_biases_on_sram=model_module.WEIGHTS_AND_BIASES_ON_SRAM_LIST[layer_num],
         lif_params_on_sram=model_module.LIF_PARAMS_ON_SRAM_LIST[layer_num],
         is_last_layer=(layer_num == model_module.NUM_LAYERS - 1),
@@ -126,12 +128,14 @@ for layer_num in range(model_module.NUM_LAYERS):
 
         DEBUG_MODE=DEBUG_MODE,
         ACCELERATOR=model_module.ACCELERATOR,
+        mem_store_loc=model_module.MEM_STORE_LOC_LIST[layer_num],
         header_out_filepath=header_out_filepath,
+        connectivity_filepath=connectivity_filepath
     )
     
 
 
-    write_init_func(connectivity_filepath, model_module.LAYER_BASE_NAME, layer_num)
+    #write_init_func(connectivity_filepath, model_module.LAYER_BASE_NAME, layer_num)
 
 
 

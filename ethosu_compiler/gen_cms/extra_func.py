@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 
+
 def align_input_output_sizes_to_8(init_input_size, init_output_size, is_first_layer):
 
     '''
@@ -98,108 +99,6 @@ def next_multiple(n, m=16):
 def next_multiple_of_8(x: int) -> int:
     return ((x + 7) // 8) * 8
 
-from config_ops import create_feature_map, gen_weights_and_biases
-def get_int8_fc_weights_and_biases(
-        weights_volume_ohwi, 
-        bias_list,
-        input_size,
-        output_size,
-
-        ifm_scale, ofm_scale,
-
-        accelerator,
-        debug_mode
-    ):
-
-    UNSET = 0
-
-    ifm = create_feature_map(
-        height=1, width=1, depth=input_size,
-        region = UNSET,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=UNSET,
-        scale=ifm_scale,
-        zero_point=UNSET,
-    )
-
-
-
-    ifm2 = None
-
-
-    ofm = create_feature_map(
-        height=1, width=1, depth=output_size,
-        region=UNSET,
-        #layout=NpuLayout.NHCWB16,
-        layout=NpuLayout.NHWC,
-        data_type=NpuDataType.INT8,
-        fm_elem_size=1,
-        fm_addr=UNSET,
-        scale = ofm_scale,
-        zero_point = UNSET
-    )
-
-
-
-    # Kernel
-    kernel = NpuKernel(
-        w=1, h=1, 
-        stride_x=1, stride_y=1, dilation_x=1, dilation_y=1
-    )
-
-    my_op = NpuConv2DOperation()
-    my_op.ifm               =   ifm
-    my_op.ifm2              =   None
-    my_op.ofm               =   ofm
-    my_op.kernel            =   kernel
-    block_config = get_block_config(my_op, accelerator)
-
-
-
-    block_traversal = NpuBlockTraversal.DEPTH_FIRST
-
-
-    if ifm.data_type == NpuDataType.INT8:
-        weight_ifm_bitdepth = 8 #int8
-    elif ifm.data_type == NpuDataType.INT16:
-        weight_ifm_bitdepth = 16 #int16
-
-    from config_ops import symmetric_zero_point_quant
-    # Set Weights Quantization params, it must be symmetric quantization 
-    max_weight_val = np.max(weights_volume_ohwi)
-    min_weight_val = np.min(weights_volume_ohwi)
-    # Get the one with the largest absolute value (since the npu only supports symmetric quantization for weights)
-    if abs(min_weight_val) > abs(max_weight_val):
-        largest_weight_abs_val = abs(min_weight_val)
-    else:
-        largest_weight_abs_val = abs(max_weight_val)
-    weight_scale, weight_zero_point = symmetric_zero_point_quant(largest_weight_abs_val, -largest_weight_abs_val)
-
-    
-    weight_byte_arr, bias_byte_arr = gen_weights_and_biases(
-                            accelerator=accelerator,
-                            weights_volume_ohwi=weights_volume_ohwi,
-                            dilation_xy=(1,1),
-                            ifm_bitdepth=weight_ifm_bitdepth,
-                            ofm_block_depth=block_config[2],
-                            op_type=NpuOperationType.Conv2D,
-                            block_traversal=block_traversal,
-
-                            #ONLY FOR 1 DIM FMs!!!!
-                            bias_list=bias_list,
-
-                            ifm_scale=ifm.quantization.scale_f32,
-                            weight_scale=weight_scale,
-                            weight_zero_point=weight_zero_point,    # should always be zero
-                            ofm_scale=ofm.quantization.scale_f32,
-
-
-                            is_debug_mode=debug_mode
-    )
-
-    return weight_byte_arr, bias_byte_arr
 
 
 def check_block_config_legal(block_config, my_op, accelerator):
@@ -234,8 +133,6 @@ def float_to_int_safe(x: float) -> int:
     return int(x)
 
 
-def get_includes_str():
-    return "#include <stddef.h>\n#include <stdint.h>\n\n\n\n\n"
 
 
 
@@ -246,8 +143,6 @@ def get_lif_param_methods_definition_str(base_name):
 def get_lut_methods_definition_str(base_name):
     return "\n\n\n\n\nstatic inline const int8_t* Get" + base_name + "LUTPointer()\n{\n\treturn lut_" + base_name + ";\n}\nstatic inline size_t Get" + base_name + "LUTLen()\n{\n\treturn sizeof(lut_" + base_name + ");\n}\n\n"
 
-def get_cms_methods_definition_str(base_name):
-    return "\n\n\n\n\nstatic inline const uint8_t * Get" + base_name + "CMSPointer()\n{\n\treturn cms_" + base_name + ";\n}\n\nstatic inline size_t Get"+ base_name +"CMSLen()\n{\n\treturn sizeof(cms_" + base_name + ");\n}\n\n"
 
 def get_weight_methods_definition_str(base_name):
     return "\n\n\n\nstatic inline const int8_t * Get" + base_name + "WeightsPointer()\n{\n\treturn weight_" + base_name + ";\n}\n\nstatic inline size_t Get"+ base_name +"WeightsLen()\n{\n\treturn sizeof(weight_" + base_name + ");\n}\n\n"
@@ -270,59 +165,38 @@ def get_weight_methods_declare_str(base_name):
 
 
 
-def get_cms_arr_def_str(base_name):
-    return "\n\n\n\nstatic const uint8_t cms_" + base_name + "[] __attribute__((aligned(16))) = \n{\n"
 
-def get_weights_arr_def_str(base_name):
-    return "\n\n\n\nstatic const int8_t weight_" + base_name + "[] __attribute__((aligned(16))) = \n{\n"
+#def get_cms_arr_def_str(base_name):
+    #return "\n\n\n\nstatic const uint8_t cms_" + base_name + "[] __attribute__((aligned(16))) = \n{\n"
 
-def get_lut_arr_def_str(base_name):
-    return "\n\n\n\nstatic const int8_t lut_" + base_name + "[] __attribute__((aligned(16))) = \n{\n" 
+#def get_weights_arr_def_str(base_name):
+    #return "\n\n\n\nstatic const int8_t weight_" + base_name + "[] __attribute__((aligned(16))) = \n{\n"
 
-def get_lif_param_arr_def_str(base_name, lif_params_on_sram):
-    ret_str = "\n\n\n\nstatic "
+#def get_lut_arr_def_str(base_name):
+    #return "\n\n\n\nstatic const int8_t lut_" + base_name + "[] __attribute__((aligned(16))) = \n{\n" 
 
-    if (not lif_params_on_sram):
-        ret_str += "const "
+#def get_lif_param_arr_def_str(base_name, lif_params_on_sram):
+    #ret_str = "\n\n\n\nstatic "
 
-    ret_str += "int8_t lif_param_" + base_name + "[] "
+    #if (not lif_params_on_sram):
+        #ret_str += "const "
 
-    if (lif_params_on_sram):
-        ret_str += "__attribute__((section(\"model_params_sram1\")))"
+    #ret_str += "int8_t lif_param_" + base_name + "[] "
 
-    ret_str += " __attribute__((aligned(16))) = \n{\n" 
+    #if (lif_params_on_sram):
+        #ret_str += "__attribute__((section(\"model_params_sram1\")))"
 
-
-    return ret_str
+    #ret_str += " __attribute__((aligned(16))) = \n{\n" 
 
 
+    #return ret_str
 
-    
 
-
-def get_macro_def_str(my_dict):
 
     
-    
-    ret_str = "\n"
-    # Skip first because first op is DMA
-    for key, value in my_dict.items():
-        ret_str += "#define "
-        ret_str += key + " " + str(value) + "\n"
-    
-    
-    return ret_str + "\n"
-
 
 
         
-def format_bytearr_for_printout(byte_arr):
-    formatted = ",\n".join(
-    ", ".join(f"0x{b:02x}" for b in byte_arr[i:i+4])
-    for i in range(0, len(byte_arr), 4)
-    )
-
-    return formatted + ", "
 
 
 
@@ -362,79 +236,6 @@ def parse_formatted_hex(formatted_str):
 
 
 
-def write_cms_to_files(header_filepath, lif_params_on_sram, cms_driver_payload_byte_array, register_cms, base_name, sizes_dict, addr_dict, quant_params_dict, lif_params_arr_contents_str, lut_arr_contents_str, weight_byte_arr=None, bias_byte_arr=None):
-    
-    formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
-    
-    if weight_byte_arr:
-        formatted_biases = format_bytearr_for_printout(bias_byte_arr)
-        formatted_weights = format_bytearr_for_printout(weight_byte_arr)
-        
-    with open(header_filepath, 'w') as f:
-        f.write("#pragma once\n")
-
-        f.write(get_includes_str())
-
-
-        # Define layer constants as macros
-        f.write("// Tensor sizes\n")
-        f.write(get_macro_def_str(sizes_dict))
-        f.write("// Input/output addresses (Relative Addressing)\n")
-        f.write(get_macro_def_str(addr_dict))
-        f.write("//Quantization Params\n")
-        f.write(get_macro_def_str(quant_params_dict))
-
-
-        #f.write(get_cms_methods_declare_str(base_name))
-        #f.write(get_weight_methods_declare_str(base_name))
-        #f.write(get_lut_methods_declare_str(base_name))
-        #f.write(get_lif_param_methods_declare_str(base_name))
-
-
-        
-    #with open(imp_filepath, 'w') as f:
-        #f.write("#include \"include/"+base_name+".h\"")
-
-        f.write("\n\n\n\n\n\n")
-
-
-        f.write(get_cms_arr_def_str(base_name)+"\n")
-        f.write(formatted_cms)
-        f.write("\n\n};\n\n\n")
-
-        f.write(get_cms_methods_definition_str(base_name))
-
-
-        if weight_byte_arr:
-            f.write(get_weights_arr_def_str(base_name)+"\n")
-            f.write("//biases\n")
-            f.write(formatted_biases + "\n")
-            f.write("//weights\n")
-            f.write(formatted_weights)
-            f.write("\n\n};\n\n\n")
-
-            f.write(get_weight_methods_definition_str(base_name))
-
-        
-        # Write LIF Params
-        if lif_params_arr_contents_str:
-            f.write(get_lif_param_arr_def_str(base_name, lif_params_on_sram) + "\n")
-            f.write(lif_params_arr_contents_str)
-            f.write("\n\n};\n\n\n")
-
-            f.write(get_lif_param_methods_definition_str(base_name))
-
-        # Write LUT
-        if lut_arr_contents_str:
-            f.write(get_lut_arr_def_str(base_name) + "\n")
-            f.write(lut_arr_contents_str)
-            f.write("\n\n};\n\n\n")
-
-            f.write(get_lut_methods_definition_str(base_name))
-
-
-
-        f.write(register_cms_2_assembly(register_cms))
 
 
 

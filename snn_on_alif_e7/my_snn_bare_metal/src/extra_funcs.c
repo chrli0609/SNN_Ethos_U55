@@ -123,23 +123,31 @@ void quantize_float_scalar_to_int8_scalar(
 // Quantize an array of floats to int8_t
 void quantize_float_scalar_to_int8_array(
   const float input_val,  // Input float scalar
-  int8_t *output,        // Output int8 array
+  int8_t* output,        // Output int8 array
   int length,             // Number of elements
   float scale,            // Quantization scale
   int32_t zero_point      // Quantization zero-point
 )
 {
 
+  //printf("in quantize_float_scalar_to_int8_array\n");
+  //printf("1\n");
+
   int32_t quantized = (int32_t)roundf(input_val / scale) + zero_point;
+  //printf("2\n");
 
   // Clamp to [-128, 127]
   if (quantized > 127) quantized = 127;
   if (quantized < -128)   quantized = -128;
+  //printf("3\n");
 
   for (int i = 0; i < length; i++)
   {
+    //printf("output[%d]: %d\tquantized: %d\n", i, output[i], quantized);
     output[i] = (int8_t)quantized;
+    //printf(" %d", i);
   }
+  //printf("4\n");
 }
 
 

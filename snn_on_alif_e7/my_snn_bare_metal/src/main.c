@@ -143,10 +143,14 @@ int main() {
     printf("Running NPU model\n");
 
     NN_Model* mlp_model = MLP_Init();
+
+    printf("MLP INIT successful\n");
+    printf("output tensor of layer 0 at: %p\n", mlp_model->first_nnlayer->output->ptr);
+    printf("output region of layer 0 at: %p\n", mlp_model->first_nnlayer->memory_regions[6]->region_start_ptr);
     
 
     //int8_t out_spk [MLP_OUTPUT_LAYER_SIZE];
-    int8_t out_spk [mlp_model->output_size];
+    //int8_t out_spk [mlp_model->output_size];
 
 
 
@@ -193,12 +197,9 @@ int main() {
         mlp_model,
         test_input_0,
         test_target_0,
-        test_input_0_NUM_SAMPLES,
-
-        mlp_model->num_time_steps,
+        //test_input_0_NUM_SAMPLES,
         1,
-
-        out_spk
+        1
     );
 
 
@@ -299,20 +300,16 @@ int main() {
 
 
 
-    printf("Start running inference forever\n");
-    while (1) {
-        MLP_Inference_test_patterns(
-            mlp_model,
-            test_input_0,
-            test_target_0,
-            test_input_0_NUM_SAMPLES,
-
-            mlp_model->num_time_steps,
-            0,
-
-            out_spk
-        );
-    }
+    //printf("Start running inference forever\n");
+    //while (1) {
+        //MLP_Inference_test_patterns(
+            //mlp_model,
+            //test_input_0,
+            //test_target_0,
+            //test_input_0_NUM_SAMPLES,
+            //0
+        //);
+    //}
     // 
 
     MLP_Free(mlp_model);

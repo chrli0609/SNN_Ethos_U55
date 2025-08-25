@@ -15,53 +15,6 @@
 #define FC_LIF_LAYER_3_WEIGHT_LEN 656
 #define FC_LIF_LAYER_3_BIAS_LEN 160
 
-// Input/output addresses (Relative Addressing)
-
-#define FC_LIF_LAYER_3_OUT_SPK_SUM_ADDR 48
-#define FC_LIF_LAYER_3_BIAS_ADDR 0
-#define FC_LIF_LAYER_3_WEIGHT_ADDR 160
-#define FC_LIF_LAYER_3_TMP1_ADDR 0
-#define FC_LIF_LAYER_3_TMP2_ADDR 16
-#define FC_LIF_LAYER_3_V_MEM_ADDR 32
-#define FC_LIF_LAYER_3_TIME_NOT_UPDATED_ADDR 64
-#define FC_LIF_LAYER_3_UPDATE_NXT_LAYER_ADDR 65
-#define FC_LIF_LAYER_3_LN_BETA_ADDR 0
-#define FC_LIF_LAYER_3_VTH_ADDR 16
-#define FC_LIF_LAYER_3_IN_SPK_ADDR 0
-#define FC_LIF_LAYER_3_OUT_SPK_ADDR 0
-#define FC_LIF_LAYER_3_OUT_SPK_SUM_SCALE -1
-#define FC_LIF_LAYER_3_OUT_SPK_SUM_ZERO_POINT -1
-
-//Quantization Params
-
-#define FC_LIF_LAYER_3_TIME_NOT_UPDATED_SCALE 0.06274509803921569
-#define FC_LIF_LAYER_3_TIME_NOT_UPDATED_ZERO_POINT -128
-#define FC_LIF_LAYER_3_V_MEM_SCALE 0.058823529411764705
-#define FC_LIF_LAYER_3_V_MEM_ZERO_POINT -26
-#define FC_LIF_LAYER_3_V_MEM_SUB_VTH_SCALE 0.00784313725490196
-#define FC_LIF_LAYER_3_V_MEM_SUB_VTH_ZERO_POINT 0
-#define FC_LIF_LAYER_3_DECAY_ACC_SCALE 0.00392156862745098
-#define FC_LIF_LAYER_3_DECAY_ACC_ZERO_POINT 127
-#define FC_LIF_LAYER_3_UPDATE_NXT_LAYER_SCALE 0.00392156862745098
-#define FC_LIF_LAYER_3_UPDATE_NXT_LAYER_ZERO_POINT -128
-#define FC_LIF_LAYER_3_IN_CURR_SCALE 0.07058823529411765
-#define FC_LIF_LAYER_3_IN_CURR_ZERO_POINT 0
-#define FC_LIF_LAYER_3_RESET_SCALE 0.004313725490196079
-#define FC_LIF_LAYER_3_RESET_ZERO_POINT -128
-#define FC_LIF_LAYER_3_VTH_SCALE 0.0007843137254901964
-#define FC_LIF_LAYER_3_VTH_ZERO_POINT -1275
-#define FC_LIF_LAYER_3_LN_BETA_SCALE 0.0007843137254901962
-#define FC_LIF_LAYER_3_LN_BETA_ZERO_POINT 65
-#define FC_LIF_LAYER_3_DECAY_SCALE 0.0037254901960784314
-#define FC_LIF_LAYER_3_DECAY_ZERO_POINT -128
-#define FC_LIF_LAYER_3_IN_SPK_SCALE 1.0
-#define FC_LIF_LAYER_3_IN_SPK_ZERO_POINT 0
-#define FC_LIF_LAYER_3_OUT_SPK_SCALE 1.0
-#define FC_LIF_LAYER_3_OUT_SPK_ZERO_POINT 0
-#define FC_LIF_LAYER_3_OUT_SPK_SUM_SCALE 0.09803921568627451
-#define FC_LIF_LAYER_3_OUT_SPK_SUM_ZERO_POINT -128
-#define FC_LIF_LAYER_3_DECAYED_MEM_SCALE 0.043137254901960784
-#define FC_LIF_LAYER_3_DECAYED_MEM_ZERO_POINT -35
 
 
 
@@ -69,13 +22,8 @@
 
 
 
-
-
-
-
-static const uint8_t cms_fc_lif_layer_3[] __attribute__((aligned(16))) = 
+static const uint8_t cms_fc_lif_layer_3[] __attribute__((aligned(16))) =
 {
-
 0x43, 0x4f, 0x50, 0x31,
 0x01, 0x00, 0x10, 0x00,
 0x08, 0x30, 0x00, 0x00,
@@ -396,33 +344,22 @@ static const uint8_t cms_fc_lif_layer_3[] __attribute__((aligned(16))) =
 0x85, 0x01, 0x01, 0x00,
 0x80, 0x01, 0x00, 0x00,
 0x06, 0x00, 0x01, 0x00,
-0x00, 0x00, 0xff, 0xff, 
+0x00, 0x00, 0xff, 0xff, };
 
-};
-
-
-
-
-
-
-
-static inline const uint8_t * Getfc_lif_layer_3CMSPointer()
+static inline const uint8_t* Getcmsfc_lif_layer_3Pointer()
 {
 	return cms_fc_lif_layer_3;
 }
 
-static inline size_t Getfc_lif_layer_3CMSLen()
+
+static inline const size_t Getcmsfc_lif_layer_3Len()
 {
 	return sizeof(cms_fc_lif_layer_3);
 }
 
 
-
-
-
-static const int8_t weight_fc_lif_layer_3[] __attribute__((aligned(16))) = 
+static const int8_t WEIGHTS_AND_BIASES_REGION_fc_lif_layer_3[] __attribute__((aligned(16))) =
 {
-
 //biases
 0x01, 0x00, 0x00, 0x00,
 0x00, 0xe4, 0xf4, 0xd4,
@@ -628,64 +565,72 @@ static const int8_t weight_fc_lif_layer_3[] __attribute__((aligned(16))) =
 0x00, 0x82, 0x01, 0x00,
 0x0a, 0x00, 0xfc, 0xff,
 0x5c, 0xfc, 0xff, 0xff,
-0xff, 0xff, 0xff, 0xff, 
+0xff, 0xff, 0xff, 0xff, };
 
-};
-
-
-
-
-
-
-static inline const int8_t * Getfc_lif_layer_3WeightsPointer()
+static inline const int8_t* GetWEIGHTS_AND_BIASES_REGIONfc_lif_layer_3Pointer()
 {
-	return weight_fc_lif_layer_3;
-}
-
-static inline size_t Getfc_lif_layer_3WeightsLen()
-{
-	return sizeof(weight_fc_lif_layer_3);
+	return WEIGHTS_AND_BIASES_REGION_fc_lif_layer_3;
 }
 
 
-
-
-
-static const int8_t lif_param_fc_lif_layer_3[]  __attribute__((aligned(16))) = 
+static inline const size_t GetWEIGHTS_AND_BIASES_REGIONfc_lif_layer_3Len()
 {
+	return sizeof(WEIGHTS_AND_BIASES_REGION_fc_lif_layer_3);
+}
 
+
+static int8_t SRAM_SCRATCH_REGION_fc_lif_layer_3 [66] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetSRAM_SCRATCH_REGIONfc_lif_layer_3Pointer()
+{
+	return SRAM_SCRATCH_REGION_fc_lif_layer_3;
+}
+
+
+static inline const size_t GetSRAM_SCRATCH_REGIONfc_lif_layer_3Len()
+{
+	return sizeof(SRAM_SCRATCH_REGION_fc_lif_layer_3);
+}
+
+
+static int8_t SRAM_FAST_SCRATCH_REGION_fc_lif_layer_3 [0] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetSRAM_FAST_SCRATCH_REGIONfc_lif_layer_3Pointer()
+{
+	return SRAM_FAST_SCRATCH_REGION_fc_lif_layer_3;
+}
+
+
+static inline const size_t GetSRAM_FAST_SCRATCH_REGIONfc_lif_layer_3Len()
+{
+	return sizeof(SRAM_FAST_SCRATCH_REGION_fc_lif_layer_3);
+}
+
+
+static const int8_t PARAMS_REGIONS_fc_lif_layer_3[] __attribute__((aligned(16))) =
+{
 
 // ln(beta)_quant
 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 0, 0, 0, 0, 0, 0, 0, 
 // vth_quant
 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, };
 
-};
-
-
-
-
-
-
-
-static inline const int8_t* Getfc_lif_layer_3LIFParamPointer()
+static inline const int8_t* GetPARAMS_REGIONSfc_lif_layer_3Pointer()
 {
-	return lif_param_fc_lif_layer_3;
-}
-static inline size_t Getfc_lif_layer_3LIFParamLen()
-{
-	return sizeof(lif_param_fc_lif_layer_3);
+	return PARAMS_REGIONS_fc_lif_layer_3;
 }
 
 
-
-
-
-static const int8_t lut_fc_lif_layer_3[] __attribute__((aligned(16))) = 
+static inline const size_t GetPARAMS_REGIONSfc_lif_layer_3Len()
 {
+	return sizeof(PARAMS_REGIONS_fc_lif_layer_3);
+}
 
+
+static const int8_t LUT_REGION_fc_lif_layer_3[] __attribute__((aligned(16))) =
+{
 
 //lut index 0
 -29, 
@@ -755,23 +700,187 @@ static const int8_t lut_fc_lif_layer_3[] __attribute__((aligned(16))) =
 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 1, 
 1, 1, 1, 1, 1, 1, 1, 
-
-
 };
 
-
-
-
-
-
-
-static inline const int8_t* Getfc_lif_layer_3LUTPointer()
+static inline const int8_t* GetLUT_REGIONfc_lif_layer_3Pointer()
 {
-	return lut_fc_lif_layer_3;
+	return LUT_REGION_fc_lif_layer_3;
 }
-static inline size_t Getfc_lif_layer_3LUTLen()
+
+
+static inline const size_t GetLUT_REGIONfc_lif_layer_3Len()
 {
-	return sizeof(lut_fc_lif_layer_3);
+	return sizeof(LUT_REGION_fc_lif_layer_3);
+}
+
+
+static int8_t OUTPUT_REGION_fc_lif_layer_3 [16] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetOUTPUT_REGIONfc_lif_layer_3Pointer()
+{
+	return OUTPUT_REGION_fc_lif_layer_3;
+}
+
+
+static inline const size_t GetOUTPUT_REGIONfc_lif_layer_3Len()
+{
+	return sizeof(OUTPUT_REGION_fc_lif_layer_3);
+}
+
+
+char* name_fc_lif_layer_3 [16] =
+{
+	"DECAYED_MEM",
+	"BIAS",
+	"OUT_SPK_SUM",
+	"UPDATE_NXT_LAYER",
+	"V_MEM",
+	"WEIGHT",
+	"TIME_NOT_UPDATED",
+	"LN_BETA",
+	"RESET",
+	"IN_SPK",
+	"DECAY_ACC",
+	"DECAY",
+	"OUT_SPK",
+	"IN_CURR",
+	"v_mem_sub_vth",
+	"VTH",
+};
+
+size_t relative_addr_fc_lif_layer_3 [16] =
+{
+	0,
+	0,
+	48,
+	65,
+	32,
+	160,
+	64,
+	0,
+	16,
+	0,
+	0,
+	0,
+	0,
+	16,
+	0,
+	16,
+};
+
+size_t region_fc_lif_layer_3 [16] =
+{
+	1,
+	0,
+	1,
+	1,
+	1,
+	0,
+	1,
+	3,
+	1,
+	5,
+	1,
+	1,
+	6,
+	1,
+	6,
+	3,
+};
+
+size_t size_fc_lif_layer_3 [16] =
+{
+	16,
+	160,
+	16,
+	1,
+	16,
+	656,
+	1,
+	16,
+	16,
+	56,
+	16,
+	16,
+	16,
+	16,
+	16,
+	16,
+};
+
+float scale_fc_lif_layer_3 [16] =
+{
+	0.043137254901960784,
+	0.0012379051423540303,
+	0.09803921568627451,
+	0.00392156862745098,
+	0.058823529411764705,
+	0.010730495639875824,
+	0.06274509803921569,
+	0.0007843137254901962,
+	0.004313725490196079,
+	1.0,
+	0.00392156862745098,
+	0.0037254901960784314,
+	1.0,
+	0.07058823529411765,
+	0.00784313725490196,
+	0.0007843137254901964,
+};
+
+int zero_point_fc_lif_layer_3 [16] =
+{
+	-35,
+	0,
+	-128,
+	-128,
+	-26,
+	0,
+	-128,
+	65,
+	-128,
+	0,
+	127,
+	-128,
+	0,
+	0,
+	0,
+	-1275,
+};
+
+static inline char** Getnamefc_lif_layer_3Pointer()
+{
+	return name_fc_lif_layer_3;
+}
+
+
+static inline size_t* Getrelative_addrfc_lif_layer_3Pointer()
+{
+	return relative_addr_fc_lif_layer_3;
+}
+
+
+static inline size_t* Getregionfc_lif_layer_3Pointer()
+{
+	return region_fc_lif_layer_3;
+}
+
+
+static inline size_t* Getsizefc_lif_layer_3Pointer()
+{
+	return size_fc_lif_layer_3;
+}
+
+
+static inline float* Getscalefc_lif_layer_3Pointer()
+{
+	return scale_fc_lif_layer_3;
+}
+
+
+static inline int* Getzero_pointfc_lif_layer_3Pointer()
+{
+	return zero_point_fc_lif_layer_3;
 }
 
 /*
