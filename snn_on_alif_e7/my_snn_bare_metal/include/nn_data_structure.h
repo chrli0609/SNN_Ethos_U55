@@ -162,7 +162,7 @@ void NNLayer_Free(NNLayer* layer);
 void NNLayer_DequantizeAndPrint(const NNLayer* layer);
 
 
-NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps, size_t out_spk_sum_tensor_idx);
+NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps);
 
 
 

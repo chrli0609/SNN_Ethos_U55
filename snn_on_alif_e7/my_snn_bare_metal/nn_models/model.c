@@ -11,6 +11,7 @@
 
 
 #include "connectivity.h"
+//#include "manual_weights/test_patterns/pattern_0.h"
 #include "nn_data_structure.h"
 //#include "nn_models/model.h"
 
@@ -256,7 +257,7 @@ NN_Model* MLP_Init() {
 
 
     // 3. Create NN_Model
-    NN_Model* mlp_model = NN_Model_Init(NULL, layer_pointers[0], MLP_INPUT_LAYER_SIZE, MLP_OUTPUT_LAYER_SIZE, MLP_NUM_TIME_STEPS, OUT_SPK_SUM_TENSOR_IDX);
+    NN_Model* mlp_model = NN_Model_Init(NULL, layer_pointers[0], MLP_INPUT_LAYER_SIZE, MLP_OUTPUT_LAYER_SIZE, MLP_NUM_TIME_STEPS);
 
     return mlp_model;
 }
@@ -496,11 +497,17 @@ int MLP_Inference_test_patterns(
     int make_printouts
 ) {
 
-    printf("start inference\n");
+
+    //int8_t* test_input = test_input_0;
+    //int8_t* test_targets = test_target_0;
+
+    //size_t num_samples = test_input_0_NUM_SAMPLES;
+    //size_t num_time_steps = MLP_NUM_TIME_STEPS;
+    
 
 
 
-
+    // Disable Cache
     uint32_t ait_disable_dcache_start_tick = debug_start_timer();
     if (!CACHE_ENABLED) {
         SCB_DisableDCache();
@@ -510,6 +517,12 @@ int MLP_Inference_test_patterns(
     ait_disable_dcache += debug_end_timer(ait_disable_dcache_start_tick);
 
 
+
+    /* 
+    
+    Declare Local Variables for Debugging and Benchmarking
+
+    */
     // For debugging
     size_t number_of_no_spk = 0;
     uint32_t debug_timer_start; float debug_timer_elapsed_ms;
@@ -542,56 +555,40 @@ int MLP_Inference_test_patterns(
 
 
 
+
+
+
+
     float time_steps_layer_not_updated;
 
 
     // For every input sample (in real system would be while(true) loop)
 
     size_t it = 0;
-    global_it = it;
+    //global_it = it;     // For debugging
     
     while (it < num_samples) {
 
-        //if (CHECK_INPUT_OUTPUT) {
-            //printf("==========================\new sample!!!==========================\n");
-            //printf("it: %d\n", it);
-        //}
-
-        int8_t out_spk_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
-
-        
 
         uint32_t inference_speed_measure_each_sample_start_tick = debug_start_timer();
-        /*___________________________________________________________
-          Reset the parameters that need to be reset for every sample  */
-        
-        //// Reset Membrane potential between input samples
-        //// Reset output spike in case last layer is never computed (because no output spikes at all from the layer before that)
-        //// Reset time stamp for previous layer update
+
+
+
+        // Reset Membrane potential between input samples
+        // Reset output spike in case last layer is never computed (because no output spikes at all from the layer before that)
+        // Reset time stamp for previous layer update
         reset_model_for_new_sample(mlp_model);
 
 
 
-        // For storing sum of output spikes across the time steps
-        //size_t out_neuron_sum[MLP_OUTPUT_LAYER_SIZE] = { 0 };
 
         ait_reset_model_for_new_sample += debug_end_timer(inference_speed_measure_each_sample_start_tick);
 
-        /* ________________________________________________________ */
 
 
-        // Start measuring time
-        //if (DEBUG_MODE) { debug_timer_start = start_timer(); }
-        //start = start_timer();
-
-        //printf("about to start iterating over time steps\n");
 
         // Feed the same input to the network for num_time_steps
         for (size_t time_step = 0; time_step < mlp_model->num_time_steps; time_step++){
-            //if (CHECK_INPUT_OUTPUT) {
-                //printf("-----------------------new time step!!!--------------------------\n");
-                //printf("time step: %d\n", time_step);
-            //}
 
             uint32_t avg_inference_time_per_forward_pass_start_tick = debug_start_timer();
 
@@ -600,10 +597,6 @@ int MLP_Inference_test_patterns(
             NNLayer* nnlayer = mlp_model->first_nnlayer;
 
 
-            // Set new input
-            //if (num_samples == 1) {
-                //it = 0;
-            //}
 
             // Write to the tensor for input instead
             //nnlayer->input->ptr = test_patterns[it][time_step];
@@ -611,6 +604,9 @@ int MLP_Inference_test_patterns(
             int8_t* tmp_in_arr = nnlayer->input->ptr;
             for (size_t neuron_num = 0; neuron_num < nnlayer->input->size; neuron_num++) {
                 tmp_in_arr[neuron_num] = test_patterns[it][time_step][neuron_num];
+                //tmp_in_arr[neuron_num] = test_input[((it * num_time_steps + time_step) * mlp_model->input->size + neuron_num)];
+                //tmp_in_arr[neuron_num] = test_input_0[it][time_step][neuron_num];
+
             }
 
 
@@ -728,15 +724,10 @@ int MLP_Inference_test_patterns(
         }
 
 
-        //printf("out_spk_sum\n");
-        //for (size_t i =0; i< MLP_OUTPUT_LAYER_SIZE; i++) {
-            //printf("%d ",out_spk_sum[i]);
-        //} printf("\n");
 
         // measure inference exe time: start tick
         uint32_t ait_arg_max_start_tick = debug_start_timer();
 
-        size_t tmp_pred = arg_max(out_spk_sum, mlp_model->out_spk_sum->size, mlp_model->out_spk_sum->scale, mlp_model->out_spk_sum->zero_point);
         size_t pred = arg_max(mlp_model->out_spk_sum->ptr, mlp_model->out_spk_sum->size, mlp_model->out_spk_sum->scale, mlp_model->out_spk_sum->zero_point);
 
 
@@ -777,7 +768,6 @@ int MLP_Inference_test_patterns(
 
         }
 
-        printf("pred: %d\ttarget: %d\ttmp_pred: %d\n", (size_t)pred, (size_t)test_targets[it], (size_t)tmp_pred);
 
         it++;
 

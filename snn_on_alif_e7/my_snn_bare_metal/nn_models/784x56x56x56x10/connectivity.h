@@ -3,6 +3,8 @@
 #include "../include/nn_data_structure.h"
 #include "../model.h"
 
+//#include "test_patterns/pattern_0.h"
+
 
 #define MODEL_NAME "784x56x56x56x10"
 

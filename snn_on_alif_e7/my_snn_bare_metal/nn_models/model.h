@@ -12,17 +12,17 @@
 //#include "connectivity.h"
 #include "test_patterns/pattern_0.h"
 
-// Set NNLayer Tensor Indices
-#define IN_SPK_TENSOR_IDX               0
-#define BIAS_TENSOR_IDX                 1
-#define WEGIHTS_TENSOR_IDX              2
-#define V_MEM_QUANT_IDX                 3
-#define TIME_NOT_UPDATED_QUANT_IDX      4
-#define UPDATE_NXT_LAYER_IDX            5
-#define OUT_SPK_TENSOR_IDX              6
+//// Set NNLayer Tensor Indices
+//#define IN_SPK_TENSOR_IDX               0
+//#define BIAS_TENSOR_IDX                 1
+//#define WEGIHTS_TENSOR_IDX              2
+//#define V_MEM_QUANT_IDX                 3
+//#define TIME_NOT_UPDATED_QUANT_IDX      4
+//#define UPDATE_NXT_LAYER_IDX            5
+//#define OUT_SPK_TENSOR_IDX              6
 
-// Only exists for last layer
-#define OUT_SPK_SUM_TENSOR_IDX          7
+//// Only exists for last layer
+//#define OUT_SPK_SUM_TENSOR_IDX          7
 
 
 
@@ -91,7 +91,7 @@ int MLP_Quantize_Inputs(NN_Model* mlp_model, float* in_spk, float* v_mem, float*
 int MLP_Inference_test_patterns(
     NN_Model* mlp_model,
 
-    //volatile int8_t*** test_patterns,
+    //volatile int8_t* test_patterns,
     //volatile int8_t* test_targets,
     //volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][2][16],
     volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][25][784],

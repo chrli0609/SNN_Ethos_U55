@@ -195,47 +195,46 @@ void dequantize_array_int8_to_float(
 
 
 
+//// Function to print int8_t tensor values
+//void PrintInt16Tensor(const char* tensor_name, const int8_t* tensor, size_t num_elements) {
+    //if (!tensor) {
+      //printf("Tensor is NULL!\n");
+      //return;
+    //}
 
-// Function to print int8_t tensor values
-void PrintInt16Tensor(const char* tensor_name, const int8_t* tensor, size_t num_elements) {
-    if (!tensor) {
-      printf("Tensor is NULL!\n");
-      return;
-    }
-
-    printf("%s\n", tensor_name);
-    for (size_t i = 0; i < num_elements; i++) {
-      printf("%d ", tensor[i]);
-    }
-    printf("\n");
-}
-
+    //printf("%s\n", tensor_name);
+    //for (size_t i = 0; i < num_elements; i++) {
+      //printf("%d ", tensor[i]);
+    //}
+    //printf("\n");
+//}
 
 
-// Function to print int8_t tensor values
-void PrintTensor(const char* tensor_name, const int8_t* tensor, size_t num_elements) {
-  if (!tensor) {
-    printf("Tensor is NULL!\n");
-    return;
-  }
 
-  printf("%s\n", tensor_name);
-  for (size_t i = 0; i < num_elements; i++) {
-    printf("%d ", tensor[i]);
-  }
-  printf("\n");
-}
+//// Function to print int8_t tensor values
+//void PrintTensor(const char* tensor_name, const int8_t* tensor, size_t num_elements) {
+  //if (!tensor) {
+    //printf("Tensor is NULL!\n");
+    //return;
+  //}
+
+  //printf("%s\n", tensor_name);
+  //for (size_t i = 0; i < num_elements; i++) {
+    //printf("%d ", tensor[i]);
+  //}
+  //printf("\n");
+//}
 
 
-void PrintFloatTensor(const char* tensor_name, const float* tensor, size_t num_elements) {
-  if (!tensor) {
-    printf("Tensor is NULL!\n");
-    return;
-  }
+//void PrintFloatTensor(const char* tensor_name, const float* tensor, size_t num_elements) {
+  //if (!tensor) {
+    //printf("Tensor is NULL!\n");
+    //return;
+  //}
 
-  printf("%s\n", tensor_name);
-  for (size_t i = 0; i < num_elements; i++) {
-    printf("%f ", tensor[i]);
-  }
-  printf("\n");
-}
+  //printf("%s\n", tensor_name);
+  //for (size_t i = 0; i < num_elements; i++) {
+    //printf("%f ", tensor[i]);
+  //}
+  //printf("\n");
+//}

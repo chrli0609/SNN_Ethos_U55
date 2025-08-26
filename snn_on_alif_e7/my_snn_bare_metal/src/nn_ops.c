@@ -22,7 +22,7 @@
 
 //mydebug
 #include "include/extra_funcs.h"    //SysTick_Handler and start and end timer
-#include "nn_data_structure.h"
+//#include "nn_data_structure.h"
 extern int DEBUG_MODE;
 extern int MEASURE_MODE;
 extern int global_it;

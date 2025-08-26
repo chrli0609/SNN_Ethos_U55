@@ -55,8 +55,8 @@ void dequantize_array_int8_to_float(
   );
 
 
-void PrintTensor(const char* tensor_name, const int8_t* tensor, size_t num_elements);
-void PrintFloatTensor(const char* tensor_name, const float* tensor, size_t num_elements);
+//void PrintTensor(const char* tensor_name, const int8_t* tensor, size_t num_elements);
+//void PrintFloatTensor(const char* tensor_name, const float* tensor, size_t num_elements);
 
 
 

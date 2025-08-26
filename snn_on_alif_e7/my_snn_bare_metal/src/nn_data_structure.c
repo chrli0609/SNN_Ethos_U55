@@ -524,7 +524,7 @@ void NNLayer_DequantizeAndPrint(const NNLayer* layer) {
 
 
 // Assume that NNLayer structs are already linked together
-NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps, size_t out_spk_sum_tensor_idx) {
+NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps) {
     // Init Total Tensor Arena and store its pointer
     NN_Model* nn_model = (NN_Model*)malloc(sizeof(NN_Model));
 

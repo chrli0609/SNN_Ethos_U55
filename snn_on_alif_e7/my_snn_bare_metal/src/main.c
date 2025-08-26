@@ -22,6 +22,7 @@
 #include "include/extra_funcs.h"
 
 #include "nn_data_structure.h"
+//#include "nn_models/manual_weights/test_patterns/pattern_0.h"
 #include "pm.h" //SystemCoreClock
 
 
@@ -97,13 +98,6 @@ int main() {
 
 
 
-
-
-
-
-    printf("Just reflashed!!! ______________________________________________________\n");
-
-
     /* Initialise the UART module to allow printf related functions (if using retarget) */
     BoardInit();
 
@@ -119,86 +113,17 @@ int main() {
 
 
 
-
-    //// RUN CPU MODEL
-    //printf("Running CPU model\n");
-    //NN_Model_CPU* mlp_model_cpu = Init_CPU_MLP();
-
-    //printf("inited mlp_model_cpu\n");
-
-    //MLP_Inference_CPU_test_patterns(
-        //mlp_model_cpu,
-        //test_input_0,
-        //test_target_0,
-        ////test_input_0_NUM_SAMPLES,
-        //1,
-
-        //mlp_model_cpu->num_time_steps,
-        //1
-    //);
-
-
-
-
     printf("Running NPU model\n");
 
     NN_Model* mlp_model = MLP_Init();
 
     printf("MLP INIT successful\n");
-    printf("output tensor of layer 0 at: %p\n", mlp_model->first_nnlayer->output->ptr);
-    printf("output region of layer 0 at: %p\n", mlp_model->first_nnlayer->memory_regions[6]->region_start_ptr);
     
-
-    //int8_t out_spk [MLP_OUTPUT_LAYER_SIZE];
-    //int8_t out_spk [mlp_model->output_size];
-
-
-
-    //bias = 0, scale = 1, shift = 0 --> -112
-    //bias = 3, scale = 1, shift = 0 --> -109
-    //bias = 10, scale = 1, shift = 0 --> -102
-    //bias = 10, scale = 2, shift = 1 --> -102
-    //bias = 10, scale = 2**7, shift = 7 --> -102
-    //bias = 10, scale = 2, shift = 0 --> -76
-
-    // Set output scale = 1, zero_point = 0
-
-    //bias = 10, scale = 2, shift = 0 --> 52
-    //bias = 0, scale = 1, shift = 0 --> 16
-    //bias = 0, scale = 2, shift = 0 --> 32
-    //bias = 3, scale = 2, shift = 0 --> 38
-    //bias = 3, scale = 2, shift = 1 --> 19 (16 + 3)
-
-    // ( sum[(ifm - Z_x) * (w - Z_w)] + bias ) * (scale >> shift) + Z_out
-
-    // Set IFM scale = 2, zero_point = 0
-
-    // Set OFM scale = 0.005, zero_point = -128
-    //bias = 3, scale = 1, shift = 0 --> -109   (16 + 3*1 -128)
-    //bias = 3, scale = 8, shift = 3 --> -109
-    //bias = 3, scale = 8, shift = 2 --> -90    (16 + 3)*2 + (-128))
-
-    // Set OFM scale = 0.01, zero_point = 0
-
-    //bias = 3, scale = 8, shift = 2 --> 38     ((16 + 3)*2 + 0)
-
-
-
-
-
-    //MLP_Inference(
-        //mlp_model,
-        //in_spk_arr,
-        //NUM_SAMPLES,
-
-        //out_spk
-    //);
     MLP_Inference_test_patterns(
         mlp_model,
         test_input_0,
         test_target_0,
         test_input_0_NUM_SAMPLES,
-        //1,
         1
     );
 
@@ -237,7 +162,7 @@ int main() {
     //printf("avg_inference_time_invalidate_ethosu_dcache:\t\t\t\t%f\n", avg_inference_time_invalidate_ethosu_dcache);
 
 
-
+    /* This is needed to measure power
     ait_reset_model_for_new_sample /= (double)test_input_0_NUM_SAMPLES;
     ait_set_test_pattern_pointer_to_model /= (double)test_input_0_NUM_SAMPLES;
     ait_get_time_since_last_update /= (double)test_input_0_NUM_SAMPLES;
@@ -256,6 +181,7 @@ int main() {
     ait_SCB_CleanInvalidateDCache /= (double)test_input_0_NUM_SAMPLES;
     ait_disable_dcache /= (double)test_input_0_NUM_SAMPLES;
     ait_enable_dcache /= (double)test_input_0_NUM_SAMPLES;
+    */
 
 
     //printf("%s\n", MLP_MODEL_NAME);
@@ -300,17 +226,17 @@ int main() {
 
 
 
-    //printf("Start running inference forever\n");
-    //while (1) {
-        //MLP_Inference_test_patterns(
-            //mlp_model,
-            //test_input_0,
-            //test_target_0,
-            //test_input_0_NUM_SAMPLES,
-            //0
-        //);
-    //}
-    // 
+    printf("Start running inference forever\n"); // For measuring power
+    while (1) {
+        MLP_Inference_test_patterns(
+            mlp_model,
+        test_input_0,
+        test_target_0,
+        test_input_0_NUM_SAMPLES,
+            0
+        );
+    }
+     
 
     MLP_Free(mlp_model);
 
