@@ -604,8 +604,18 @@ int MLP_Inference_test_patterns(
             //if (num_samples == 1) {
                 //it = 0;
             //}
-            nnlayer->input->ptr = test_patterns[it][time_step];
-            //nnlayer->input = test_patterns[0][time_step];
+
+            // Write to the tensor for input instead
+            //nnlayer->input->ptr = test_patterns[it][time_step];
+            //nnlayer->memory_regions[5] = test_patterns[it][time_step];
+            int8_t* tmp_in_arr = nnlayer->input->ptr;
+            for (size_t neuron_num = 0; neuron_num < nnlayer->input->size; neuron_num++) {
+                tmp_in_arr[neuron_num] = test_patterns[it][time_step][neuron_num];
+            }
+
+
+
+
 
 
             size_t layer_number = 0;
@@ -640,18 +650,15 @@ int MLP_Inference_test_patterns(
 
 
 
-                    printf("layer %d\n", layer_number);
-                    printf("in_spk");
-                    for (size_t i = 0; i < nnlayer->input->size; i++){
-                        printf("%d ", nnlayer->input->ptr[i]);
-                    } printf("\n");
+                    //printf("Layer: %d==================\n", layer_number);
+                    //Tensor_Print_Dequant_Values(nnlayer->input);
+                    //Tensor_Print_Dequant_Values(NNLayer_Get_Tensor(nnlayer, "V_MEM"));
 
+                    //printf("Compute Layer\n");
                     MLP_Run_Layer(nnlayer);
 
-                    printf("out_spk");
-                    for (size_t i = 0; i < nnlayer->output->size; i++){
-                        printf("%d ", nnlayer->output->ptr[i]);
-                    } printf("\n");
+                    //Tensor_Print_Dequant_Values(nnlayer->output);
+                    //Tensor_Print_Dequant_Values(NNLayer_Get_Tensor(nnlayer, "V_MEM"));
         
 
                     //start_layer1 = start_timer();

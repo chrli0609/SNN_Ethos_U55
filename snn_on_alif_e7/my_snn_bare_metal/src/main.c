@@ -197,8 +197,8 @@ int main() {
         mlp_model,
         test_input_0,
         test_target_0,
-        //test_input_0_NUM_SAMPLES,
-        1,
+        test_input_0_NUM_SAMPLES,
+        //1,
         1
     );
 

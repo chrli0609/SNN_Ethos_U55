@@ -114,6 +114,10 @@ def write_init_func(connectivity_h_filepath, mem_alloc, base_name, layer_num):
             #f.write(get_method_def_str(None, region_name, layer_name, MethodAccessType.LEN))
 
         
+        print("mem_regons_arr_name_list", mem_regions_arr_name_list)
+        print("mem_regions_size_list", mem_regions_size_list)
+        print("mem_regions_region_number_list", mem_regions_region_number_list)
+
         f.write(get_arr_def_str("int8_t*", "region_ptrs", layer_name, mem_regions_arr_name_list))
         f.write(get_arr_def_str("size_t", "region_sizes", layer_name, mem_regions_size_list))
         f.write(get_arr_def_str("size_t", "region_numbers", layer_name, mem_regions_region_number_list))

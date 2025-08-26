@@ -9,6 +9,7 @@
 
 
 // Include Test Patterns
+//#include "connectivity.h"
 #include "test_patterns/pattern_0.h"
 
 // Set NNLayer Tensor Indices
@@ -92,7 +93,9 @@ int MLP_Inference_test_patterns(
 
     //volatile int8_t*** test_patterns,
     //volatile int8_t* test_targets,
+    //volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][2][16],
     volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][25][784],
+    //volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE],
     volatile int8_t test_targets[test_input_0_NUM_SAMPLES],
 
     size_t num_samples,

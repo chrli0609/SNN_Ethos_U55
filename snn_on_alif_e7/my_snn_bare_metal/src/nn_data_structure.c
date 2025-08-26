@@ -156,9 +156,22 @@ void Tensor_Print_Quant_Values(Tensor* tensor) {
     int8_t* arr = tensor->ptr;
     printf("Tensor: %s\n", tensor->name);
     for (size_t i = 0; i < tensor->size; i++) {
-        printf("%d", arr[i]);
-        if (i % MAX_NUM_PRINTED_VALUES_PER_LINE == 0) { printf("\n"); }
+        printf("%d ", arr[i]);
+        if (i % MAX_NUM_PRINTED_VALUES_PER_LINE == 0 && i != 0) { printf("\n"); }
     }
+    printf("\n");
+}
+
+void Tensor_Print_Dequant_Values(Tensor* tensor) {
+
+    int8_t* arr = tensor->ptr;
+    printf("Tensor: %s\n", tensor->name);
+    for (size_t i = 0; i < tensor->size; i++) {
+        float dequantized_value = (arr[i] - tensor->zero_point) * tensor->scale;
+        printf("%f ", dequantized_value);
+        if (i % MAX_NUM_PRINTED_VALUES_PER_LINE == 0 && i != 0) { printf("\n"); }
+    }
+    printf("\n");
 }
 
 
