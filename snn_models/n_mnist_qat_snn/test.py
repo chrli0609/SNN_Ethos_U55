@@ -69,7 +69,6 @@ print("model", net)
 
 
 
-    
 
 
 
@@ -109,17 +108,24 @@ def test(net, test_data, test_target):
         )  # get the index of the max log-probability
         correct += pred.eq(target.view_as(pred)).sum().item()
 
-
+        print("pred:")
+        for val in pred:
+	        print(str(val.item()) + " ", end='')
+        print("")
+        print("target:")
+        for val in target:
+            print(str(val.item()) + " ", end='')
+        print("")
 
         #print("target:", target, "\tpred:", pred)
 
 
         # Store test data
-        #tmp_test_data = data.cpu()
-        #tmp_test_target = target.cpu()
+        tmp_test_data = data.cpu()
+        tmp_test_target = target.cpu()
 
-        #np.save(model_dir / test_patterns_dir / Path("test_input_"+ str(counter) + ".npy"), tmp_test_data)
-        #np.save(model_dir / test_patterns_dir / Path("test_target_" + str(counter) +".npy"), tmp_test_target)
+        np.save(model_dir / test_patterns_dir / Path("test_input_"+ str(counter) + ".npy"), tmp_test_data)
+        np.save(model_dir / test_patterns_dir / Path("test_target_" + str(counter) +".npy"), tmp_test_target)
 
         #print("spikes", spikes)
 
@@ -131,7 +137,6 @@ def test(net, test_data, test_target):
     accuracy = 100.0 * correct / len(test_target)
 
     return test_loss, accuracy
-
 
 
 

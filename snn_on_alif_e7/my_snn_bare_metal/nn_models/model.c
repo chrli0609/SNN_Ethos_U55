@@ -587,7 +587,7 @@ int MLP_Inference_test_patterns(
         //if (DEBUG_MODE) { debug_timer_start = start_timer(); }
         //start = start_timer();
 
-
+        //printf("input_spike = [\n]");
 
         // Feed the same input to the network for num_time_steps
         for (size_t time_step = 0; time_step < num_time_steps; time_step++){
@@ -634,6 +634,12 @@ int MLP_Inference_test_patterns(
                     ait_get_time_since_last_update += debug_end_timer(ait_get_time_since_last_update_start_tick);
                     uint32_t inference_speed_measure_start_tick = debug_start_timer();
 
+                    if (layer_number == 1 && it == 0) {
+
+                        size_t investigated_neuron = 2;
+                        float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][investigated_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
+                        printf("time_step=%d: v_mem[%d]=%f\n", time_step, investigated_neuron, v_mem_1);
+                    }
 
 
                     MLP_Run_Layer(
@@ -655,6 +661,19 @@ int MLP_Inference_test_patterns(
                         nnlayer->output,
                         nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]
                     );
+
+                    if (layer_number == 1 && it == 0) {
+                        size_t investigated_neuron = 2;
+                        float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][investigated_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
+                        //printf("time_step=%d: v_mem[0]=%f, out_spk[%d]=%d\n", time_step, v_mem_1, investigated_neuron, nnlayer->output[investigated_neuron]);
+                        
+                        //printf("[\n");
+                        //for (size_t i = 0; i < nnlayer->input_size; i++){
+                            //printf("%d", nnlayer->input[i]);
+                            //if (i != nnlayer->input_size-1) { printf(", "); }
+                        //}
+                        //printf("],\n");
+                    }
         
 
                     //start_layer1 = start_timer();
@@ -678,10 +697,10 @@ int MLP_Inference_test_patterns(
 
 
 
-                printf("layer: %d\n", layer_number);
-                for (size_t i = 0; i < nnlayer->output_size; i++) {
-                    printf("%d ", nnlayer->output[i]);
-                } printf("\n");
+                //printf("layer: %d\n", layer_number);
+                //for (size_t i = 0; i < nnlayer->output_size; i++) {
+                    //printf("%d ", nnlayer->output[i]);
+                //} printf("\n");
 
                 
 
@@ -829,6 +848,13 @@ int MLP_Inference_test_patterns(
         printf("avg_inference_time_per_forward_pass, %f,\n", avg_inference_time_per_forward_pass);
         printf("avg_inference_exe_time_per_sample, %f,\n", tmp);
         printf("stop printing inference exe time\n");
+
+
+        printf("prediction array:");
+        for (size_t i = 0; i < num_samples; i++) {
+            printf("%d ", prediction_arr[i]);
+        }
+        printf("\n");
 
     }
 

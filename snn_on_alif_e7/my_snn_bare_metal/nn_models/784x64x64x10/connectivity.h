@@ -4,7 +4,7 @@
 #include "../model.h"
 
 
-#define MODEL_NAME "784x64x64x10"
+#define MODEL_NAME "784x64x64x10_ver_2"
 
 
 #include "layers/fc_lif_layer_0.h"
