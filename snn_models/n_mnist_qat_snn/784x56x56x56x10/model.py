@@ -13,6 +13,9 @@ from torch.quantization import QuantStub, DeQuantStub, get_default_qat_qconfig, 
 from norse.torch.functional.reset import reset_subtract
 
 
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) # add parent directory to add common plotting functions
+from plot import plot_neuron_mem_traces
 
 
 # Network architecture parameters
@@ -95,22 +98,68 @@ class Net(torch.nn.Module):
         layer_spikes = []
         if self.quant_aware: inp = self.quant(inp)
 
+        #for getting membrane traces
+        # We are looking for sample 0, neuron 2, in layer 1
+        probe_sample = 7
+        probe_layer = 0
+        probe_neuron = 45
+
+        in_curr_traces = []
+        mem_traces = []
+        out_spk_traces = []
+        out_spk_sum = np.zeros(self.linear_layers[probe_layer].in_features)
+
+        time_step = 0
         inp = inp.squeeze(2)
         for x in inp:
             x = torch.flatten(x, 1)
             for idx, layer in enumerate(self.linear_layers):
                 x = layer(x)
+
+                # Get in curr for plotting traces
+                if idx == probe_layer:
+                    in_curr_traces.append(x[probe_sample][probe_neuron].item())
+                
                 x, states[idx] = self.temp_layers[idx](x, states[idx])
 
+                #print("scale", layer.scale)
+                print("zp", layer.__dir__)
 
 
+
+                if idx == probe_layer:
+                    #print(f"time_step: {time_step} v_mem_nxt {(states[idx].v)[sample][neuron]}")
+                    mem_traces.append(((states[idx].v)[probe_sample][probe_neuron]).item())
+
+                    #import sys
+                    #np.set_printoptions(threshold=sys.maxsize)
+                    print("out_spk:")
+                    #for i in range(x.size()[0]):
+                    for j in range(x.size()[1]):
+                            #print(f"{x[i][j].item()} ", end='')
+                            #row_sum[i] += x[i][j].item()
+                        out_spk_sum[j] += x[probe_sample][j].item()
+                            
+                    print("")
+                    #print("row_sum", row_sum)
+
+                    out_spk_traces.append(x[probe_sample][probe_neuron].item())
                 # Track min/max values for the current state
                 self._update_state_minmax(idx, states[idx].v)
 
 
                 layer_spikes.append(x.flatten())
             out_spikes.append(x)
+
+            time_step+=1
         
+        print("in_curr_traces = ", in_curr_traces)
+        print("mem_traces = ", mem_traces)
+        print("out_spk_traces = ", out_spk_traces)
+        print("out_spk_sum", out_spk_sum)
+        print("out_spk_sum[21]", out_spk_sum[21])
+        plot_neuron_mem_traces(in_curr_traces, mem_traces, out_spk_traces, time_step, 1, f"GPU: {model_dir}\n Activity of Neuron {probe_neuron}, Layer {probe_layer} (Test sample {probe_sample})")
+
         out = torch.stack(out_spikes)
         if self.quant_aware: out = self.dequant(out)  # Dequantize output
         return out, torch.cat(layer_spikes)
@@ -164,7 +213,8 @@ if quant_aware:
     
     snn.qconfig = QConfig(
         activation=MinMaxObserver.with_args(dtype=torch.quint8, qscheme=torch.per_tensor_affine),
-        weight=MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine),
+        #weight=MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_affine),
+        weight=MinMaxObserver.with_args(dtype=torch.qint8, qscheme=torch.per_tensor_symmetric),
     )
     torch.backends.quantized.engine = 'fbgemm'  # or whichever you use
     torch.quantization.prepare_qat(snn, inplace=True)

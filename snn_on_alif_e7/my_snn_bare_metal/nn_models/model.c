@@ -545,6 +545,23 @@ int MLP_Inference_test_patterns(
 
 
 
+    //for capturing mem traces
+    // For getting membrane traces
+    size_t probed_sample = 7;
+    size_t probed_layer = 0;
+    size_t probed_neuron = 45;
+    int print_in_spk = 0;
+    int print_v_mem_traces = 1;
+    NNLayer* tmp_layer = mlp_model->first_nnlayer;
+    for (size_t i = 0; i < mlp_model->num_layers; i++){
+        if (i != probed_layer) {
+            tmp_layer = tmp_layer->next_layer;
+        }
+    }
+    size_t* out_spk_sum_hidden = (size_t*)malloc(sizeof(size_t) * tmp_layer->output_size);
+    for (size_t i = 0; i < tmp_layer->output_size; i++){
+        out_spk_sum_hidden[i] = 0;
+    }
 
 
     float time_steps_layer_not_updated;
@@ -587,7 +604,10 @@ int MLP_Inference_test_patterns(
         //if (DEBUG_MODE) { debug_timer_start = start_timer(); }
         //start = start_timer();
 
-        //printf("input_spike = [\n]");
+        // For getting mem traces
+        if (it == probed_sample && print_in_spk == 1) {
+            printf("input_spike = [\n]");
+        }
 
         // Feed the same input to the network for num_time_steps
         for (size_t time_step = 0; time_step < num_time_steps; time_step++){
@@ -613,6 +633,27 @@ int MLP_Inference_test_patterns(
 
             size_t layer_number = 0;
             while (nnlayer != NULL) {
+
+
+
+
+
+                // For plotting membrane traces
+                //printf("sample %d, time step %d layer %d\n", it, time_step, layer_number);
+                if (it == probed_sample && layer_number == probed_layer && print_in_spk == 1) {
+                    printf("[\n");
+                    for (size_t i = 0; i < nnlayer->input_size; i++){
+                    //    printf("nnlayer->update_curr: %d\n", (int8_t)*(nnlayer->update_curr));
+                    //    if ((int8_t)*(nnlayer->update_curr) == 127) {
+                            printf("%d", nnlayer->input[i]);
+                    //    } else if ((int8_t)*(nnlayer->update_curr) == -128) {
+                    //       printf("%d", 0);
+                    //    }
+                        if (i != nnlayer->input_size-1) { printf(", "); }
+                    }
+                    printf("],\n");
+                }
+
                 
 
                 // Had at least 1 spike in layer0 --> run next layer
@@ -634,12 +675,12 @@ int MLP_Inference_test_patterns(
                     ait_get_time_since_last_update += debug_end_timer(ait_get_time_since_last_update_start_tick);
                     uint32_t inference_speed_measure_start_tick = debug_start_timer();
 
-                    if (layer_number == 1 && it == 0) {
 
-                        size_t investigated_neuron = 2;
-                        float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][investigated_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
-                        printf("time_step=%d: v_mem[%d]=%f\n", time_step, investigated_neuron, v_mem_1);
-                    }
+                    //if (layer_number == 1 && it == 4) {
+
+                        ////float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][probed_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
+                        ////printf("time_step=%d: v_mem[%d]=%f\n", time_step, probed_neuron, v_mem_1);
+                    //}
 
 
                     MLP_Run_Layer(
@@ -662,18 +703,19 @@ int MLP_Inference_test_patterns(
                         nnlayer->tensor_sizes[OUT_SPK_TENSOR_IDX]
                     );
 
-                    if (layer_number == 1 && it == 0) {
-                        size_t investigated_neuron = 2;
-                        float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][investigated_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
-                        //printf("time_step=%d: v_mem[0]=%f, out_spk[%d]=%d\n", time_step, v_mem_1, investigated_neuron, nnlayer->output[investigated_neuron]);
-                        
-                        //printf("[\n");
-                        //for (size_t i = 0; i < nnlayer->input_size; i++){
-                            //printf("%d", nnlayer->input[i]);
-                            //if (i != nnlayer->input_size-1) { printf(", "); }
-                        //}
-                        //printf("],\n");
+
+                    if (layer_number == probed_layer && it == probed_sample) {
+                        for (size_t i = 0; i < nnlayer->output_size; i++) {
+                            out_spk_sum_hidden[i] += nnlayer->output[i];
+                        }
                     }
+
+                    if (layer_number == probed_layer && it == probed_sample && print_v_mem_traces == 1) {
+                        float v_mem_1 = (nnlayer->tensor_ptrs[V_MEM_QUANT_IDX][probed_neuron] - nnlayer->quant_params[V_MEM_QUANT_IDX].zero_point) * nnlayer->quant_params[V_MEM_QUANT_IDX].scale;
+                        printf("time_step=%d: v_mem[%d]=%f, out_spk[%d]=%d\n", time_step, probed_neuron, v_mem_1, probed_neuron, nnlayer->output[probed_neuron]);
+                        
+                    }
+
         
 
                     //start_layer1 = start_timer();
@@ -694,6 +736,8 @@ int MLP_Inference_test_patterns(
                     break;
                 } else { //printf("ERROR: Unexpected update_nxt_layer value found. Expected 127 or -128 but received: %d\n", (int8_t)*(nnlayer->update_curr)); 
                 }
+
+
 
 
 
@@ -855,6 +899,12 @@ int MLP_Inference_test_patterns(
             printf("%d ", prediction_arr[i]);
         }
         printf("\n");
+
+        printf("sample %d, layer %d out_spk_sum\n", probed_sample, probed_layer);
+        for (size_t i = 0; i < tmp_layer->output_size; i++) {
+            printf("%d ", out_spk_sum_hidden[i]);
+        } printf("\n");
+        //printf("sample %d, layer %d, neuron %d ")
 
     }
 

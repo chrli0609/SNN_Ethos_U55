@@ -298,21 +298,21 @@ int main() {
 
 
 
+    // For measuring power
+    //printf("Start running inference forever\n");
+    //while (1) {
+        //MLP_Inference_test_patterns(
+            //mlp_model,
+            //test_input_0,
+            //test_target_0,
+            //test_input_0_NUM_SAMPLES,
 
-    printf("Start running inference forever\n");
-    while (1) {
-        MLP_Inference_test_patterns(
-            mlp_model,
-            test_input_0,
-            test_target_0,
-            test_input_0_NUM_SAMPLES,
+            //mlp_model->num_time_steps,
+            //0,
 
-            mlp_model->num_time_steps,
-            0,
-
-            out_spk
-        );
-    }
+            //out_spk
+        //);
+    //}
     // 
 
     MLP_Free(mlp_model);

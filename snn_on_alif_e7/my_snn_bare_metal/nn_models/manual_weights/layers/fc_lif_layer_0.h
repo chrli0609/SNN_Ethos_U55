@@ -1,0 +1,912 @@
+#pragma once
+#include <stddef.h>
+#include <stdint.h>
+
+
+
+
+// Tensor sizes
+
+#define FC_LIF_LAYER_0_IS_LAST_LAYER 0
+#define FC_LIF_LAYER_0_MAX_NUM_TENSORS_TO_TRACK 8
+#define FC_LIF_LAYER_0_TENSOR_ARENA_SIZE  50
+#define FC_LIF_LAYER_0_INPUT_LAYER_SIZE  16
+#define FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE  16
+#define FC_LIF_LAYER_0_WEIGHT_LEN 80
+#define FC_LIF_LAYER_0_BIAS_LEN 160
+
+
+
+
+
+
+
+
+static const uint8_t cms_fc_lif_layer_0[] __attribute__((aligned(16))) =
+{
+0x43, 0x4f, 0x50, 0x31,
+0x01, 0x00, 0x10, 0x00,
+0x08, 0x30, 0x00, 0x00,
+0x00, 0x00, 0x06, 0x10,
+0x05, 0x00, 0x00, 0x00,
+0x05, 0x00, 0x00, 0x00,
+0x05, 0x00, 0x00, 0x00,
+0x02, 0x00, 0x10, 0x01,
+0x30, 0x01, 0x04, 0x00,
+0x30, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x31, 0x01, 0x03, 0x01,
+0x31, 0x40, 0x00, 0x00,
+0x00, 0xb8, 0x00, 0x00,
+0x32, 0x40, 0x00, 0x00,
+0x00, 0x01, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x24, 0x40, 0x25, 0x00,
+0x9a, 0x33, 0xcd, 0x66,
+0x0f, 0x01, 0x03, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x01, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x02, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x03, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x0b, 0x01, 0x00, 0x00,
+0x0c, 0x01, 0xff, 0xff,
+0x0a, 0x01, 0x00, 0x00,
+0x04, 0x01, 0x0f, 0x00,
+0x06, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x05, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x04, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x09, 0x01, 0x86, 0x00,
+0x05, 0x01, 0x01, 0x00,
+0x07, 0x01, 0x00, 0x00,
+0x1f, 0x01, 0x01, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x11, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x12, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x13, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x1b, 0x01, 0x00, 0x00,
+0x1c, 0x01, 0xff, 0xff,
+0x1a, 0x01, 0x00, 0x00,
+0x12, 0x01, 0x00, 0x00,
+0x11, 0x01, 0x00, 0x00,
+0x13, 0x01, 0x0f, 0x00,
+0x16, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x15, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x14, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x7f, 0x00,
+0x14, 0x01, 0x41, 0x01,
+0x25, 0x01, 0x10, 0x00,
+0x26, 0x01, 0x80, 0xff,
+0x27, 0x01, 0x7f, 0x00,
+0x16, 0x01, 0x01, 0x00,
+0x15, 0x01, 0x01, 0x00,
+0x17, 0x01, 0x0f, 0x00,
+0x0d, 0x01, 0x2e, 0x00,
+0x2d, 0x01, 0x2e, 0x00,
+0x8d, 0x01, 0x0a, 0x00,
+0x24, 0x01, 0x00, 0x00,
+0x8f, 0x01, 0x01, 0x00,
+0x80, 0x40, 0x00, 0x00,
+0x30, 0x00, 0x00, 0x00,
+0x81, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x82, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x83, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x8b, 0x01, 0x00, 0x00,
+0x8c, 0x01, 0xff, 0xff,
+0x8a, 0x01, 0x00, 0x00,
+0x86, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x85, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x84, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x89, 0x01, 0x80, 0xff,
+0x85, 0x01, 0x01, 0x00,
+0x80, 0x01, 0x04, 0x00,
+0x2f, 0x01, 0x00, 0x00,
+0x11, 0x00, 0x00, 0x00,
+0x06, 0x00, 0x00, 0x00,
+0x0f, 0x01, 0x05, 0x00,
+0x09, 0x01, 0x00, 0x00,
+0x00, 0x01, 0x00, 0x00,
+0x01, 0x01, 0x00, 0x00,
+0x03, 0x01, 0x00, 0x00,
+0x02, 0x01, 0x00, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x00, 0x00,
+0x14, 0x01, 0x41, 0x00,
+0x21, 0x01, 0x00, 0x00,
+0x20, 0x01, 0x00, 0x00,
+0x22, 0x01, 0x00, 0x00,
+0x28, 0x01, 0x00, 0x00,
+0x20, 0x40, 0x00, 0x00,
+0xa0, 0x00, 0x00, 0x00,
+0x21, 0x40, 0x00, 0x00,
+0x50, 0x00, 0x00, 0x00,
+0x29, 0x01, 0x00, 0x00,
+0x22, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x23, 0x40, 0x00, 0x00,
+0xa0, 0x00, 0x00, 0x00,
+0x25, 0x01, 0x00, 0x00,
+0x0d, 0x01, 0x0a, 0x00,
+0x2d, 0x01, 0x1e, 0x00,
+0x2f, 0x01, 0x03, 0x00,
+0x02, 0x00, 0x00, 0x00,
+0x24, 0x40, 0x26, 0x00,
+0x91, 0x01, 0x3f, 0x49,
+0x0f, 0x01, 0x01, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x20, 0x00, 0x00, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x18, 0x01, 0xe6, 0xff,
+0x14, 0x01, 0x41, 0x01,
+0x0d, 0x01, 0x2e, 0x00,
+0x2d, 0x01, 0x2e, 0x00,
+0x80, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x86, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x85, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x84, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x85, 0x01, 0x41, 0x00,
+0x80, 0x01, 0x00, 0x00,
+0x06, 0x00, 0x00, 0x00,
+0x25, 0x40, 0x0c, 0x00,
+0xab, 0xaa, 0xaa, 0x6a,
+0x26, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x24, 0x40, 0x31, 0x00,
+0x00, 0x00, 0x00, 0x40,
+0x00, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x06, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x09, 0x01, 0xe6, 0xff,
+0x05, 0x01, 0x41, 0x01,
+0x10, 0x40, 0x00, 0x00,
+0x20, 0x00, 0x00, 0x00,
+0x16, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x00, 0x00,
+0x14, 0x01, 0x01, 0x01,
+0x80, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x89, 0x01, 0x00, 0x00,
+0x2f, 0x01, 0x00, 0x00,
+0x06, 0x00, 0x01, 0x00,
+0x30, 0x40, 0x00, 0x00,
+0x00, 0x01, 0x00, 0x00,
+0x31, 0x40, 0x00, 0x00,
+0x00, 0xb9, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x25, 0x40, 0x11, 0x00,
+0x44, 0x44, 0x44, 0x44,
+0x24, 0x40, 0x2f, 0x00,
+0x00, 0x00, 0x00, 0x60,
+0x00, 0x40, 0x00, 0x00,
+0x20, 0x00, 0x00, 0x00,
+0x06, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x09, 0x01, 0x00, 0x00,
+0x05, 0x01, 0x01, 0x02,
+0x1f, 0x01, 0x06, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x25, 0x01, 0x11, 0x00,
+0x8f, 0x01, 0x03, 0x00,
+0x86, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x89, 0x01, 0x05, 0xfb,
+0x85, 0x01, 0x01, 0x00,
+0x11, 0x00, 0x00, 0x00,
+0x06, 0x00, 0x02, 0x00,
+0x24, 0x40, 0x21, 0x00,
+0xd1, 0x45, 0x17, 0x5d,
+0x0f, 0x01, 0x03, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x09, 0x01, 0x05, 0xfb,
+0x05, 0x01, 0x01, 0x00,
+0x1f, 0x01, 0x01, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x16, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x80, 0xff,
+0x14, 0x01, 0x41, 0x01,
+0x25, 0x01, 0x00, 0x00,
+0x8f, 0x01, 0x06, 0x00,
+0x80, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x89, 0x01, 0x00, 0x00,
+0x06, 0x00, 0x00, 0x00,
+0x25, 0x40, 0x0f, 0x00,
+0xde, 0xdd, 0xdd, 0x5d,
+0x24, 0x40, 0x31, 0x00,
+0x00, 0x00, 0x00, 0x40,
+0x0f, 0x01, 0x01, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x20, 0x00, 0x00, 0x00,
+0x09, 0x01, 0x00, 0x00,
+0x05, 0x01, 0x01, 0x02,
+0x10, 0x40, 0x00, 0x00,
+0x20, 0x00, 0x00, 0x00,
+0x16, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x00, 0x00,
+0x14, 0x01, 0x01, 0x01,
+0x8f, 0x01, 0x01, 0x00,
+0x80, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x86, 0x40, 0x00, 0x00,
+0x10, 0x00, 0x00, 0x00,
+0x89, 0x01, 0x80, 0xff,
+0x85, 0x01, 0x41, 0x00,
+0x06, 0x00, 0x02, 0x00,
+0x0f, 0x01, 0x06, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x05, 0x01, 0x01, 0x00,
+0x10, 0x40, 0x00, 0x00,
+0x31, 0x00, 0x00, 0x00,
+0x13, 0x01, 0x00, 0x00,
+0x15, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x14, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x18, 0x01, 0x80, 0xff,
+0x17, 0x01, 0x07, 0x00,
+0x0d, 0x01, 0x0a, 0x00,
+0x2d, 0x01, 0x1e, 0x00,
+0x24, 0x40, 0x16, 0x00,
+0xff, 0x00, 0xc0, 0x3f,
+0x2f, 0x01, 0x03, 0x00,
+0x05, 0x00, 0x02, 0x00,
+0x24, 0x40, 0x1e, 0x00,
+0x00, 0x00, 0x00, 0x40,
+0x0f, 0x01, 0x01, 0x00,
+0x00, 0x40, 0x00, 0x00,
+0x30, 0x00, 0x00, 0x00,
+0x04, 0x01, 0x00, 0x00,
+0x05, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x04, 0x40, 0x00, 0x00,
+0x01, 0x00, 0x00, 0x00,
+0x09, 0x01, 0x80, 0xff,
+0x10, 0x40, 0x00, 0x00,
+0x30, 0x00, 0x00, 0x00,
+0x0d, 0x01, 0x2e, 0x00,
+0x2d, 0x01, 0x2e, 0x00,
+0x89, 0x01, 0x00, 0x00,
+0x85, 0x01, 0x00, 0x00,
+0x80, 0x01, 0x80, 0x00,
+0x81, 0x01, 0x00, 0x00,
+0x06, 0x00, 0x00, 0x00,
+0x00, 0x00, 0xff, 0xff, };
+
+static inline const uint8_t* Getcmsfc_lif_layer_0Pointer()
+{
+	return cms_fc_lif_layer_0;
+}
+
+
+static inline const size_t Getcmsfc_lif_layer_0Len()
+{
+	return sizeof(cms_fc_lif_layer_0);
+}
+
+
+static const int8_t WEIGHTS_AND_BIASES_REGION_fc_lif_layer_0[] __attribute__((aligned(16))) =
+{
+//biases
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24,
+0x80, 0x00, 0x00, 0x00,
+0x00, 0x44, 0x44, 0x44,
+0x44, 0x24, 0x80, 0x00,
+0x00, 0x00, 0x00, 0x44,
+0x44, 0x44, 0x44, 0x24, 
+//weights
+0xfe, 0x0f, 0x5c, 0x10,
+0xec, 0x0f, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0xf0, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0x0f, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0xf0, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff,
+0xff, 0xff, 0xff, 0xff, };
+
+static inline const int8_t* GetWEIGHTS_AND_BIASES_REGIONfc_lif_layer_0Pointer()
+{
+	return WEIGHTS_AND_BIASES_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetWEIGHTS_AND_BIASES_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(WEIGHTS_AND_BIASES_REGION_fc_lif_layer_0);
+}
+
+
+static int8_t SRAM_SCRATCH_REGION_fc_lif_layer_0 [50] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetSRAM_SCRATCH_REGIONfc_lif_layer_0Pointer()
+{
+	return SRAM_SCRATCH_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetSRAM_SCRATCH_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(SRAM_SCRATCH_REGION_fc_lif_layer_0);
+}
+
+
+static int8_t SRAM_FAST_SCRATCH_REGION_fc_lif_layer_0 [0] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetSRAM_FAST_SCRATCH_REGIONfc_lif_layer_0Pointer()
+{
+	return SRAM_FAST_SCRATCH_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetSRAM_FAST_SCRATCH_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(SRAM_FAST_SCRATCH_REGION_fc_lif_layer_0);
+}
+
+
+static const int8_t PARAMS_REGIONS_fc_lif_layer_0[] __attribute__((aligned(16))) =
+{
+
+// ln(beta)_quant
+0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 
+// vth_quant
+0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, };
+
+static inline const int8_t* GetPARAMS_REGIONSfc_lif_layer_0Pointer()
+{
+	return PARAMS_REGIONS_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetPARAMS_REGIONSfc_lif_layer_0Len()
+{
+	return sizeof(PARAMS_REGIONS_fc_lif_layer_0);
+}
+
+
+static const int8_t LUT_REGION_fc_lif_layer_0[] __attribute__((aligned(16))) =
+{
+
+//lut index 0
+-29, 
+-29, -28, -28, -28, -27, -27, -27, -26, 
+-26, -25, -25, -24, -24, -24, -23, -23, 
+-22, -22, -22, -21, -21, -20, -20, -20, 
+-19, -19, -18, -18, -17, -17, -16, -16, 
+-16, -15, -15, -14, -14, -13, -13, -12, 
+-12, -12, -11, -11, -10, -10, -9, -9, 
+-8, -8, -7, -7, -6, -6, -5, -5, 
+-5, -4, -4, -3, -3, -2, -2, -1, 
+-1, 0, 0, 1, 1, 2, 2, 3, 
+3, 4, 5, 5, 6, 6, 7, 7, 
+8, 8, 9, 9, 10, 10, 11, 11, 
+12, 13, 13, 14, 14, 15, 15, 16, 
+16, 17, 18, 18, 19, 19, 20, 20, 
+21, 22, 22, 23, 23, 24, 25, 25, 
+26, 26, 27, 28, 28, 29, 29, 30, 
+31, 31, 32, 33, 33, 34, 34, 35, 
+36, 36, 37, 38, 38, 39, 40, 40, 
+41, 42, 42, 43, 44, 44, 45, 46, 
+46, 47, 48, 48, 49, 50, 51, 51, 
+52, 53, 53, 54, 55, 55, 56, 57, 
+58, 58, 59, 60, 61, 61, 62, 63, 
+64, 64, 65, 66, 67, 67, 68, 69, 
+70, 70, 71, 72, 73, 74, 74, 75, 
+76, 77, 78, 78, 79, 80, 81, 82, 
+82, 83, 84, 85, 86, 87, 87, 88, 
+89, 90, 91, 92, 93, 93, 94, 95, 
+96, 97, 98, 99, 100, 101, 101, 102, 
+103, 104, 105, 106, 107, 108, 109, 110, 
+111, 112, 113, 113, 114, 115, 116, 117, 
+118, 119, 120, 121, 122, 123, 124, 125, 
+126, 127, 127, 127, 127, 127, 127, 127, 
+127, 127, 127, 127, 127, 127, 127, 
+//lut index 1
+0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 1, 
+1, 1, 1, 1, 1, 1, 1, 
+};
+
+static inline const int8_t* GetLUT_REGIONfc_lif_layer_0Pointer()
+{
+	return LUT_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetLUT_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(LUT_REGION_fc_lif_layer_0);
+}
+
+
+static int8_t INPUT_REGION_fc_lif_layer_0 [16] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetINPUT_REGIONfc_lif_layer_0Pointer()
+{
+	return INPUT_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetINPUT_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(INPUT_REGION_fc_lif_layer_0);
+}
+
+
+static int8_t OUTPUT_REGION_fc_lif_layer_0 [16] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
+
+static inline int8_t* GetOUTPUT_REGIONfc_lif_layer_0Pointer()
+{
+	return OUTPUT_REGION_fc_lif_layer_0;
+}
+
+
+static inline const size_t GetOUTPUT_REGIONfc_lif_layer_0Len()
+{
+	return sizeof(OUTPUT_REGION_fc_lif_layer_0);
+}
+
+
+char* name_fc_lif_layer_0 [15] =
+{
+	"UPDATE_NXT_LAYER",
+	"DECAYED_MEM",
+	"IN_SPK",
+	"WEIGHT",
+	"VTH",
+	"BIAS",
+	"v_mem_sub_vth",
+	"IN_CURR",
+	"LN_BETA",
+	"OUT_SPK",
+	"V_MEM",
+	"TIME_NOT_UPDATED",
+	"RESET",
+	"DECAY",
+	"DECAY_ACC",
+};
+
+size_t relative_addr_fc_lif_layer_0 [15] =
+{
+	49,
+	0,
+	0,
+	160,
+	16,
+	0,
+	0,
+	16,
+	0,
+	0,
+	32,
+	48,
+	16,
+	0,
+	0,
+};
+
+size_t region_fc_lif_layer_0 [15] =
+{
+	1,
+	1,
+	5,
+	0,
+	3,
+	0,
+	6,
+	1,
+	3,
+	6,
+	1,
+	1,
+	1,
+	1,
+	1,
+};
+
+size_t size_fc_lif_layer_0 [15] =
+{
+	1,
+	16,
+	16,
+	80,
+	16,
+	160,
+	16,
+	16,
+	16,
+	16,
+	16,
+	1,
+	16,
+	16,
+	16,
+};
+
+float scale_fc_lif_layer_0 [15] =
+{
+	0.00392156862745098,
+	0.0392156862745098,
+	1.0,
+	0.0007843137254901962,
+	0.0007843137254901964,
+	0.0007843137254901962,
+	0.00784313725490196,
+	0.047058823529411764,
+	0.0007843137254901962,
+	1.0,
+	0.047058823529411764,
+	0.06274509803921569,
+	0.004313725490196079,
+	0.0037254901960784314,
+	0.00392156862745098,
+};
+
+int zero_point_fc_lif_layer_0 [15] =
+{
+	-128,
+	-26,
+	0,
+	0,
+	-1275,
+	0,
+	0,
+	0,
+	134,
+	0,
+	0,
+	-128,
+	-128,
+	-128,
+	127,
+};
+
+static inline char** Getnamefc_lif_layer_0Pointer()
+{
+	return name_fc_lif_layer_0;
+}
+
+
+static inline size_t* Getrelative_addrfc_lif_layer_0Pointer()
+{
+	return relative_addr_fc_lif_layer_0;
+}
+
+
+static inline size_t* Getregionfc_lif_layer_0Pointer()
+{
+	return region_fc_lif_layer_0;
+}
+
+
+static inline size_t* Getsizefc_lif_layer_0Pointer()
+{
+	return size_fc_lif_layer_0;
+}
+
+
+static inline float* Getscalefc_lif_layer_0Pointer()
+{
+	return scale_fc_lif_layer_0;
+}
+
+
+static inline int* Getzero_pointfc_lif_layer_0Pointer()
+{
+	return zero_point_fc_lif_layer_0;
+}
+
+/*
+Register Command Stream:
++---------------------------+-----------+-------------------------+
+| Command Name              | Parameter | Payload Data            |
++---------------------------+-----------+-------------------------+
+| NPU_SET_DMA0_SRC_REGION   | 4         | -                       |
+| NPU_SET_DMA0_SRC          | 0         | 0x00000000 (0)          |
+| NPU_SET_DMA0_DST_REGION   | 259       | -                       |
+| NPU_SET_DMA0_DST          | 0         | 0x0000b800 (47104)      |
+| NPU_SET_DMA0_LEN          | 0         | 0x00000100 (256)        |
+| NPU_OP_DMA_START          | 0         | -                       |
+| NPU_SET_OFM_SCALE         | 37        | 0x66cd339a (1724724122) |
+| NPU_SET_IFM_REGION        | 3         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_BASE1         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_BASE2         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_BASE3         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_HEIGHT0_M1    | 0         | -                       |
+| NPU_SET_IFM_HEIGHT1_M1    | 65535     | -                       |
+| NPU_SET_IFM_WIDTH0_M1     | 0         | -                       |
+| NPU_SET_IFM_DEPTH_M1      | 15        | -                       |
+| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM_ZERO_POINT    | 134       | -                       |
+| NPU_SET_IFM_PRECISION     | 1         | -                       |
+| NPU_SET_IFM_UPSCALE       | 0         | -                       |
+| NPU_SET_OFM_REGION        | 1         | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_BASE1         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_BASE2         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_BASE3         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_HEIGHT0_M1    | 0         | -                       |
+| NPU_SET_OFM_HEIGHT1_M1    | 65535     | -                       |
+| NPU_SET_OFM_WIDTH0_M1     | 0         | -                       |
+| NPU_SET_OFM_HEIGHT_M1     | 0         | -                       |
+| NPU_SET_OFM_WIDTH_M1      | 0         | -                       |
+| NPU_SET_OFM_DEPTH_M1      | 15        | -                       |
+| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_STRIDE_Y      | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_STRIDE_X      | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_ZERO_POINT    | 127       | -                       |
+| NPU_SET_OFM_PRECISION     | 321       | -                       |
+| NPU_SET_ACTIVATION        | 16        | -                       |
+| NPU_SET_ACTIVATION_MIN    | 65408     | -                       |
+| NPU_SET_ACTIVATION_MAX    | 127       | -                       |
+| NPU_SET_OFM_BLK_HEIGHT_M1 | 1         | -                       |
+| NPU_SET_OFM_BLK_WIDTH_M1  | 1         | -                       |
+| NPU_SET_OFM_BLK_DEPTH_M1  | 15        | -                       |
+| NPU_SET_IFM_IB_END        | 46        | -                       |
+| NPU_SET_AB_START          | 46        | -                       |
+| NPU_SET_IFM2_IB_START     | 10        | -                       |
+| NPU_SET_ACC_FORMAT        | 0         | -                       |
+| NPU_SET_IFM2_REGION       | 1         | -                       |
+| NPU_SET_IFM2_BASE0        | 0         | 0x00000030 (48)         |
+| NPU_SET_IFM2_BASE1        | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM2_BASE2        | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM2_BASE3        | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM2_HEIGHT0_M1   | 0         | -                       |
+| NPU_SET_IFM2_HEIGHT1_M1   | 65535     | -                       |
+| NPU_SET_IFM2_WIDTH0_M1    | 0         | -                       |
+| NPU_SET_IFM2_STRIDE_C     | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM2_STRIDE_Y     | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM2_STRIDE_X     | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM2_ZERO_POINT   | 65408     | -                       |
+| NPU_SET_IFM_PRECISION     | 1         | -                       |
+| NPU_SET_IFM2_BROADCAST    | 4         | -                       |
+| NPU_SET_BLOCKDEP          | 0         | -                       |
+| NPU_OP_DMA_WAIT           | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 0         | -                       |
+| NPU_SET_IFM_REGION        | 5         | -                       |
+| NPU_SET_IFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_IFM_PAD_TOP       | 0         | -                       |
+| NPU_SET_IFM_PAD_LEFT      | 0         | -                       |
+| NPU_SET_IFM_PAD_BOTTOM    | 0         | -                       |
+| NPU_SET_IFM_PAD_RIGHT     | 0         | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_OFM_PRECISION     | 65        | -                       |
+| NPU_SET_KERNEL_HEIGHT_M1  | 0         | -                       |
+| NPU_SET_KERNEL_WIDTH_M1   | 0         | -                       |
+| NPU_SET_KERNEL_STRIDE     | 0         | -                       |
+| NPU_SET_WEIGHT_REGION     | 0         | -                       |
+| NPU_SET_WEIGHT_BASE       | 0         | 0x000000a0 (160)        |
+| NPU_SET_WEIGHT_LENGTH     | 0         | 0x00000050 (80)         |
+| NPU_SET_SCALE_REGION      | 0         | -                       |
+| NPU_SET_SCALE_BASE        | 0         | 0x00000000 (0)          |
+| NPU_SET_SCALE_LENGTH      | 0         | 0x000000a0 (160)        |
+| NPU_SET_ACTIVATION        | 0         | -                       |
+| NPU_SET_IFM_IB_END        | 10        | -                       |
+| NPU_SET_AB_START          | 30        | -                       |
+| NPU_SET_BLOCKDEP          | 3         | -                       |
+| NPU_OP_CONV               | 0         | -                       |
+| NPU_SET_OFM_SCALE         | 38        | 0x493f0191 (1228865937) |
+| NPU_SET_IFM_REGION        | 1         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000020 (32)         |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_ZERO_POINT    | 65510     | -                       |
+| NPU_SET_OFM_PRECISION     | 321       | -                       |
+| NPU_SET_IFM_IB_END        | 46        | -                       |
+| NPU_SET_AB_START          | 46        | -                       |
+| NPU_SET_IFM2_BASE0        | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM2_STRIDE_C     | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM2_STRIDE_Y     | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM2_STRIDE_X     | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM_PRECISION     | 65        | -                       |
+| NPU_SET_IFM2_BROADCAST    | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 0         | -                       |
+| NPU_SET_OPA_SCALE         | 12        | 0x6aaaaaab (1789569707) |
+| NPU_SET_OPB_SCALE         | 0         | 0x00000000 (0)          |
+| NPU_SET_OFM_SCALE         | 49        | 0x40000000 (1073741824) |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM_ZERO_POINT    | 65510     | -                       |
+| NPU_SET_IFM_PRECISION     | 321       | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000020 (32)         |
+| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_OFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_OFM_PRECISION     | 257       | -                       |
+| NPU_SET_IFM2_BASE0        | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM2_ZERO_POINT   | 0         | -                       |
+| NPU_SET_BLOCKDEP          | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 1         | -                       |
+| NPU_SET_DMA0_SRC          | 0         | 0x00000100 (256)        |
+| NPU_SET_DMA0_DST          | 0         | 0x0000b900 (47360)      |
+| NPU_OP_DMA_START          | 0         | -                       |
+| NPU_SET_OPA_SCALE         | 17        | 0x44444444 (1145324612) |
+| NPU_SET_OFM_SCALE         | 47        | 0x60000000 (1610612736) |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000020 (32)         |
+| NPU_SET_IFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_IFM_PRECISION     | 513       | -                       |
+| NPU_SET_OFM_REGION        | 6         | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_ACTIVATION        | 17        | -                       |
+| NPU_SET_IFM2_REGION       | 3         | -                       |
+| NPU_SET_IFM2_STRIDE_C     | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM2_ZERO_POINT   | 64261     | -                       |
+| NPU_SET_IFM_PRECISION     | 1         | -                       |
+| NPU_OP_DMA_WAIT           | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 2         | -                       |
+| NPU_SET_OFM_SCALE         | 33        | 0x5d1745d1 (1561806289) |
+| NPU_SET_IFM_REGION        | 3         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM_ZERO_POINT    | 64261     | -                       |
+| NPU_SET_IFM_PRECISION     | 1         | -                       |
+| NPU_SET_OFM_REGION        | 1         | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000010 (16)         |
+| NPU_SET_OFM_ZERO_POINT    | 65408     | -                       |
+| NPU_SET_OFM_PRECISION     | 321       | -                       |
+| NPU_SET_ACTIVATION        | 0         | -                       |
+| NPU_SET_IFM2_REGION       | 6         | -                       |
+| NPU_SET_IFM2_BASE0        | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM2_ZERO_POINT   | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 0         | -                       |
+| NPU_SET_OPA_SCALE         | 15        | 0x5dddddde (1574821342) |
+| NPU_SET_OFM_SCALE         | 49        | 0x40000000 (1073741824) |
+| NPU_SET_IFM_REGION        | 1         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000020 (32)         |
+| NPU_SET_IFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_IFM_PRECISION     | 513       | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000020 (32)         |
+| NPU_SET_OFM_STRIDE_C      | 0         | 0x00000001 (1)          |
+| NPU_SET_OFM_ZERO_POINT    | 0         | -                       |
+| NPU_SET_OFM_PRECISION     | 257       | -                       |
+| NPU_SET_IFM2_REGION       | 1         | -                       |
+| NPU_SET_IFM2_BASE0        | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM2_STRIDE_C     | 0         | 0x00000010 (16)         |
+| NPU_SET_IFM2_ZERO_POINT   | 65408     | -                       |
+| NPU_SET_IFM_PRECISION     | 65        | -                       |
+| NPU_OP_ELEMENTWISE        | 2         | -                       |
+| NPU_SET_IFM_REGION        | 6         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000000 (0)          |
+| NPU_SET_IFM_PRECISION     | 1         | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000031 (49)         |
+| NPU_SET_OFM_DEPTH_M1      | 0         | -                       |
+| NPU_SET_OFM_STRIDE_Y      | 0         | 0x00000001 (1)          |
+| NPU_SET_OFM_STRIDE_X      | 0         | 0x00000001 (1)          |
+| NPU_SET_OFM_ZERO_POINT    | 65408     | -                       |
+| NPU_SET_OFM_BLK_DEPTH_M1  | 7         | -                       |
+| NPU_SET_IFM_IB_END        | 10        | -                       |
+| NPU_SET_AB_START          | 30        | -                       |
+| NPU_SET_OFM_SCALE         | 22        | 0x3fc000ff (1069547775) |
+| NPU_SET_BLOCKDEP          | 3         | -                       |
+| NPU_OP_POOL               | 2         | -                       |
+| NPU_SET_OFM_SCALE         | 30        | 0x40000000 (1073741824) |
+| NPU_SET_IFM_REGION        | 1         | -                       |
+| NPU_SET_IFM_BASE0         | 0         | 0x00000030 (48)         |
+| NPU_SET_IFM_DEPTH_M1      | 0         | -                       |
+| NPU_SET_IFM_STRIDE_Y      | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM_STRIDE_X      | 0         | 0x00000001 (1)          |
+| NPU_SET_IFM_ZERO_POINT    | 65408     | -                       |
+| NPU_SET_OFM_BASE0         | 0         | 0x00000030 (48)         |
+| NPU_SET_IFM_IB_END        | 46        | -                       |
+| NPU_SET_AB_START          | 46        | -                       |
+| NPU_SET_IFM2_ZERO_POINT   | 0         | -                       |
+| NPU_SET_IFM_PRECISION     | 0         | -                       |
+| NPU_SET_IFM2_BROADCAST    | 128       | -                       |
+| NPU_SET_IFM2_SCALAR       | 0         | -                       |
+| NPU_OP_ELEMENTWISE        | 0         | -                       |
+| NPU_OP_STOP               | 65535     | -                       |
++---------------------------+-----------+-------------------------+
+*/

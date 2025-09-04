@@ -204,10 +204,13 @@ net = Model(snn=snn, decoder=decode)
 optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
 
 
-for epoch in range(epochs):
-    training_loss, mean_loss = train(net, trainloader, optimizer)
-    print(test(net, testloader))
+snn.load_state_dict(torch.load("model_state_dict.pkl"))
+print(net)
+
+#for epoch in range(epochs):
+#    training_loss, mean_loss = train(net, trainloader, optimizer)
+#    print(test(net, testloader))
 
 # Save the model or the weights as you want. Example for saving the model
 #torch.save(net.snn, 'model.pkl')
-torch.save(net.snn.state_dict(), 'model_state_dict.pkl')
+#torch.save(net.snn.state_dict(), 'model_state_dict.pkl')
