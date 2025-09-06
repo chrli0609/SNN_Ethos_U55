@@ -22,6 +22,7 @@
 #include "include/extra_funcs.h"
 
 #include "nn_data_structure.h"
+//#include "nn_models/784x56x56x56x10/test_patterns/pattern_0.h"
 #include "pm.h" //SystemCoreClock
 
 
@@ -191,10 +192,6 @@ int main() {
     //);
     MLP_Inference_test_patterns(
         mlp_model,
-        test_input_0,
-        test_target_0,
-        test_input_0_NUM_SAMPLES,
-
         mlp_model->num_time_steps,
         1,
 
@@ -235,7 +232,8 @@ int main() {
     //printf("avg_inference_time_post_inference_end:\t\t\t\t%f us\n", avg_inference_time_post_inference_end);
     //printf("avg_inference_time_invalidate_ethosu_dcache:\t\t\t\t%f\n", avg_inference_time_invalidate_ethosu_dcache);
 
-
+    //assume 45 samples
+    size_t test_input_0_NUM_SAMPLES = 45;
 
     ait_reset_model_for_new_sample /= (double)test_input_0_NUM_SAMPLES;
     ait_set_test_pattern_pointer_to_model /= (double)test_input_0_NUM_SAMPLES;

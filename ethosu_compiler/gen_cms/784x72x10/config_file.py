@@ -52,7 +52,9 @@ ACCELERATOR = NpuAccelerator.Ethos_U55_256
 '''
 Set Test Pattern to use
 '''
-TEST_PATTERN_NUM = 0
+#TEST_PATTERN_NUM = 0
+#TEST_PATTERN_NUM = 1
+TEST_PATTERN_NUM = 4
 
 
 

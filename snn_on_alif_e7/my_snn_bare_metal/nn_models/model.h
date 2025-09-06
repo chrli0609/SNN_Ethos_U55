@@ -9,7 +9,8 @@
 
 
 // Include Test Patterns
-#include "test_patterns/pattern_0.h"
+//#include "test_patterns/pattern_0.h"
+//#include "test_patterns/pattern_1.h"
 
 // Set NNLayer Tensor Indices
 #define IN_SPK_TENSOR_IDX               0
@@ -95,10 +96,10 @@ int MLP_Inference_test_patterns(
 
     //volatile int8_t*** test_patterns,
     //volatile int8_t* test_targets,
-    volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][25][784],
-    volatile int8_t test_targets[test_input_0_NUM_SAMPLES],
+    //volatile int8_t test_patterns[][25][784],
+    //volatile int8_t test_targets[],
 
-    size_t num_samples,
+    //size_t num_samples,
 
     size_t num_time_steps,
     int make_printouts,
@@ -111,49 +112,3 @@ int MLP_Free(NN_Model* mlp_model);
 
 
 
-
-/*
-Set region for every layer
-
-*/
-
-//static int8_t fc_lif_layer_0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-//static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-//static int8_t fc_lif_layer_0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));
-
-
-
-
-NN_Model_CPU* Init_CPU_MLP();
-
-NNLayer_CPU* FC_LIF_Layer_CPU_Init(
-
-    // Const tensors
-    float* weights_arr,
-    float* biases_arr,
-    float* beta_arr,
-    float* vth_arr,
-
-    // Non-const tensors
-    float* in_spk,
-    float* out_spk,
-    float* v_mem,
-    float* time_since_last_update,
-
-    size_t input_size,
-    size_t output_size,
-
-    float* out_spk_sum
-);
-
-int MLP_Inference_CPU_test_patterns(
-    NN_Model_CPU* mlp_model,
-
-    volatile int8_t test_patterns[test_input_0_NUM_SAMPLES][25][784],
-    volatile int8_t test_targets[test_input_0_NUM_SAMPLES],
-
-    size_t num_samples,
-    size_t num_time_steps,
-
-    int make_printouts
-);

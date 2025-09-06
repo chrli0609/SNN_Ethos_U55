@@ -40,7 +40,7 @@ connectivity_filepath = get_connectivity_filepath(model_module.MODEL_NAME, CURR_
 connectivity_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 
-clear_file_and_write_preamble(connectivity_filepath, args.model, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS)
+clear_file_and_write_preamble(connectivity_filepath, args.model, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS, model_module.TEST_PATTERN_NUM)
 write_tensor_declarations(connectivity_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.MEM_STORE_LOC_LIST)
 
 

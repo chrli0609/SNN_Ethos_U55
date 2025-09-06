@@ -21,6 +21,18 @@
 #define MLP_NUM_LAYERS 5
 #define MLP_NUM_TIME_STEPS 25
 
+
+#include "test_patterns/pattern_4.h"
+
+#define NUM_TEST_SAMPLES test_input_4_NUM_SAMPLES
+
+volatile int8_t* get_test_target() {
+	return test_target_4;
+}
+volatile int8_t (*get_test_inputs())[MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE] {
+	return test_input_4;
+}
+
 static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
 static int8_t fc_lif_layer_0_tensor_arena[FC_LIF_LAYER_0_TENSOR_ARENA_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));
 static int8_t fc_lif_layer_0_out_spk[FC_LIF_LAYER_0_OUTPUT_LAYER_SIZE] __attribute__((section("model_params_sram1"))) __attribute__((aligned(16)));

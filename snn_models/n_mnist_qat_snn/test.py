@@ -18,6 +18,7 @@ import importlib
 # Parse CLI args
 parser = argparse.ArgumentParser()
 parser.add_argument("--model", required=True, help="Model folder name, e.g. model_1 or model_2")
+parser.add_argument("--pattern_num", required=False, default=0, help="")
 args = parser.parse_args()
 
 # Dynamically import the model module
@@ -156,8 +157,12 @@ def make_csv_rows(dicts, keys):
 
 ## Do testing
 
-test_data = np.load(model_dir / test_patterns_dir / Path("test_input_0.npy"))
-target_data = np.load(model_dir / test_patterns_dir / Path("test_target_0.npy"))
+#test_data = np.load(model_dir / test_patterns_dir / Path("test_input_0.npy"))
+#target_data = np.load(model_dir / test_patterns_dir / Path("test_target_0.npy"))
+
+test_pattern_num_to_use = int(args.pattern_num)
+test_data = np.load(model_dir / test_patterns_dir / Path("test_input_"+str(test_pattern_num_to_use)+".npy"))
+target_data = np.load(model_dir / test_patterns_dir / Path("test_target_"+str(test_pattern_num_to_use)+".npy"))
 
 
 

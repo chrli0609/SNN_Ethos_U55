@@ -14,6 +14,7 @@ def numpy_to_c_array_3d(arr, var_name, mem_section_name, num_samples_macro_name,
     depth, rows, cols = arr.shape
     
     # Write array declaration
+    #output_file.write(f"static volatile __attribute__((section(\"{mem_section_name}\"))) int8_t {var_name}[{num_samples_macro_name}][{rows}][{cols}] = {{\n")
     output_file.write(f"static volatile __attribute__((section(\"{mem_section_name}\"))) int8_t {var_name}[{num_samples_macro_name}][{rows}][{cols}] = {{\n")
     
     # Write array data

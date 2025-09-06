@@ -1,7 +1,7 @@
 
 
 
-def clear_file_and_write_preamble(connectivity_h_filepath, model_name, base_name, num_layers, num_time_steps):
+def clear_file_and_write_preamble(connectivity_h_filepath, model_name, base_name, num_layers, num_time_steps, test_pattern_nr):
     with open(connectivity_h_filepath, 'w') as f:
         f.write("#pragma once\n\n")
 
@@ -20,7 +20,14 @@ def clear_file_and_write_preamble(connectivity_h_filepath, model_name, base_name
         f.write("#define MLP_OUTPUT_LAYER_SIZE\t" + base_name.upper() + str(num_layers-1) + "_OUTPUT_LAYER_SIZE\n\n")
 
         f.write("#define MLP_NUM_LAYERS " + str(num_layers) + "\n")
-        f.write("#define MLP_NUM_TIME_STEPS " + str(num_time_steps) + "\n")
+        f.write("#define MLP_NUM_TIME_STEPS " + str(num_time_steps) + "\n\n\n")
+
+        f.write(f'#include "test_patterns/pattern_{test_pattern_nr}.h"\n\n')
+        f.write(f"#define NUM_TEST_SAMPLES test_input_{test_pattern_nr}_NUM_SAMPLES\n\n")
+
+        f.write("volatile int8_t* get_test_target() {\n\treturn test_target_"+str(test_pattern_nr)+";\n}\n")
+        f.write("volatile int8_t (*get_test_inputs())[MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE] {\n\treturn test_input_"+str(test_pattern_nr)+";\n}\n")
+
 
 
 def get_func_calls(funcname_first_part, layer_name, content_name, type):
