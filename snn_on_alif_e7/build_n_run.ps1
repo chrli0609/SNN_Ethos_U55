@@ -1,3 +1,10 @@
+# Set COM port to Alif E7 here!!
+
+Set-Variable -Name "COM_PORT" -Value "COM32"
+
+
+#####
+
 # Enable PowerShell to stop on the first error
 $ErrorActionPreference = "Stop"
 
@@ -53,7 +60,8 @@ try {
     ./app-gen-toc -f alif-img.json
     #echo "COM8" | ./app-write-mram -p -d
     #echo "COM12" | ./app-write-mram -p -d
-    echo "COM32" | ./app-write-mram -p -d
+    #echo "COM32" | ./app-write-mram -p -d
+    echo "${COM_PORT}" | ./app-write-mram -p -d
 
     rm ./build/images/alif-img.bin
     rm ./alif-img.json

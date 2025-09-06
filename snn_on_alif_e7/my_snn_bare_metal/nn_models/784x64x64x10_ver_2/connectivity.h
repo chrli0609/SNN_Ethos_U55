@@ -20,15 +20,15 @@
 #define MLP_NUM_TIME_STEPS 25
 
 
-#include "test_patterns/pattern_4.h"
+#include "test_patterns/pattern_0.h"
 
-#define NUM_TEST_SAMPLES test_input_4_NUM_SAMPLES
+#define NUM_TEST_SAMPLES test_input_0_NUM_SAMPLES
 
 volatile int8_t* get_test_target() {
-	return test_target_4;
+	return test_target_0;
 }
 volatile int8_t (*get_test_inputs())[MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE] {
-	return test_input_4;
+	return test_input_0;
 }
 
 static int8_t fc_lif_layer_0_in_spk[FC_LIF_LAYER_0_INPUT_LAYER_SIZE] __attribute__((section("model_params_dtcm"))) __attribute__((aligned(16)));

@@ -1,3 +1,30 @@
+# Generate C layer and connectivity files
+File structure for a model is:
+model_name/
+    - config_file.py
+    - model_params/
+        - fc_lif_layer_0_biases.npy
+        - fc_lif_layer_0_weights.npy
+        ...
+        - fc_lif_layer_n_biases.npy
+        - fc_lif_layer_n_weights.npy
+    - test_patterns/
+        - test_input_0.npy
+        - test_target_0.npy
+        ...
+        - test_input_n.npy
+        - test_target_n.npy
+
+
+Generate files by running:
+```
+python3 main.py --model model_name
+```
+
+
+# Adding Operations other than Feed forward fully connected LIF
+All the code for LIF is under gen_cms/fc_lif.py
+That file is currently quite messy. Simplest way to add other operations is to create new file for it and import the npu_op_list generated
 
 
 
