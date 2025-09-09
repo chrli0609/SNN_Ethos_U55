@@ -3,7 +3,7 @@
 2. Build and flash to Alif E7 (./build_n_run.ps1)
 3. Read from UART Port to see output (./scripts/read_com.ps1)
 
-The model being run can be changed by editing in my_snn_bare_metal/my_snn_bare_metal.cproject.yml
+The model being run can be changed by editing in my_snn_bare_metal/my_snn_bare_metal.cproject.yml (./scripts/edit_cproject_file.py)
 ```
   add-path:
   - .
