@@ -1,0 +1,4 @@
+ethos_u_vela==3.10.0
+numpy==1.24.0
+prettytable==3.16.0
+tensorflow==2.14.1

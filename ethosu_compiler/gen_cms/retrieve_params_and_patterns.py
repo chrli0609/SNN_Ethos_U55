@@ -4,14 +4,16 @@ import subprocess
 import sys
 from pathlib import Path
 
+remote_user = "chrliu"
+remote_host = "172.16.222.25"
+
+
 # Usage: python3 script.py 784x64x64x10
 if len(sys.argv) < 2:
     print("Usage: python3 script.py <model_dir>")
     sys.exit(1)
 
 model_dir = Path(sys.argv[1])
-remote_user = "chrliu"
-remote_host = "172.16.222.25"
 remote_base_path = f"/home/{remote_user}/n_mnist_qat_snn/{model_dir}"
 local_model_path = os.path.join(model_dir, "model_params")
 local_test_path = os.path.join(model_dir, "test_patterns")

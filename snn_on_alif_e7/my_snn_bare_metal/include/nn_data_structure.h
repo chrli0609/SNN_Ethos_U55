@@ -10,12 +10,6 @@
 #define TENSOR_INIT_VALUE 0
 #define MAX_NUM_PRINTED_VALUES_PER_LINE 10
 
-//// Simple Persistent Buffer Allocator (like PersistentArenaBufferAllocator)
-//typedef struct {
-    //int8_t* buffer_head;  // Start of buffer
-    //int8_t* tail_temp;    // Current tail position
-//} PersistentAllocator;
-
 
 
 typedef struct {
@@ -41,8 +35,6 @@ typedef struct {
 } MemoryRegion;
 
 
-
-
 typedef struct {
 
     // Tensors that are always in use
@@ -50,14 +42,6 @@ typedef struct {
     Tensor* output;
     Tensor* update_nxt_layer;
     Tensor* update_curr_layer;
-    //int8_t* input;
-    //size_t input_size;
-
-    //int8_t* output;
-    //size_t output_size;
-
-    //int8_t* update_nxt;
-    //int8_t* update_curr;
 
 
     float time_of_previous_update;
@@ -99,29 +83,17 @@ typedef struct {
 } NN_Model;
 
 
-
+// Tensor functions
 void Tensor_Print(Tensor* tensor);
 void Tensor_Print_Quant_Values(Tensor* tensor);
 
 
+// NNLayer functions
 Tensor* NNLayer_Get_Tensor(NNLayer* nnlayer, const char* tensor_name);
 
 
-
-void* aligned_malloc(size_t required_bytes, size_t alignment);
-void aligned_free(void* p);
-
-//void PersistentAllocator_Init(PersistentAllocator* allocator, int8_t* arena, size_t size);
-//void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t relative_addr);
-//void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, size_t alignment);
-
-
-//int8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator);
-//int8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator);
-
 NNLayer* NNLayer_Init(size_t num_tensors, size_t num_regions);
-//int NNLayer_Assign(NNLayer* layer, size_t element, int8_t* tensor_ptr, size_t tensor_size, 
-                   //float scale, int zero_point, const char* tensor_name);
+
 int NNLayer_Assign(
     NNLayer* nnlayer,
     const uint8_t* command_stream,
@@ -144,77 +116,19 @@ int NNLayer_Assign(
     float* tensor_scales,
     int* tensor_zero_points,
     size_t num_tensors,
-
-
-    //float in_spk_scale,
-    //int in_spk_zero_point,
-
-    //float v_mem_scale,
-    //int v_mem_zero_point,
-    //float time_not_updated_scale,
-    //int time_not_updated_zero_point,
-
-    //float out_spk_scale,
-    //int out_spk_zero_point
     int is_last_layer);
 
 void NNLayer_Free(NNLayer* layer);
 void NNLayer_DequantizeAndPrint(const NNLayer* layer);
 
 
+
+
+
+
+// NN_MODEL functions
 NN_Model* NN_Model_Init(int8_t* total_arena_tensor, NNLayer* first_nnlayer, size_t input_size, size_t output_size, size_t num_time_steps);
 
 
 
 
-
-
-
-
-//typedef struct {
-
-    //// Const tensors
-    //float* weights;
-    //float* biases;
-    //float* vth;
-    //float* beta;
-
-    //// Non const tensors
-    //float* v_mem;
-    //float* time_since_last_update;
-
-
-
-    //float* input;
-    //size_t input_size;
-
-    //float* output;
-    //size_t output_size;
-    //float* out_spk_sum;
-
-    //struct NNLayer_CPU* next_layer;
-
-//} NNLayer_CPU;
-
-
-
-//typedef struct {
-    //size_t input_size;
-    //size_t output_size;
-
-
-    //// Num time steps to process each input sample
-    //size_t num_time_steps;
-
-    //size_t num_layers;
-
-
-    //NNLayer_CPU* first_nnlayer;
-    //NNLayer_CPU* last_nnlayer;
-
-    //float* input;
-    //float* output;
-
-    //float* out_spk_sum;
-
-//}NN_Model_CPU;

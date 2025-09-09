@@ -40,7 +40,7 @@ connectivity_filepath = get_connectivity_filepath(model_module.MODEL_NAME, CURR_
 connectivity_filepath.parent.mkdir(parents=True, exist_ok=True)
 
 
-clear_file_and_write_preamble(connectivity_filepath, args.model, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS)
+clear_file_and_write_preamble(connectivity_filepath, args.model, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.NUM_TIME_STEPS, model_module.TEST_PATTERN_NUM)
 #write_tensor_declarations(connectivity_filepath, model_module.LAYER_BASE_NAME, model_module.NUM_LAYERS, model_module.MEM_STORE_LOC_LIST)
 
 
@@ -66,7 +66,7 @@ for layer_num in range(model_module.NUM_LAYERS):
     print("Sizes: Input\t", aligned_input_size, "Output\t", aligned_output_size)
     ##### Set LIF Param values #######
 
-    # Generate Beta values
+    # Generate Beta values (sort of assumes that the whole layer shares the same beta and vth, if want unique ones can move this to config file)
     beta_list = []
     for j in range(aligned_output_size):
         beta_list.append(model_module.ALL_BETA_VALUE)

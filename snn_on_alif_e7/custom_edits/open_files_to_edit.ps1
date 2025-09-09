@@ -1,1 +1,0 @@
-code C:\Users\chris\AppData\Local\arm\packs\ARM\ethos-u-core-driver\1.23.2\ethos_u_core_driver\src\ethosu_driver.c

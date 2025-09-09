@@ -12,9 +12,6 @@ def write_cms_to_files(header_filepath, mem_alloc: MemoryAllocator, cms_driver_p
     
     formatted_cms = format_bytearr_for_printout(cms_driver_payload_byte_array)
     
-    #if weight_byte_arr:
-        #formatted_biases = format_bytearr_for_printout(bias_byte_arr)
-        #formatted_weights = format_bytearr_for_printout(weight_byte_arr)
         
     with open(header_filepath, 'w') as f:
         f.write("#pragma once\n")
@@ -25,21 +22,10 @@ def write_cms_to_files(header_filepath, mem_alloc: MemoryAllocator, cms_driver_p
         # Define layer constants as macros
         f.write("// Tensor sizes\n")
         f.write(get_macro_def_str(sizes_dict))
-        #f.write("// Input/output addresses (Relative Addressing)\n")
-        #f.write(get_macro_def_str(addr_dict))
-        #f.write("//Quantization Params\n")
-        #f.write(get_macro_def_str(quant_params_dict))
 
-
-        #f.write(get_cms_methods_declare_str(layer_name))
-        #f.write(get_weight_methods_declare_str(layer_name))
-        #f.write(get_lut_methods_declare_str(layer_name))
-        #f.write(get_lif_param_methods_declare_str(layer_name))
 
 
         
-    #with open(imp_filepath, 'w') as f:
-        #f.write("#include \"include/"+layer_name+".h\"")
 
         f.write("\n\n\n\n\n\n")
 
@@ -71,31 +57,11 @@ def write_cms_to_files(header_filepath, mem_alloc: MemoryAllocator, cms_driver_p
                 
                 f.write(get_arr_dec_str("static "+region.dtype, region.name, layer_name, region.size, [f'section("{mem_store_loc}")', f"aligned(16)"]))
             
-            #mem_regions_arr_name_list.append(get_arr_name(region.name, layer_name))
-            #mem_regions_size_list.append(region.size)
-            #mem_regions_region_number_list.append(region.number)
             
             f.write(get_method_def_str(region.dtype, region.name, layer_name, MethodAccessType.POINTER))
             f.write(get_method_def_str(None, region.name, layer_name, MethodAccessType.LEN))
 
         
-        #f.write(get_arr_def_str("int8_t*", "region_ptrs", layer_name, mem_regions_arr_name_list))
-        #f.write(get_arr_def_str("size_t", "region_sizes", layer_name, mem_regions_size_list))
-        #f.write(get_arr_def_str("size_t", "region_numbers", layer_name, mem_regions_region_number_list))
-
-            
-        #f.write(get_method_def_str("int8_t*", "region_ptrs", layer_name, MethodAccessType.POINTER))
-        #f.write(get_method_def_str("size_t", "region_sizes", layer_name, MethodAccessType.POINTER))
-        #f.write(get_method_def_str("size_t", "region_numbers", layer_name, MethodAccessType.POINTER))
-
-        ## Write Method to access the output region
-        #if layer_num == 0:
-            #f.write(get_method_def_str(mem_alloc.regions[INPUT_REGION_NAME].dtype, INPUT_REGION_NAME, layer_name, MethodAccessType.POINTER))
-            #f.write(get_method_def_str(mem_alloc.regions[INPUT_REGION_NAME].dtype, INPUT_REGION_NAME, layer_name, MethodAccessType.LEN))
-
-        #f.write(get_method_def_str(mem_alloc.regions[OUTPUT_REGION_NAME].dtype, OUTPUT_REGION_NAME, layer_name, MethodAccessType.POINTER))
-        #f.write(get_method_def_str(mem_alloc.regions[OUTPUT_REGION_NAME].dtype, OUTPUT_REGION_NAME, layer_name, MethodAccessType.LEN))
-
 
 
 

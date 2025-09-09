@@ -10060,12 +10060,6 @@ static inline const size_t GetOUTPUT_REGIONfc_lif_layer_0Len()
 
 char* name_fc_lif_layer_0 [15] =
 {
-	"RESET",
-	"DECAY",
-	"DECAY_ACC",
-	"UPDATE_NXT_LAYER",
-	"DECAYED_MEM",
-	"IN_SPK",
 	"WEIGHT",
 	"VTH",
 	"BIAS",
@@ -10075,16 +10069,16 @@ char* name_fc_lif_layer_0 [15] =
 	"OUT_SPK",
 	"V_MEM",
 	"TIME_NOT_UPDATED",
+	"RESET",
+	"DECAY",
+	"DECAY_ACC",
+	"UPDATE_NXT_LAYER",
+	"DECAYED_MEM",
+	"IN_SPK",
 };
 
 size_t relative_addr_fc_lif_layer_0 [15] =
 {
-	64,
-	0,
-	0,
-	185,
-	0,
-	0,
 	560,
 	56,
 	0,
@@ -10094,35 +10088,35 @@ size_t relative_addr_fc_lif_layer_0 [15] =
 	0,
 	128,
 	184,
+	64,
+	0,
+	0,
+	185,
+	0,
+	0,
 };
 
 size_t region_fc_lif_layer_0 [15] =
 {
+	0,
+	3,
+	0,
+	6,
+	1,
+	3,
+	6,
+	1,
+	1,
 	1,
 	1,
 	1,
 	1,
 	1,
 	5,
-	0,
-	3,
-	0,
-	6,
-	1,
-	3,
-	6,
-	1,
-	1,
 };
 
 size_t size_fc_lif_layer_0 [15] =
 {
-	56,
-	56,
-	56,
-	1,
-	56,
-	784,
 	37472,
 	56,
 	560,
@@ -10132,16 +10126,16 @@ size_t size_fc_lif_layer_0 [15] =
 	56,
 	56,
 	1,
+	56,
+	56,
+	56,
+	1,
+	56,
+	784,
 };
 
 float scale_fc_lif_layer_0 [15] =
 {
-	0.004313725490196079,
-	0.0037254901960784314,
-	0.00392156862745098,
-	0.00392156862745098,
-	0.043137254901960784,
-	1.0,
 	0.004073868078344009,
 	0.0007843137254901964,
 	0.0034155163110471238,
@@ -10151,16 +10145,16 @@ float scale_fc_lif_layer_0 [15] =
 	1.0,
 	0.058823529411764705,
 	0.06274509803921569,
+	0.004313725490196079,
+	0.0037254901960784314,
+	0.00392156862745098,
+	0.00392156862745098,
+	0.043137254901960784,
+	1.0,
 };
 
 int zero_point_fc_lif_layer_0 [15] =
 {
-	-128,
-	-128,
-	127,
-	-128,
-	-35,
-	0,
 	0,
 	-1275,
 	0,
@@ -10170,6 +10164,12 @@ int zero_point_fc_lif_layer_0 [15] =
 	0,
 	-26,
 	-128,
+	-128,
+	-128,
+	127,
+	-128,
+	-35,
+	0,
 };
 
 static inline char** Getnamefc_lif_layer_0Pointer()

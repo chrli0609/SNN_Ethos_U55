@@ -7,99 +7,12 @@
 
 
 #include "include/extra_funcs.h"
-//#include "nn_models/spk_mnist_784x32x10/model.h"
-//#include "nn_models/nmnist_784x64x64x10/model.h"
-//#include "nn_models/nmnist_784x32x32x32x10/model.h"
 
 
 
 
 
 
-
-
-// For allocating main tensor (all the tensor arenas)
-void* aligned_malloc(size_t required_bytes, size_t alignment) {
-    void* p1;       // Original pointer returned by malloc
-    void** p2;      // Aligned pointer to return
-
-    // We need extra space: enough to realign and to store the original pointer
-    size_t offset = alignment - 1 + sizeof(void*);
-
-    // Allocate extra memory
-    p1 = malloc(required_bytes + offset);
-    if (p1 == NULL) return NULL;
-
-    // Align the pointer upward and store the original just before the aligned address
-    p2 = (void**)(((size_t)(p1) + offset) & ~(alignment - 1));
-    p2[-1] = p1;  // Store original pointer for later free()
-
-    return p2;
-}
-
-
-void aligned_free(void* p) {
-    free(((void**)p)[-1]);
-}
-
-
-
-
-
-
-
-
-
-
-// Aligns a pointer down to the nearest aligned address
-void* AlignPointerDown(void* ptr, size_t alignment) {
-    return (void*)((uintptr_t)ptr & ~(alignment - 1));
-}
-
-//// Initializes the PersistentAllocator
-//void PersistentAllocator_Init(PersistentAllocator* allocator, int8_t* arena, size_t size) {
-    //allocator->buffer_head = arena;
-    //allocator->tail_temp = arena + size;
-//}
-
-//// Allocates a persistent buffer
-//void* PersistentAllocator_Allocate(PersistentAllocator* allocator, size_t size, size_t alignment) {
-    //int8_t* aligned_result = (int8_t*)AlignPointerDown(allocator->tail_temp - size, alignment);
-    
-    //if (aligned_result < allocator->buffer_head) {
-        //printf("Memory allocation failed! Requested: %zu bytes\n", size);
-        //return NULL;
-    //}
-
-    //allocator->tail_temp = aligned_result;
-    //return aligned_result;
-//}
-
-
-//// Manually allocate relative addressing
-
-//void* PersistentAllocator_GetAbsPointer(PersistentAllocator* allocator, size_t relative_addr) {
-    //void* absolute_ptr = allocator->buffer_head + relative_addr;
-
-    //// Only an error if its the pointer to the whole tensor, not only pointers within the tensor
-    ////if (absolute_ptr != AlignPointerDown(absolute_ptr, MEM_ALIGNMENT)) {
-        //////printf("Error: manually set pointer is not 16-bit aligned\n");
-    ////}
-
-    //return absolute_ptr;
-//}
-
-
-
-
-//// Getters
-//int8_t* PersistentAllocator_GetBufferHead(PersistentAllocator* allocator) {
-    //return allocator->buffer_head;
-//}
-
-//int8_t* PersistentAllocator_GetTailTemp(PersistentAllocator* allocator) {
-    //return allocator->tail_temp;
-//}
 
 
 int8_t* relative_addr_2_absolute_addr(int8_t* region_ptr, size_t relative_addr) {
@@ -200,10 +113,6 @@ NNLayer* NNLayer_Init(size_t num_tensors, size_t num_regions) {
     // Allocate memory for array containing custom memory regions
     layer->memory_regions = (MemoryRegion**)malloc(num_regions * sizeof(MemoryRegion*));
     if (!layer->memory_regions) {
-        //free(layer->quant_params);
-        //free(layer->tensor_sizes);
-        //free(layer->tensor_ptrs);
-        //free(layer->tensor_names);
         free(layer->tensors);
         free(layer);
         return NULL;
@@ -211,13 +120,6 @@ NNLayer* NNLayer_Init(size_t num_tensors, size_t num_regions) {
 
 
 
-    // Initiate PersistentAllocator for each region
-    //PersistentAllocator_Init(&layer->allocator, layer->sram_scratch_region->region_start_ptr, layer->sram_scratch_region->length);
-
-    //for (size_t i = 0; i < num_regions; i++) {
-        //PersistentAllocator_Init(&layer->allocator, layer->custom_regions[i]->region_start_ptr, layer->custom_regions[i]->length);
-
-    //}
 
 
     // Default Next Layer is NULL
@@ -275,22 +177,10 @@ int NNLayer_Assign(
     size_t num_tensors,
 
 
-    //float in_spk_scale,
-    //int in_spk_zero_point,
-
-    //float v_mem_scale,
-    //int v_mem_zero_point,
-    //float time_not_updated_scale,
-    //int time_not_updated_zero_point,
-
-    //float out_spk_scale,
-    //int out_spk_zero_point
     int is_last_layer
 ) {
 
 
-    //NNLayer* nnlayer = NNLayer_Init(num_tensors, num_regions);
-    //if (nnlayer == NULL) { printf("Error when initializing NN_layer0\n"); }
 
 
     nnlayer->command_stream = command_stream;
@@ -326,7 +216,10 @@ int NNLayer_Assign(
             tensor_zero_points[i]
         );
         
-        /* TEMPORARY SOLUTION !!!! */
+        /* 
+        TEMPORARY SOLUTION !!!!
+        THIS WOULD NOT WORK IF THE SAME TENSOR NAMES ARE USED
+         */
         Tensor* tensor = nnlayer->tensors[i];
         // If its V_mem or time not updated, assign 0 to them
         if (strcmp(tensor->name, "V_MEM") == 0 || strcmp(tensor->name, "TIME_NOT_UPDATED") == 0) {
@@ -396,51 +289,6 @@ int NNLayer_Assign_Tensor(NNLayer* layer, size_t element, int8_t* region_ptr, si
 
     Tensor_Assign(layer->tensors[element], tensor_name, layer->memory_regions[region_number]->region_start_ptr, region_number, relative_addr, tensor_size, scale, zero_point);
 
-    //layer->tensors[element].ptr = tensor_ptr;
-    //layer->tensors[element].size = tensor_size;
-    //layer->tensors[element].name = tensor_name;
-    //layer->tensors[element].scale = scale;
-    //layer->tensors[element].zero_point = zero_point;
-    //layer->tensors[element].scale_reciprocal = 1 / scale;
-
-
-
-    // Free previous tensor if it exists
-    //if (layer->tensors[element].ptr != NULL) {
-        //free(layer->tensors[element]);
-    //}
-    
-    //// Free previous name if it exists
-    //if (layer->tensor_names[element] != NULL) {
-        //free(layer->tensor_names[element]);
-    //}
-
-    //// Assign new tensor pointer
-    //layer->tensor_ptrs[element] = tensor_ptr;
-    
-    //// Set tensor size
-    //layer->tensor_sizes[element] = tensor_size;
-    
-    //// Set quantization parameters
-    //layer->quant_params[element].scale = scale;
-    //layer->quant_params[element].zero_point = zero_point;
-    //layer->quant_params[element].scale_reciprocal = 1/scale;
-    
-    //// Allocate and copy tensor name
-    //if (tensor_name) {
-        //layer->tensor_names[element] = strdup(tensor_name);
-        //if (!layer->tensor_names[element]) {
-            //return -3;  // Memory allocation failed for name
-        //}
-    //} else {
-        //// Provide default name if none is specified
-        //char default_name[32];
-        //snprintf(default_name, sizeof(default_name), "tensor_%zu", element);
-        //layer->tensor_names[element] = strdup(default_name);
-        //if (!layer->tensor_names[element]) {
-            //return -3;  // Memory allocation failed for name
-        //}
-    //}
     
     return 0;  // Success
 }

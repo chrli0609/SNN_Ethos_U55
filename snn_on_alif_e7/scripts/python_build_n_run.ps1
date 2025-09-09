@@ -18,7 +18,7 @@ try {
 
     #cd $PythonScriptDir
     #$pythonOutput = & python $PythonScriptFilename $outputNeurons 2>&1
-    $pythonOutput = python $PythonScriptFilename --model $model
+    $pythonOutput = python3 $PythonScriptFilename --model $model
     Write-Output "This is python output!"
     Write-Output "$pythonOutput"
     #$pythonOutput = & python3 $PythonScriptFilename

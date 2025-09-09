@@ -3,8 +3,6 @@
 #include "../include/nn_data_structure.h"
 #include "../model.h"
 
-//#include "test_patterns/pattern_0.h"
-
 
 #define MODEL_NAME "784x56x56x56x10"
 
@@ -21,6 +19,19 @@
 
 #define MLP_NUM_LAYERS 4
 #define MLP_NUM_TIME_STEPS 25
+
+
+// for test patterns
+#include "test_patterns/pattern_10.h"
+
+#define NUM_TEST_SAMPLES test_input_10_NUM_SAMPLES
+
+volatile int8_t* get_test_target() {
+	return test_target_10;
+}
+volatile int8_t (*get_test_inputs())[MLP_NUM_TIME_STEPS][MLP_INPUT_LAYER_SIZE] {
+	return test_input_10;
+}
 
 
 NNLayer* Init_fc_lif_layer_0() {

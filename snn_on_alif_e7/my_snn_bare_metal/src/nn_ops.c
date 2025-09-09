@@ -162,7 +162,7 @@ extern double avg_inference_time_start_inference;
 uint32_t inference_speed_measure_start_tick_start_inference = 0;
 
 
-
+// For measuring inside the NPU
 //This gets called by ethosu_inference_begin() in ethosu_cpu_cache.c
 void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 {
@@ -202,7 +202,8 @@ void ethosu_start_pmu_measure(struct ethosu_driver *drv, void *user_arg)
 
 }
 
-
+// For measuring clock cycles inside the NPU
+// This overrides the weakly defined ethosu_inference_end() function in ethosu_driver.c
 void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 {
 
@@ -281,6 +282,8 @@ void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg)
 
 extern double avg_inference_time_run_cms;
 
+
+// Calls the ethosu_invoke_v3 function defined in ethosu_driver.c, which starts NPU operation
 int run_cms(
     const uint8_t* command_stream,
     size_t command_stream_size,
